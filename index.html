@@ -640,6 +640,60 @@
     .cta-blog a:hover {
       filter: brightness(1.05);
     }
+
+    /* Casos típicos */
+    .use-cases {
+      margin-top: 24px;
+      padding: 14px 12px 12px;
+      border-radius: var(--radius-md);
+      background: rgba(15,23,42,0.95);
+      border: 1px solid rgba(55,65,81,0.9);
+    }
+
+    .use-cases h2 {
+      margin-bottom: 6px;
+    }
+
+    .use-cases p.intro {
+      font-size: 0.86rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .use-cases-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    @media (max-width: 860px) {
+      .use-cases-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .use-case {
+      background: rgba(15,23,42,0.98);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(55,65,81,0.9);
+      padding: 8px 9px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .use-case h3 {
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+
+    .use-case p {
+      margin: 3px 0;
+    }
+
+    .use-case code {
+      font-size: 0.78rem;
+    }
   </style>
 </head>
 
@@ -662,6 +716,7 @@
     </div>
     <nav>
       <a href="#como-funciona">Cómo funciona</a>
+      <a href="#casos-tipicos">Casos típicos</a>
       <a href="#faq">Preguntas frecuentes</a>
       <a href="#privacidad">Privacidad</a>
       <a href="/blog">Guía: pasar LaTeX a Word</a>
@@ -714,7 +769,7 @@
               <input id="file-input" type="file" accept=".docx,.txt" />
             </label>
             <span class="small-pill">
-              Admite .docx y .txt · Tamaño máx. aprox. 10&nbsp;MB
+              Admite .docx y .txt · Conversión online y gratuita · Sin registro
             </span>
           </div>
           <div class="file-name" id="file-name">
@@ -762,7 +817,8 @@
         <li>Potencias y subíndices: <code>x^2</code>, <code>y^3</code>, <code>a_{11}</code>, <code>q_1</code>, etc.</li>
         <li>Productos y determinantes: <code>\cdot</code>, <code>\det(A)</code>.</li>
         <li>
-          Matrices con <code>\left(\matrix{...}\right)</code> o <code>\left[\matrix{...}\right]</code>,
+          Matrices con <code>\begin{pmatrix} ... \end{pmatrix}</code>,
+          <code>\begin{bmatrix} ... \end{bmatrix}</code> o <code>\begin{matrix} ... \end{matrix}</code>,
           con filas separadas por <code>\\</code> y columnas por <code>&amp;</code>.
         </li>
       </ul>
@@ -776,6 +832,44 @@
       </p>
     </aside>
   </main>
+
+  <!-- Casos típicos de uso -->
+  <section class="use-cases" id="casos-tipicos">
+    <h2>Casos típicos donde esta herramienta te ahorra tiempo</h2>
+    <p class="intro">
+      Estos son algunos ejemplos reales de cómo usan otros estudiantes y profesores el conversor
+      LaTeX → Word. Si te ves reflejado en alguno, estás en el sitio adecuado.
+    </p>
+    <div class="use-cases-grid">
+      <article class="use-case">
+        <h3>1. Copiar ecuaciones de ChatGPT a Word</h3>
+        <p>
+          Le pides a una IA que te resuelva un ejercicio, te devuelve la solución en LaTeX y,
+          al pegarlo en Word, el formato se rompe. Copia todo el LaTeX a un <code>.txt</code>
+          o un <code>.docx</code>, súbelo aquí y descarga un Word con ecuaciones nativas.
+        </p>
+      </article>
+
+      <article class="use-case">
+        <h3>2. Pasar apuntes en LaTeX a un documento entregable</h3>
+        <p>
+          Tienes apuntes de Álgebra o Cálculo escritos en LaTeX, pero necesitas entregar el
+          trabajo en formato Word. Genera un archivo con tus fórmulas delimitadas por
+          <code>$...$</code> o <code>$$...$$</code> y deja que la herramienta cree las
+          ecuaciones por ti.
+        </p>
+      </article>
+
+      <article class="use-case">
+        <h3>3. Preparar exámenes y hojas de ejercicios</h3>
+        <p>
+          Como docente, redactas los ejercicios en LaTeX pero el centro te exige entregarlos en
+          Word. Conviertes tus expresiones LaTeX a ecuaciones de Word y luego solo te ocupas del
+          diseño final del documento (portada, instrucciones, etc.).
+        </p>
+      </article>
+    </div>
+  </section>
 
   <!-- CTA hacia el blog -->
   <section class="cta-blog">
