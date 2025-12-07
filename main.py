@@ -624,3 +624,38 @@ async def blog():
             return f.read()
     except FileNotFoundError:
         return "<h1>No se encuentra blog.html</h1>"
+
+
+# ================================================================
+#  9. Servir sitemap.xml y robots.txt
+# ================================================================
+
+@app.get("/sitemap.xml", response_class=HTMLResponse)
+async def sitemap():
+    """
+    Devuelve el sitemap XML.
+    """
+    sitemap_path = os.path.join(BASE_DIR, "sitemap.xml")
+    try:
+        with open(sitemap_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        return HTMLResponse(content=content, media_type="application/xml")
+    except FileNotFoundError:
+        # Sitemap mínimo vacío si no existe el archivo (no debería ocurrir)
+        return HTMLResponse("<urlset></urlset>", media_type="application/xml")
+
+
+@app.get("/robots.txt", response_class=HTMLResponse)
+async def robots():
+    """
+    Devuelve el robots.txt.
+    """
+    robots_path = os.path.join(BASE_DIR, "robots.txt")
+    try:
+        with open(robots_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        return HTMLResponse(content=content, media_type="text/plain; charset=utf-8")
+    except FileNotFoundError:
+        # robots.txt mínimo por defecto
+        content = "User-agent: *\nAllow: /"
+        return HTMLResponse(content=content, media_type="text/plain; charset=utf-8")
