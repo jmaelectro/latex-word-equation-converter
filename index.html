@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>LaTeX → Ecuaciones de Word</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="Convierte documentos .txt o .docx con fórmulas LaTeX en ecuaciones nativas de Word (OMML)."
+  />
+
+  <style>
+    :root {
+      --bg: #050816;
+      --bg-card: #0b1020;
+      --accent: #22c55e;
+      --accent-soft: rgba(34, 197, 94, 0.1);
+      --accent-danger: #f97373;
+      --text: #f9fafb;
+      --text-muted: #9ca3af;
+      --border: #1f2937;
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #1f2937, #020617);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .app {
+      max-width: 960px;
+      width: 100%;
+      padding: 32px 16px;
+    }
+
+    .card {
+      background: linear-gradient(135deg, #020617, #020617) padding-box,
+        linear-gradient(135deg, #22c55e33, #22c55e00) border-box;
+      border: 1px solid transparent;
+      border-radius: 20px;
+      padding: 28px 24px 32px;
+      box-shadow: 0 22px 45px rgba(0, 0, 0, 0.5);
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin: 0 0 8px;
+      letter-spacing: 0.02em;
+    }
+
+    .subtitle {
+      margin: 0 0 24px;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .step {
+      background: #020617;
+      border-radius: var(--radius);
+      padding: 14px 14px 16px;
+      border: 1px solid var(--border);
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .step-number {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid rgba(34, 197, 94, 0.5);
+    }
+
+    .step-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .step-body {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .panel {
+      margin-top: 8px;
+      border-radius: var(--radius);
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border);
+      padding: 18px 16px 14px;
+    }
+
+    .panel-label {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .file-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .btn {
+      border-radius: 999px;
+      border: none;
+      padding: 8px 18px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #022c22;
+      font-weight: 600;
+      box-shadow: 0 12px 25px rgba(34, 197, 94, 0.35);
+      transition: transform 0.12s ease, box-shadow 0.12s ease,
+        background 0.12s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 30px rgba(34, 197, 94, 0.45);
+      background: #16a34a;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: default;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-outline {
+      border: 1px solid var(--border);
+      background: #020617;
+      color: var(--text);
+      font-size: 0.85rem;
+    }
+
+    .file-name {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .hint {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .status {
+      margin-top: 12px;
+      font-size: 0.86rem;
+      min-height: 1.2em;
+    }
+
+    .status-ok {
+      color: var(--accent);
+    }
+
+    .status-error {
+      color: var(--accent-danger);
+    }
+
+    .status-info {
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 720px) {
+      .card {
+        padding: 20px 16px 24px;
+      }
+      .steps {
+        grid-template-columns: 1fr;
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
+      .subtitle {
+        font-size: 0.88rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <div class="card">
+      <h1>LaTeX → Ecuaciones de Word</h1>
+      <p class="subtitle">
+        Sube un archivo <strong>.txt</strong> o <strong>.docx</strong> con fórmulas
+        LaTeX sencillas (como las que genera ChatGPT) y descarga un
+        <strong>.docx</strong> con ecuaciones nativas de Word (OMML), totalmente
+        editables.
+      </p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">1</div>
+            <div class="step-title">Elige archivo</div>
+          </div>
+          <div class="step-body">
+            Selecciona un <code>.txt</code> o <code>.docx</code> con fórmulas
+            delimitadas por <code>$...$</code>, <code>$$...$$</code> o
+            <code>\[...\]</code>.
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">2</div>
+            <div class="step-title">Convierte</div>
+          </div>
+          <div class="step-body">
+            El archivo se envía al servidor, se analizan las fórmulas LaTeX y se
+            crean ecuaciones de Word (OMML).
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-header">
+            <div class="step-number">3</div>
+            <div class="step-title">Descarga</div>
+          </div>
+          <div class="step-body">
+            Descarga el nuevo <code>.docx</code>, ábrelo en Word y edita las
+            ecuaciones como cualquier ecuación nativa.
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-label">1. Elige un archivo .docx o .txt</div>
+
+        <div class="file-row">
+          <label for="fileInput" class="btn btn-outline">Seleccionar archivo</label>
+          <span id="fileName" class="file-name">Ningún archivo seleccionado</span>
+        </div>
+
+        <input type="file" id="fileInput" accept=".txt,.docx" />
+
+        <p class="hint">
+          Dentro del texto, usa notación como
+          <code>$x^2$</code>, <code>$q_1$</code>, <code>\det(A)</code>,
+          <code>\left[\matrix{...}\right]</code>, etc.
+        </p>
+      </div>
+
+      <div class="panel" style="margin-top: 16px;">
+        <div class="panel-label">2. Ejecuta la conversión</div>
+        <button id="convertBtn" class="btn btn-primary">
+          2. Convertir documento
+        </button>
+        <p id="status" class="status status-info">
+          Esperando archivo…
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById("fileInput");
+    const fileNameSpan = document.getElementById("fileName");
+    const convertBtn = document.getElementById("convertBtn");
+    const statusEl = document.getElementById("status");
+
+    let selectedFile = null;
+
+    function setStatus(message, type) {
+      statusEl.textContent = message || "";
+      statusEl.classList.remove("status-ok", "status-error", "status-info");
+      if (type === "ok") statusEl.classList.add("status-ok");
+      else if (type === "error") statusEl.classList.add("status-error");
+      else statusEl.classList.add("status-info");
+    }
+
+    fileInput.addEventListener("change", () => {
+      const files = fileInput.files;
+      if (!files || files.length === 0) {
+        selectedFile = null;
+        fileNameSpan.textContent = "Ningún archivo seleccionado";
+        setStatus("Esperando archivo…", "info");
+        return;
+      }
+      selectedFile = files[0];
+      fileNameSpan.textContent = selectedFile.name;
+      setStatus("Archivo listo para convertir.", "info");
+    });
+
+    convertBtn.addEventListener("click", async () => {
+      if (!selectedFile) {
+        setStatus("Primero selecciona un archivo .txt o .docx.", "error");
+        return;
+      }
+
+      convertBtn.disabled = true;
+      setStatus("Enviando archivo y convirtiendo…", "info");
+
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      try {
+        const response = await fetch("/convert", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          let detail = "";
+          try {
+            const data = await response.json();
+            detail = data.detail || "";
+          } catch (e) {
+            /* ignoramos si no hay JSON */
+          }
+          setStatus(
+            "Error durante la conversión" +
+              (detail ? `: ${detail}` : ". Revisa el archivo de entrada."),
+            "error"
+          );
+          convertBtn.disabled = false;
+          return;
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+
+        const originalName = selectedFile.name.replace(/\.(txt|docx)$/i, "");
+        a.href = url;
+        a.download = originalName + "_convertido.docx";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+
+        setStatus(
+          "Conversión completada. Se ha descargado el documento convertido.",
+          "ok"
+        );
+      } catch (err) {
+        console.error(err);
+        setStatus("Error al conectar con el servidor.", "error");
+      } finally {
+        convertBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
