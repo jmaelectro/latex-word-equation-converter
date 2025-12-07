@@ -2,14 +2,44 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>LaTeX → Ecuaciones de Word | ecuacionesaword.com</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description"
-        content="Convierte documentos con fórmulas LaTeX sencillas en ecuaciones nativas de Word (.docx) listas para editar." />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>∑</text></svg>">
+
+  <title>Convertir ecuaciones LaTeX a Word online | ecuacionesaword.com</title>
+
+  <meta
+    name="description"
+    content="Convierte documentos con ecuaciones LaTeX a Word (.docx) en segundos. Sube tu archivo .txt o .docx con fórmulas LaTeX y descarga un Word con ecuaciones nativas, editables y bien maquetadas."
+  />
+
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="https://www.ecuacionesaword.com/" />
+
+  <!-- Open Graph / Social -->
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="es_ES" />
+  <meta property="og:title" content="Convertir ecuaciones LaTeX a Word online" />
+  <meta
+    property="og:description"
+    content="Pega tus soluciones en LaTeX o súbelas desde un .docx y consigue un Word con ecuaciones nativas, listas para entregar."
+  />
+  <meta property="og:url" content="https://www.ecuacionesaword.com/" />
+  <meta property="og:site_name" content="ecuacionesaword.com" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Convertir ecuaciones LaTeX a Word online" />
+  <meta
+    name="twitter:description"
+    content="Convierte tus ecuaciones LaTeX a Word en un clic. Ideal para estudiantes y docentes."
+  />
+
+  <!-- Favicon sencillo -->
+  <link
+    rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>∑</text></svg>"
+  />
 
   <!-- Google Analytics 4 -->
-  <!-- NOTA: si en el futuro cambias de propiedad solo tienes que sustituir el ID G-GS589S9BG4 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-GS589S9BG4"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -18,10 +48,76 @@
     gtag("config", "G-GS589S9BG4");
   </script>
 
+  <!-- Datos estructurados: WebApplication -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Conversor LaTeX a Word",
+    "url": "https://www.ecuacionesaword.com/",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Any",
+    "description": "Aplicación web para convertir documentos con ecuaciones LaTeX en archivos Word (.docx) con ecuaciones nativas editables.",
+    "publisher": {
+      "@type": "Person",
+      "name": "ecuacionesaword.com"
+    }
+  }
+  </script>
+
+  <!-- Datos estructurados: FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "¿Qué hace exactamente ecuacionesaword.com?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Convierte documentos .txt o .docx que incluyen fórmulas escritas en LaTeX en un nuevo archivo Word (.docx) donde las fórmulas aparecen como ecuaciones nativas de Word (OMML), totalmente editables."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Qué tipo de fórmulas LaTeX soporta la herramienta?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Soporta un subconjunto de LaTeX orientado a ejercicios de Álgebra Lineal: potencias y subíndices (x^2, a_{11}), productos y determinantes (\\cdot, \\det(A)), y matrices escritas con \\left(\\matrix{...}\\right) o \\left[\\matrix{...}\\right] con filas separadas por \\\\ y columnas separadas por &."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Mis documentos se guardan en el servidor?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Los archivos se usan únicamente para realizar la conversión y se eliminan automáticamente tras el proceso. No se crean cuentas de usuario ni se construyen perfiles con el contenido de los documentos."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Puedo usar soluciones generadas por IA en LaTeX?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Sí. Si obtienes tu solución en LaTeX (por ejemplo desde un chatbot de IA), puedes pegarla en un .txt o pegarla en un documento Word como texto, y luego usar esta herramienta para convertirlas en ecuaciones nativas de Word listas para entregar."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "¿Cuánto cuesta usar la herramienta?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Actualmente ecuacionesaword.com es gratuita. En el futuro podrían añadirse funciones avanzadas, pero la conversión básica de LaTeX a ecuaciones de Word seguirá siendo accesible."
+        }
+      }
+    ]
+  }
+  </script>
+
   <style>
     :root {
       --bg: #050816;
-      --bg-soft: #0b1020;
       --card: #111827;
       --accent: #22c55e;
       --accent-soft: rgba(34, 197, 94, 0.12);
@@ -55,13 +151,13 @@
     }
 
     .page {
-      max-width: 960px;
+      max-width: 980px;
       width: 100%;
       margin: 20px auto;
       padding: 20px 16px 32px;
     }
 
-    header {
+    header.page-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -76,7 +172,7 @@
     }
 
     .brand-title {
-      font-size: 1.8rem;
+      font-size: 1.9rem;
       font-weight: 700;
       letter-spacing: 0.03em;
       display: flex;
@@ -99,7 +195,7 @@
     .brand-subtitle {
       color: var(--muted);
       font-size: 0.9rem;
-      max-width: 520px;
+      max-width: 540px;
     }
 
     nav a {
@@ -118,6 +214,12 @@
       background: rgba(15,23,42,0.9);
     }
 
+    .hero-note {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
     .grid {
       display: grid;
       grid-template-columns: minmax(0, 1.8fr) minmax(0, 1.4fr);
@@ -129,7 +231,7 @@
       .grid {
         grid-template-columns: minmax(0, 1fr);
       }
-      header {
+      header.page-header {
         flex-direction: column;
         align-items: flex-start;
       }
@@ -162,59 +264,46 @@
       z-index: 1;
     }
 
+    h1 {
+      font-size: 1.4rem;
+      margin: 0 0 8px;
+    }
+
     h2 {
-      margin: 0 0 10px;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
+      margin: 0 0 8px;
     }
 
-    .steps {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 6px;
+    h3 {
+      font-size: 0.96rem;
+      margin: 6px 0;
     }
 
-    .step {
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-      padding: 8px 10px;
+    .steps-list {
+      list-style: none;
+      padding: 0;
+      margin: 6px 0 0;
+    }
+
+    .steps-list li {
       border-radius: var(--radius-md);
+      padding: 8px 10px;
       background: rgba(15,23,42,0.6);
       border: 1px solid rgba(55,65,81,0.7);
+      margin-bottom: 8px;
     }
 
-    .step-badge {
-      width: 22px;
-      height: 22px;
-      border-radius: 8px;
-      background: var(--accent-soft);
-      color: var(--accent);
-      font-size: 0.75rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      border: 1px solid var(--accent);
-    }
-
-    .step-text-title {
-      font-size: 0.92rem;
-      font-weight: 600;
-      margin-bottom: 2px;
-    }
-
-    .step-text-body {
+    .steps-list p {
       font-size: 0.84rem;
       color: var(--muted);
+      margin: 4px 0 0;
     }
 
     .upload-area {
-      margin-top: 16px;
+      margin-top: 14px;
       border-radius: var(--radius-md);
       border: 1px dashed rgba(148,163,184,0.5);
-      background: rgba(15,23,42,0.85);
+      background: rgba(15,23,42,0.9);
       padding: 12px 12px 16px;
       display: flex;
       flex-direction: column;
@@ -226,7 +315,6 @@
       flex-wrap: wrap;
       gap: 10px;
       align-items: center;
-      justify-content: flex-start;
     }
 
     .file-input-label {
@@ -295,7 +383,6 @@
 
     .status {
       font-size: 0.8rem;
-      margin-top: 6px;
       min-height: 16px;
     }
 
@@ -326,7 +413,7 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      margin-top: 10px;
+      margin-top: 6px;
       font-size: 0.85rem;
       color: var(--accent);
       text-decoration: none;
@@ -345,8 +432,6 @@
       background: rgba(34,197,94,0.18);
     }
 
-    /* Lateral derecho: explicación y privacidad */
-
     .right-card {
       background: radial-gradient(circle at top left, #020617 0, #020617 30%, #020617 100%);
       border-radius: var(--radius-lg);
@@ -364,13 +449,13 @@
       font-size: 0.85rem;
       color: var(--muted);
       line-height: 1.5;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
 
     .right-list {
       font-size: 0.82rem;
       color: var(--muted);
-      padding-left: 16px;
+      padding-left: 18px;
       margin-top: 4px;
       margin-bottom: 10px;
     }
@@ -404,32 +489,27 @@
       text-decoration: underline;
     }
 
-    footer {
-      margin-top: 26px;
-      padding-top: 10px;
-      border-top: 1px solid rgba(31,41,55,0.9);
-      font-size: 0.78rem;
+    /* FAQ section */
+    .faq {
+      margin-top: 24px;
+      background: rgba(15,23,42,0.9);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(55,65,81,0.9);
+      padding: 14px 12px 10px;
+    }
+
+    .faq-item {
+      margin-bottom: 8px;
+    }
+
+    .faq-item p {
+      font-size: 0.83rem;
       color: var(--muted);
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: space-between;
-      align-items: center;
+      margin: 4px 0 0;
     }
-
-    footer a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-
-    footer a:hover {
-      text-decoration: underline;
-    }
-
-    /* Sección de privacidad */
 
     .privacy-section {
-      margin-top: 20px;
+      margin-top: 18px;
       background: rgba(15,23,42,0.9);
       border-radius: var(--radius-md);
       border: 1px solid rgba(55,65,81,0.9);
@@ -458,8 +538,29 @@
       margin-bottom: 2px;
     }
 
-    /* Aviso de cookies / Analytics */
+    footer {
+      margin-top: 22px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(31,41,55,0.9);
+      font-size: 0.78rem;
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: space-between;
+      align-items: center;
+    }
 
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Aviso cookies / Analytics */
     #cookie-banner {
       position: fixed;
       left: 50%;
@@ -513,19 +614,24 @@
 
 <body>
 <div class="page">
-  <header>
+  <header class="page-header">
     <div class="brand">
       <div class="brand-title">
         LaTeX → Ecuaciones de Word
         <span class="brand-pill">ecuacionesaword.com</span>
       </div>
       <p class="brand-subtitle">
-        Sube un documento .docx o .txt con fórmulas LaTeX sencillas y obtén un .docx nuevo con
-        ecuaciones nativas de Word (OMML), listas para editar.
+        Convierte documentos <strong>.docx</strong> o <strong>.txt</strong> con fórmulas LaTeX en
+        <strong>archivos Word (.docx) con ecuaciones nativas</strong>, listas para editar y entregar.
+        Ideal para pasar soluciones generadas con IA o LaTeX a un documento presentable.
+      </p>
+      <p class="hero-note">
+        Soporta ecuaciones delimitadas por <code>$...$</code>, <code>$$...$$</code> o <code>\[...\]</code>.
       </p>
     </div>
     <nav>
       <a href="#como-funciona">Cómo funciona</a>
+      <a href="#faq">Preguntas frecuentes</a>
       <a href="#privacidad">Privacidad</a>
     </nav>
   </header>
@@ -534,39 +640,40 @@
     <!-- Columna izquierda: app -->
     <section class="card">
       <div class="card-inner">
-        <h2>Convierte tu documento en 3 pasos</h2>
-        <div class="steps">
-          <div class="step">
-            <div class="step-badge">1</div>
-            <div>
-              <div class="step-text-title">Elige un archivo .docx o .txt</div>
-              <div class="step-text-body">
-                El documento debe contener fórmulas delimitadas por <code>$...$</code>,
-                <code>$$...$$</code> o <code>\[...\]</code>.
-              </div>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-badge">2</div>
-            <div>
-              <div class="step-text-title">Envía el archivo y espera la conversión</div>
-              <div class="step-text-body">
-                El servidor detecta las fórmulas LaTeX soportadas y las convierte en ecuaciones de
-                Word (OMML) manteniendo el resto del texto.
-              </div>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-badge">3</div>
-            <div>
-              <div class="step-text-title">Descarga el nuevo .docx</div>
-              <div class="step-text-body">
-                Abre el archivo en Word: verás las fórmulas como ecuaciones nativas, editables y
-                bien alineadas.
-              </div>
-            </div>
-          </div>
-        </div>
+        <h1>Conversor LaTeX → Word online</h1>
+        <p style="font-size:0.86rem; color:var(--muted); margin:4px 0 8px;">
+          Pega tus ecuaciones LaTeX en un documento o súbelo directamente y en segundos obtendrás
+          un Word con ecuaciones nativas, sin tener que reescribir nada en el editor de ecuaciones.
+        </p>
+
+        <section aria-labelledby="steps-title">
+          <h2 id="steps-title">Cómo convertir ecuaciones LaTeX en ecuaciones de Word</h2>
+          <ol class="steps-list">
+            <li>
+              <h3>1. Elige tu archivo .docx o .txt</h3>
+              <p>
+                Crea un documento con tus fórmulas LaTeX (por ejemplo copiadas desde un chat de IA)
+                y guárdalo como <strong>.txt</strong> o <strong>.docx</strong>. Después súbelo aquí.
+              </p>
+            </li>
+            <li>
+              <h3>2. Procesamos las fórmulas LaTeX</h3>
+              <p>
+                El servidor detecta las expresiones LaTeX soportadas (potencias, subíndices,
+                determinantes, matrices, etc.) y genera internamente las ecuaciones de Word en
+                formato OMML.
+              </p>
+            </li>
+            <li>
+              <h3>3. Descarga tu nuevo Word</h3>
+              <p>
+                Obtén un documento <strong>.docx</strong> donde las fórmulas ya son ecuaciones nativas de Word:
+                puedes editar números, matrices y símbolos como si las hubieras escrito con el
+                editor de ecuaciones.
+              </p>
+            </li>
+          </ol>
+        </section>
 
         <div class="upload-area" id="upload-area">
           <div class="upload-row">
@@ -575,7 +682,7 @@
               <input id="file-input" type="file" accept=".docx,.txt" />
             </label>
             <span class="small-pill">
-              Admite .docx y .txt · Tamaño máx. ~10&nbsp;MB
+              Admite .docx y .txt · Tamaño máx. aprox. 10&nbsp;MB
             </span>
           </div>
           <div class="file-name" id="file-name">
@@ -583,7 +690,7 @@
           </div>
           <div class="upload-row">
             <button id="convert-btn" class="convert-btn" disabled>
-              <span>Convertir documento</span>
+              Convertir documento
             </button>
           </div>
           <div class="status status--idle" id="status">
@@ -596,30 +703,40 @@
       </div>
     </section>
 
-    <!-- Columna derecha: texto y privacidad rápida -->
+    <!-- Columna derecha: explicación -->
     <aside class="right-card" id="como-funciona">
       <div class="pill-header">
         <span class="pill-dot"></span>
         Pensado para estudiantes y docentes
       </div>
-      <h3 class="right-title">Ahorra tiempo preparando tus apuntes</h3>
+      <h2 class="right-title">¿Para quién es este conversor LaTeX a Word?</h2>
       <p class="right-text">
-        Esta herramienta está pensada para quien usa LaTeX (o IA que responde en LaTeX) pero
-        necesita entregar ejercicios, apuntes o exámenes en Word, con ecuaciones editables.
+        Esta herramienta está pensada para <strong>estudiantes, docentes y creadores de contenido matemático</strong>
+        que escriben soluciones en LaTeX (o las obtienen de herramientas de IA) pero necesitan
+        entregar el trabajo en <strong>Microsoft Word</strong> con ecuaciones nativas.
       </p>
       <p class="right-text">
-        El conversor soporta un subconjunto de LaTeX orientado a formas matriciales y
-        expresiones habituales en Álgebra Lineal:
+        En lugar de reescribir a mano cada fórmula en el editor de ecuaciones de Word,
+        subes tu documento con LaTeX y en segundos obtienes un Word listo para:
       </p>
       <ul class="right-list">
-        <li>Potencias y subíndices: <code>x^2</code>, <code>a_{11}</code>, etc.</li>
+        <li>Entregar ejercicios o exámenes con buena presentación.</li>
+        <li>Preparar apuntes o resúmenes para clase.</li>
+        <li>Compartir soluciones con compañeros que solo usan Word.</li>
+      </ul>
+
+      <h3 class="right-title">Qué tipos de fórmulas LaTeX soporta</h3>
+      <ul class="right-list">
+        <li>Potencias y subíndices: <code>x^2</code>, <code>y^3</code>, <code>a_{11}</code>, <code>q_1</code>, etc.</li>
         <li>Productos y determinantes: <code>\cdot</code>, <code>\det(A)</code>.</li>
-        <li>Matrices con <code>\left(\matrix{...}\right)</code> o <code>\left[\matrix{...}\right]</code>.</li>
-        <li>Filas separadas por <code>\\</code> y columnas por <code>&amp;</code>.</li>
+        <li>
+          Matrices con <code>\left(\matrix{...}\right)</code> o <code>\left[\matrix{...}\right]</code>,
+          con filas separadas por <code>\\</code> y columnas por <code>&amp;</code>.
+        </li>
       </ul>
       <p class="right-text">
-        No pretende sustituir a LaTeX completo, pero sí cubrir los casos más frecuentes en
-        ejercicios y soluciones explicadas.
+        No pretende sustituir a LaTeX completo, pero cubre los casos más frecuentes
+        en <strong>Álgebra Lineal y ejercicios con matrices y determinantes</strong>.
       </p>
       <p class="right-text">
         Para más detalles sobre el tratamiento de archivos y datos, consulta la
@@ -627,6 +744,54 @@
       </p>
     </aside>
   </main>
+
+  <!-- FAQ visible -->
+  <section id="faq" class="faq" aria-labelledby="faq-title">
+    <h2 id="faq-title">Preguntas frecuentes sobre el conversor LaTeX → Word</h2>
+
+    <article class="faq-item">
+      <h3>¿Cómo paso ecuaciones de LaTeX a Word?</h3>
+      <p>
+        Crea un archivo <strong>.txt</strong> o <strong>.docx</strong> con tus fórmulas LaTeX,
+        súbelo a ecuacionesaword.com y descarga el nuevo documento Word con las ecuaciones
+        convertidas. No necesitas instalar nada.
+      </p>
+    </article>
+
+    <article class="faq-item">
+      <h3>¿Puedo copiar directamente desde un chat de IA?</h3>
+      <p>
+        Sí. Copia la respuesta en LaTeX, pégala en un documento de texto o Word como texto plano
+        y súbelo al conversor. La herramienta detectará las fórmulas y las transformará en
+        ecuaciones editables.
+      </p>
+    </article>
+
+    <article class="faq-item">
+      <h3>¿Qué limitaciones tiene el conversor?</h3>
+      <p>
+        Está optimizado para un subconjunto de LaTeX centrado en matrices, potencias, subíndices
+        y determinantes. Fórmulas muy avanzadas o símbolos poco habituales pueden no convertirse
+        correctamente y aparecerán como texto normal.
+      </p>
+    </article>
+
+    <article class="faq-item">
+      <h3>¿Qué ocurre con mis archivos después de la conversión?</h3>
+      <p>
+        Los documentos se usan únicamente para realizar la conversión. No se almacenan de forma
+        permanente ni se utilizan para otros fines distintos al servicio que ofrece la web.
+      </p>
+    </article>
+
+    <article class="faq-item">
+      <h3>¿Es gratis usar ecuacionesaword.com?</h3>
+      <p>
+        Sí, la herramienta es actualmente gratuita. En el futuro podrían añadirse funciones
+        avanzadas, pero la conversión básica seguirá accesible.
+      </p>
+    </article>
+  </section>
 
   <!-- Bloque de privacidad/resumen legal -->
   <section class="privacy-section" id="privacidad">
@@ -765,14 +930,14 @@
       lastBlobUrl = URL.createObjectURL(blob);
 
       downloadLink.href = lastBlobUrl;
-      downloadLink.download = "documento_convertido.docx";
+      const originalName = file.name.replace(/\.(txt|docx)$/i, "");
+      downloadLink.download = originalName + "_convertido.docx";
       downloadLink.classList.remove("hidden");
 
       setStatus("idle", "Conversión completada. Descarga el documento convertido.");
     } catch (err) {
       console.error(err);
-      setStatus("error",
-        "Error durante la conversión. Inténtalo de nuevo más tarde.");
+      setStatus("error", "Error durante la conversión. Inténtalo de nuevo más tarde.");
     } finally {
       convertBtn.disabled = !fileInput.files[0];
     }
@@ -793,7 +958,6 @@
         banner.style.display = "none";
       });
     } catch (e) {
-      // Si localStorage no está disponible, simplemente mostramos el banner sin guardar nada
       banner.style.display = "flex";
     }
   })();
