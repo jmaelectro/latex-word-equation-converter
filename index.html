@@ -84,7 +84,7 @@
         "name": "¿Qué tipo de fórmulas LaTeX soporta la herramienta?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Soporta un subconjunto de LaTeX orientado a ejercicios de Álgebra Lineal: potencias y subíndices (x^2, a_{11}), productos y determinantes (\\cdot, \\det(A)), y matrices escritas con \\left(\\matrix{...}\\right) o \\left[\\matrix{...}\\right] con filas separadas por \\\\ y columnas separadas por &."
+          "text": "Soporta un subconjunto de LaTeX orientado a ejercicios de Álgebra Lineal: potencias y subíndices (x^2, a_{11}), productos y determinantes (\\cdot, \\det(A)), y matrices escritas con \\begin{pmatrix}...\\end{pmatrix} o entornos similares con filas separadas por \\\\ y columnas separadas por &."
         }
       },
       {
@@ -129,7 +129,7 @@
       --radius-lg: 18px;
       --radius-md: 10px;
       --shadow-soft: 0 18px 40px rgba(0,0,0,0.45);
-      --shadow-card: 0 12px 30px rgba(0,0,0,0.4);
+      --shadow-card: 0 18px 45px rgba(0,0,0,0.65);
       --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
@@ -222,7 +222,7 @@
 
     .grid {
       display: grid;
-      grid-template-columns: minmax(0, 1.8fr) minmax(0, 1.4fr);
+      grid-template-columns: minmax(0, 1.9fr) minmax(0, 1.2fr);
       gap: 20px;
       align-items: flex-start;
     }
@@ -241,11 +241,11 @@
     }
 
     .card {
-      background: radial-gradient(circle at top left, #1f2937 0, var(--card) 35%);
+      background: radial-gradient(circle at top left, #1f2937 0, var(--card) 40%);
       border-radius: var(--radius-lg);
-      border: 1px solid rgba(148,163,184,0.16);
+      border: 1px solid rgba(148,163,184,0.26);
       box-shadow: var(--shadow-card);
-      padding: 20px 18px;
+      padding: 22px 20px 20px;
       position: relative;
       overflow: hidden;
     }
@@ -254,7 +254,7 @@
       content: "";
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at top right, rgba(56,189,248,0.12), transparent 55%);
+      background: radial-gradient(circle at top right, rgba(56,189,248,0.18), transparent 55%);
       opacity: 0.9;
       pointer-events: none;
     }
@@ -265,7 +265,7 @@
     }
 
     h1 {
-      font-size: 1.4rem;
+      font-size: 1.6rem;
       margin: 0 0 8px;
     }
 
@@ -279,32 +279,19 @@
       margin: 6px 0;
     }
 
-    .steps-list {
-      list-style: none;
-      padding: 0;
-      margin: 6px 0 0;
-    }
-
-    .steps-list li {
-      border-radius: var(--radius-md);
-      padding: 8px 10px;
-      background: rgba(15,23,42,0.6);
-      border: 1px solid rgba(55,65,81,0.7);
-      margin-bottom: 8px;
-    }
-
-    .steps-list p {
-      font-size: 0.84rem;
+    .hero-main-text {
+      font-size: 0.95rem;
       color: var(--muted);
-      margin: 4px 0 0;
+      margin: 4px 0 14px;
+      max-width: 520px;
     }
 
     .upload-area {
-      margin-top: 14px;
-      border-radius: var(--radius-md);
-      border: 1px dashed rgba(148,163,184,0.5);
-      background: rgba(15,23,42,0.9);
-      padding: 12px 12px 16px;
+      margin-top: 4px;
+      border-radius: 20px;
+      border: 1px solid rgba(148,163,184,0.6);
+      background: rgba(15,23,42,0.96);
+      padding: 16px 14px 18px;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -323,13 +310,14 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 12px;
+      padding: 9px 14px;
       background: rgba(15,23,42,0.9);
       border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.5);
+      border: 1px solid rgba(148,163,184,0.8);
       cursor: pointer;
-      font-size: 0.85rem;
+      font-size: 0.88rem;
       white-space: nowrap;
+      font-weight: 500;
     }
 
     .file-input-label:hover {
@@ -345,34 +333,34 @@
     }
 
     .small-pill {
-      font-size: 0.7rem;
+      font-size: 0.74rem;
       color: var(--muted);
-      padding: 2px 8px;
+      padding: 3px 9px;
       border-radius: 999px;
       border: 1px solid rgba(55,65,81,0.9);
       background: rgba(15,23,42,0.9);
     }
 
     .file-name {
-      font-size: 0.84rem;
+      font-size: 0.86rem;
       color: var(--muted);
     }
 
     .convert-btn {
-      padding: 9px 22px;
+      padding: 11px 28px;
       border-radius: 999px;
       border: none;
       cursor: pointer;
       background-image: linear-gradient(90deg, #22c55e, #16a34a);
       color: #04101a;
-      font-size: 0.9rem;
-      font-weight: 600;
-      letter-spacing: 0.03em;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      box-shadow: 0 12px 25px rgba(34,197,94,0.25);
+      box-shadow: 0 14px 30px rgba(34,197,94,0.35);
     }
 
     .convert-btn[disabled] {
@@ -432,6 +420,16 @@
       background: rgba(34,197,94,0.18);
     }
 
+    .hero-note-cta {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    .hero-note-cta code {
+      font-size: 0.8rem;
+    }
+
     .right-card {
       background: radial-gradient(circle at top left, #020617 0, #020617 30%, #020617 100%);
       border-radius: var(--radius-lg);
@@ -487,6 +485,111 @@
 
     .privacy-link:hover {
       text-decoration: underline;
+    }
+
+    /* Casos típicos */
+    .use-cases {
+      margin-top: 24px;
+      padding: 14px 12px 12px;
+      border-radius: var(--radius-md);
+      background: rgba(15,23,42,0.95);
+      border: 1px solid rgba(55,65,81,0.9);
+    }
+
+    .use-cases h2 {
+      margin-bottom: 6px;
+    }
+
+    .use-cases p.intro {
+      font-size: 0.86rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .use-cases-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    @media (max-width: 860px) {
+      .use-cases-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .use-case {
+      background: rgba(15,23,42,0.98);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(55,65,81,0.9);
+      padding: 8px 9px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .use-case h3 {
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+
+    .use-case p {
+      margin: 3px 0;
+    }
+
+    .use-case code {
+      font-size: 0.78rem;
+    }
+
+    /* Sección simple "Cómo funciona" (resumida) */
+    .simple-how {
+      margin-top: 24px;
+      padding: 14px 12px 12px;
+      border-radius: var(--radius-md);
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(55,65,81,0.9);
+      font-size: 0.86rem;
+      color: var(--muted);
+    }
+
+    .simple-how ol {
+      margin: 6px 0 0 18px;
+      padding: 0;
+    }
+
+    .simple-how li {
+      margin-bottom: 3px;
+    }
+
+    /* CTA hacia el blog */
+    .cta-blog {
+      margin-top: 20px;
+      padding: 12px 12px;
+      border-radius: var(--radius-md);
+      background: rgba(34,197,94,0.06);
+      border: 1px solid rgba(34,197,94,0.4);
+      font-size: 0.86rem;
+      color: var(--muted);
+    }
+
+    .cta-blog a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #22c55e, #16a34a);
+      color: #022c22;
+      text-decoration: none;
+      font-size: 0.84rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .cta-blog a:hover {
+      filter: brightness(1.05);
     }
 
     /* FAQ section */
@@ -609,91 +712,6 @@
         align-items: flex-start;
       }
     }
-
-    /* CTA hacia el blog */
-    .cta-blog {
-      margin-top: 20px;
-      padding: 12px 12px;
-      border-radius: var(--radius-md);
-      background: rgba(34,197,94,0.06);
-      border: 1px solid rgba(34,197,94,0.4);
-      font-size: 0.86rem;
-      color: var(--muted);
-    }
-
-    .cta-blog a {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 6px;
-      padding: 6px 14px;
-      border-radius: 999px;
-      background: linear-gradient(90deg, #22c55e, #16a34a);
-      color: #022c22;
-      text-decoration: none;
-      font-size: 0.84rem;
-      font-weight: 600;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-    }
-
-    .cta-blog a:hover {
-      filter: brightness(1.05);
-    }
-
-    /* Casos típicos */
-    .use-cases {
-      margin-top: 24px;
-      padding: 14px 12px 12px;
-      border-radius: var(--radius-md);
-      background: rgba(15,23,42,0.95);
-      border: 1px solid rgba(55,65,81,0.9);
-    }
-
-    .use-cases h2 {
-      margin-bottom: 6px;
-    }
-
-    .use-cases p.intro {
-      font-size: 0.86rem;
-      color: var(--muted);
-      margin-bottom: 10px;
-    }
-
-    .use-cases-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    @media (max-width: 860px) {
-      .use-cases-grid {
-        grid-template-columns: minmax(0, 1fr);
-      }
-    }
-
-    .use-case {
-      background: rgba(15,23,42,0.98);
-      border-radius: var(--radius-md);
-      border: 1px solid rgba(55,65,81,0.9);
-      padding: 8px 9px;
-      font-size: 0.82rem;
-      color: var(--muted);
-    }
-
-    .use-case h3 {
-      font-size: 0.9rem;
-      margin-bottom: 4px;
-      color: var(--text);
-    }
-
-    .use-case p {
-      margin: 3px 0;
-    }
-
-    .use-case code {
-      font-size: 0.78rem;
-    }
   </style>
 </head>
 
@@ -724,43 +742,15 @@
   </header>
 
   <main class="grid">
-    <!-- Columna izquierda: app -->
+    <!-- Columna izquierda: app (CTA principal) -->
     <section class="card">
       <div class="card-inner">
-        <h1>Conversor LaTeX → Word online</h1>
-        <p style="font-size:0.86rem; color:var(--muted); margin:4px 0 8px;">
-          Pega tus ecuaciones LaTeX en un documento o súbelo directamente y en segundos obtendrás
-          un Word con ecuaciones nativas, sin tener que reescribir nada en el editor de ecuaciones.
+        <h1>Sube tu archivo y conviértelo a Word en un clic</h1>
+        <p class="hero-main-text">
+          Elige tu archivo <strong>.txt</strong> o <strong>.docx</strong> con fórmulas LaTeX
+          y pulsa en <strong>Convertir documento</strong>. Te devolvemos un Word con ecuaciones
+          nativas, listas para editar. Sin registro y gratis.
         </p>
-
-        <section aria-labelledby="steps-title" id="como-funciona">
-          <h2 id="steps-title">Cómo convertir ecuaciones LaTeX en ecuaciones de Word</h2>
-          <ol class="steps-list">
-            <li>
-              <h3>1. Elige tu archivo .docx o .txt</h3>
-              <p>
-                Crea un documento con tus fórmulas LaTeX (por ejemplo copiadas desde un chat de IA)
-                y guárdalo como <strong>.txt</strong> o <strong>.docx</strong>. Después súbelo aquí.
-              </p>
-            </li>
-            <li>
-              <h3>2. Procesamos las fórmulas LaTeX</h3>
-              <p>
-                El servidor detecta las expresiones LaTeX soportadas (potencias, subíndices,
-                determinantes, matrices, etc.) y genera internamente las ecuaciones de Word en
-                formato OMML.
-              </p>
-            </li>
-            <li>
-              <h3>3. Descarga tu nuevo Word</h3>
-              <p>
-                Obtén un documento <strong>.docx</strong> donde las fórmulas ya son ecuaciones nativas de Word:
-                puedes editar números, matrices y símbolos como si las hubieras escrito con el
-                editor de ecuaciones.
-              </p>
-            </li>
-          </ol>
-        </section>
 
         <div class="upload-area" id="upload-area">
           <div class="upload-row">
@@ -781,12 +771,18 @@
             </button>
           </div>
           <div class="status status--idle" id="status">
-            <span>Selecciona un archivo para empezar.</span>
+            <span>Selecciona un archivo y pulsa «Convertir documento».</span>
           </div>
           <a id="download-link" href="#" class="download-link hidden">
             Descargar documento convertido
           </a>
         </div>
+
+        <p class="hero-note-cta">
+          Funciona mejor si las fórmulas están delimitadas por <code>$...$</code>,
+          <code>$$...$$</code> o <code>\[...\]</code> y usan notación LaTeX estándar
+          para potencias, subíndices, determinantes y matrices.
+        </p>
       </div>
     </section>
 
@@ -869,6 +865,20 @@
         </p>
       </article>
     </div>
+  </section>
+
+  <!-- Sección corta: Cómo funciona -->
+  <section class="simple-how" id="como-funciona">
+    <h2>Cómo funciona (resumen)</h2>
+    <p>
+      El flujo es muy sencillo. Solo necesitas un archivo <strong>.txt</strong> o
+      <strong>.docx</strong> con tus fórmulas escritas en LaTeX:
+    </p>
+    <ol>
+      <li>Preparas tu archivo con las ecuaciones delimitadas por <code>$...$</code> o <code>$$...$$</code>.</li>
+      <li>Lo subes en esta página y pulsas <strong>«Convertir documento»</strong>.</li>
+      <li>Descargas el nuevo <strong>.docx</strong> donde las fórmulas ya son ecuaciones nativas de Word.</li>
+    </ol>
   </section>
 
   <!-- CTA hacia el blog -->
