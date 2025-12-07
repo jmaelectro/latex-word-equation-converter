@@ -609,6 +609,37 @@
         align-items: flex-start;
       }
     }
+
+    /* CTA hacia el blog */
+    .cta-blog {
+      margin-top: 20px;
+      padding: 12px 12px;
+      border-radius: var(--radius-md);
+      background: rgba(34,197,94,0.06);
+      border: 1px solid rgba(34,197,94,0.4);
+      font-size: 0.86rem;
+      color: var(--muted);
+    }
+
+    .cta-blog a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #22c55e, #16a34a);
+      color: #022c22;
+      text-decoration: none;
+      font-size: 0.84rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .cta-blog a:hover {
+      filter: brightness(1.05);
+    }
   </style>
 </head>
 
@@ -633,6 +664,7 @@
       <a href="#como-funciona">Cómo funciona</a>
       <a href="#faq">Preguntas frecuentes</a>
       <a href="#privacidad">Privacidad</a>
+      <a href="/blog">Guía: pasar LaTeX a Word</a>
     </nav>
   </header>
 
@@ -646,7 +678,7 @@
           un Word con ecuaciones nativas, sin tener que reescribir nada en el editor de ecuaciones.
         </p>
 
-        <section aria-labelledby="steps-title">
+        <section aria-labelledby="steps-title" id="como-funciona">
           <h2 id="steps-title">Cómo convertir ecuaciones LaTeX en ecuaciones de Word</h2>
           <ol class="steps-list">
             <li>
@@ -704,7 +736,7 @@
     </section>
 
     <!-- Columna derecha: explicación -->
-    <aside class="right-card" id="como-funciona">
+    <aside class="right-card">
       <div class="pill-header">
         <span class="pill-dot"></span>
         Pensado para estudiantes y docentes
@@ -744,6 +776,16 @@
       </p>
     </aside>
   </main>
+
+  <!-- CTA hacia el blog -->
+  <section class="cta-blog">
+    <strong>¿Primera vez que usas LaTeX con Word?</strong>
+    <p>
+      Hemos preparado una guía paso a paso donde te explicamos, con ejemplos, cómo pasar
+      ecuaciones LaTeX o soluciones generadas por IA a Word sin perder el formato.
+    </p>
+    <a href="/blog">Leer la guía completa</a>
+  </section>
 
   <!-- FAQ visible -->
   <section id="faq" class="faq" aria-labelledby="faq-title">
