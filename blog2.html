@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Guía rápida: cómo preparar tu archivo LaTeX antes de convertirlo a Word</title>
+
+  <meta
+    name="description"
+    content="Aprende a preparar correctamente un archivo .txt o .docx con fórmulas LaTeX para que la conversión a Word con ecuaciones nativas sea lo más limpia posible."
+  />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="https://www.ecuacionesaword.com/blog2" />
+
+  <!-- Open Graph / Social -->
+  <meta property="og:type" content="article" />
+  <meta property="og:locale" content="es_ES" />
+  <meta property="og:title" content="Guía rápida: cómo preparar tu archivo LaTeX antes de convertirlo a Word" />
+  <meta
+    property="og:description"
+    content="Pasos y consejos para crear un archivo .txt o .docx con LaTeX que se convierta bien a ecuaciones de Word nativas."
+  />
+  <meta property="og:url" content="https://www.ecuacionesaword.com/blog2" />
+  <meta property="og:site_name" content="ecuacionesaword.com" />
+
+  <link
+    rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>∑</text></svg>"
+  />
+
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-GS589S9BG4"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag("js", new Date());
+    gtag("config", "G-GS589S9BG4");
+  </script>
+
+  <style>
+    :root {
+      --bg: #050816;
+      --card: #111827;
+      --accent: #22c55e;
+      --accent-soft: rgba(34, 197, 94, 0.12);
+      --accent-strong: rgba(34, 197, 94, 0.25);
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --border-soft: #1f2937;
+      --radius-lg: 18px;
+      --radius-md: 10px;
+      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at top, #1f2933 0, #020617 45%, #000 100%);
+      color: var(--text);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .page {
+      max-width: 820px;
+      width: 100%;
+      margin: 20px auto;
+      padding: 16px 14px 32px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .logo {
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-pill {
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.7rem;
+      border: 1px solid var(--accent-strong);
+    }
+
+    .nav-link {
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+    }
+
+    .nav-link:hover {
+      color: var(--text);
+      border-color: var(--border-soft);
+      background: rgba(15,23,42,0.9);
+    }
+
+    main {
+      background: radial-gradient(circle at top left, #1f2937 0, var(--card) 40%);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(148,163,184,0.18);
+      box-shadow: 0 14px 35px rgba(0,0,0,0.55);
+      padding: 20px 16px 22px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin: 0 0 8px;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin: 0 0 14px;
+    }
+
+    h2 {
+      font-size: 1.05rem;
+      margin: 18px 0 6px;
+    }
+
+    h3 {
+      font-size: 0.94rem;
+      margin: 12px 0 4px;
+    }
+
+    p {
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: var(--text);
+      margin: 6px 0;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    ul, ol {
+      font-size: 0.88rem;
+      color: var(--text);
+      line-height: 1.6;
+      padding-left: 20px;
+      margin: 6px 0;
+    }
+
+    code {
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.82rem;
+      background: rgba(15,23,42,0.9);
+      border-radius: 4px;
+      padding: 2px 4px;
+    }
+
+    .highlight-box {
+      margin: 10px 0;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      background: rgba(15,23,42,0.95);
+      border: 1px solid rgba(148,163,184,0.3);
+      font-size: 0.86rem;
+      color: var(--muted);
+    }
+
+    .cta-box {
+      margin-top: 16px;
+      padding: 12px 12px;
+      border-radius: var(--radius-md);
+      background: rgba(34,197,94,0.08);
+      border: 1px solid rgba(34,197,94,0.45);
+      font-size: 0.88rem;
+    }
+
+    .cta-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding: 7px 15px;
+      border-radius: 999px;
+      text-decoration: none;
+      border: 1px solid rgba(34,197,94,0.4);
+      color: #022c22;
+      background: linear-gradient(90deg, #22c55e, #16a34a);
+      font-size: 0.86rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .cta-link:hover {
+      filter: brightness(1.05);
+    }
+
+    footer {
+      margin-top: 16px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 640px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      main {
+        padding: 16px 12px 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <header>
+      <div class="logo">
+        ecuacionesaword.com
+        <span class="logo-pill">Guía</span>
+      </div>
+      <nav>
+        <a class="nav-link" href="/">Volver al conversor</a>
+        <a class="nav-link" href="/blog">Artículo 1</a>
+      </nav>
+    </header>
+
+    <main>
+      <article>
+        <header>
+          <h1>Guía rápida: cómo preparar tu archivo LaTeX antes de convertirlo a Word</h1>
+          <p class="subtitle">
+            Un buen archivo de entrada hace que la conversión a ecuaciones de Word sea mucho más
+            limpia. Aquí te explico cómo preparar tu .txt o .docx con LaTeX para sacarle el máximo
+            partido al conversor.
+          </p>
+        </header>
+
+        <section>
+          <h2>1. Decide si vas a trabajar con .txt o con .docx</h2>
+          <p>
+            La herramienta acepta tanto <strong>.txt</strong> como <strong>.docx</strong>. En la práctica:
+          </p>
+          <ul>
+            <li>
+              <strong>.txt</strong>: ideal si copias directamente desde un chat de IA o desde un
+              editor de LaTeX. Solo contiene texto plano y es difícil que se “rompa” el formato.
+            </li>
+            <li>
+              <strong>.docx</strong>: útil si ya estás trabajando en Word y quieres mezclar texto
+              normal con fórmulas LaTeX escritas como texto.
+            </li>
+          </ul>
+          <p>
+            Si tienes dudas, empieza por <strong>.txt</strong>. Siempre podrás pegar luego el
+            resultado convertido en tu documento final.
+          </p>
+        </section>
+
+        <section>
+          <h2>2. Usa delimitadores claros para las fórmulas</h2>
+          <p>
+            El conversor detecta las fórmulas LaTeX usando delimitadores específicos. Es muy
+            importante que los utilices correctamente:
+          </p>
+          <ul>
+            <li><code>$ ... $</code> para fórmulas en línea (dentro del propio párrafo).</li>
+            <li><code>$$ ... $$</code> para fórmulas centradas (de bloque).</li>
+            <li><code>\[ ... \]</code> también para fórmulas centradas.</li>
+          </ul>
+          <p>Por ejemplo:</p>
+          <div class="highlight-box">
+            <code>
+            Sea $q(x,y,z)=2x^2+2y^2+2z^2+2xy+2xz$.<br />
+            La matriz asociada es<br />
+            $$A=\begin{pmatrix}2 &amp; 1 &amp; 1\\ 1 &amp; 2 &amp; 0\\ 1 &amp; 0 &amp; 2\end{pmatrix}.$$
+            </code>
+          </div>
+          <p>
+            Si no usas estos delimitadores (por ejemplo, si dejas las fórmulas sueltas sin
+            <code>$</code> ni <code>$$</code>), el conversor no sabrá qué partes del texto
+            tienen que transformarse en ecuaciones de Word.
+          </p>
+        </section>
+
+        <section>
+          <h2>3. Mantén el LaTeX dentro del subconjunto soportado</h2>
+          <p>
+            El conversor está optimizado para un subconjunto de LaTeX, especialmente útil para
+            Álgebra Lineal y ejercicios con matrices. Funciona especialmente bien con:
+          </p>
+          <ul>
+            <li>Potencias y subíndices: <code>x^2</code>, <code>y^3</code>, <code>a_{11}</code>, <code>q_1</code>.</li>
+            <li>Productos y determinantes: <code>\cdot</code>, <code>\det(A)</code>.</li>
+            <li>
+              Matrices: <code>\begin{pmatrix} ... \end{pmatrix}</code>,
+              <code>\begin{bmatrix} ... \end{bmatrix}</code> o <code>\begin{matrix} ... \end{matrix}</code>,
+              con filas separadas por <code>\\</code> y columnas por <code>&amp;</code>.
+            </li>
+          </ul>
+          <p class="muted">
+            Puedes usar más comandos, pero cuanto más te salgas de estos casos, más probable es
+            que alguna fórmula concreta no se convierta tan bien.
+          </p>
+        </section>
+
+        <section>
+          <h2>4. Limpia el texto sobrante alrededor de las fórmulas</h2>
+          <p>
+            Antes de subir el archivo a ecuacionesaword.com, merece la pena hacer una revisión
+            rápida del texto:
+          </p>
+          <ul>
+            <li>
+              Evita mezclar trozos de código LaTeX sin sentido con las fórmulas importantes.
+            </li>
+            <li>
+              Si tienes secciones de prueba o fórmulas duplicadas que no quieres en el documento
+              final, bórralas antes.
+            </li>
+            <li>
+              Procura que cada ecuación importante esté bien delimitada por <code>$$</code> o
+              <code>\[...\]</code>.
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>5. Ejemplo completo de archivo .txt listo para convertir</h2>
+          <p>
+            Aquí tienes un ejemplo de cómo podría quedar un archivo <strong>.txt</strong> bien
+            preparado para la conversión:
+          </p>
+          <div class="highlight-box">
+            <code>
+            Actividad 2 (trabajo grupal)<br /><br />
+            Consideramos las formas cuadráticas siguientes en $\mathbb{R}^3$:<br />
+            $$ q_1(x,y,z) = 2x^2 + 2y^2 + 2z^2 + 2xy + 2xz $$<br />
+            $$ q_2(x,y,z) = x^2 - y^2 + z^2 + 2xy $$<br />
+            $$ q_3(x,y,z) = 2x^2 - y^2 + 2z^2 + 4xy - 4yz $$<br />
+            $$ q_4(x,y,z) = 4x^2 + 2y^2 + z^2 + 2yz $$<br /><br />
+            Escribimos cada forma como $q(\mathbf x) = \mathbf x^T A\, \mathbf x$,<br />
+            con $\mathbf x = (x,y,z)^T$ y $A$ matriz simétrica asociada.
+            </code>
+          </div>
+          <p>
+            Si subes este archivo a ecuacionesaword.com, obtendrás un documento Word con texto
+            normal donde corresponde y ecuaciones nativas de Word en los bloques delimitados
+            por <code>$$</code>.
+          </p>
+        </section>
+
+        <section>
+          <h2>6. Qué hacer si una fórmula concreta no se convierte bien</h2>
+          <p>
+            Aunque prepares bien el archivo, puede ocurrir que una ecuación concreta no se convierta
+            exactamente como esperabas. En ese caso:
+          </p>
+          <ul>
+            <li>
+              Revisa el código LaTeX de esa fórmula y comprueba que no hay errores de sintaxis
+              (paréntesis sin cerrar, <code>{</code> o <code>}</code> desbalanceadas, etc.).
+            </li>
+            <li>
+              Intenta simplificar la expresión o separarla en varias ecuaciones más cortas.
+            </li>
+            <li>
+              Si solo se trata de una fórmula aislada, puedes corregirla a mano en Word una vez
+              convertida.
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>7. Combinar esta guía con la guía principal</h2>
+          <p>
+            Este artículo se centra en la preparación del archivo. En el primer artículo del blog
+            explicamos el proceso completo de conversión y el contexto del problema de pasar
+            LaTeX o resultados de IA a Word.
+          </p>
+          <p>
+            Si todavía no lo has leído, te recomiendo echarle un vistazo también.
+          </p>
+
+          <div class="cta-box">
+            <strong>¿Listo para convertir tu archivo?</strong>
+            <p>
+              Cuando tengas tu .txt o .docx preparado, súbelo al conversor y descarga tu Word con
+              ecuaciones nativas listas para editar.
+            </p>
+            <a class="cta-link" href="https://www.ecuacionesaword.com/">
+              Ir al conversor LaTeX → Word
+            </a>
+          </div>
+        </section>
+      </article>
+    </main>
+
+    <footer>
+      <span>© <span id="year"></span> ecuacionesaword.com</span>
+      <span>
+        <a href="https://www.ecuacionesaword.com/#privacidad">Política de privacidad</a>
+      </span>
+    </footer>
+  </div>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
