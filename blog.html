@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Cómo pasar ecuaciones LaTeX o de IA a Word sin perder formato</title>
+
+  <meta
+    name="description"
+    content="Guía paso a paso para pasar ecuaciones LaTeX o respuestas de ChatGPT a Word sin perder el formato. Evita reescribir fórmulas y convierte tus documentos en ecuaciones nativas de Word."
+  />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="https://www.ecuacionesaword.com/blog" />
+
+  <!-- Open Graph / Social -->
+  <meta property="og:type" content="article" />
+  <meta property="og:locale" content="es_ES" />
+  <meta property="og:title" content="Cómo pasar ecuaciones LaTeX o de IA a Word sin perder formato" />
+  <meta
+    property="og:description"
+    content="Aprende a convertir tus ecuaciones LaTeX o resultados de IA a un documento Word con ecuaciones nativas, sin tener que reescribirlas una por una."
+  />
+  <meta property="og:url" content="https://www.ecuacionesaword.com/blog" />
+  <meta property="og:site_name" content="ecuacionesaword.com" />
+
+  <link
+    rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>∑</text></svg>"
+  />
+
+  <!-- Google Analytics 4 (mismo ID que en la home) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-GS589S9BG4"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag("js", new Date());
+    gtag("config", "G-GS589S9BG4");
+  </script>
+
+  <style>
+    :root {
+      --bg: #050816;
+      --card: #111827;
+      --accent: #22c55e;
+      --accent-soft: rgba(34, 197, 94, 0.12);
+      --accent-strong: rgba(34, 197, 94, 0.25);
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --border-soft: #1f2937;
+      --radius-lg: 18px;
+      --radius-md: 10px;
+      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at top, #1f2933 0, #020617 45%, #000 100%);
+      color: var(--text);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .page {
+      max-width: 820px;
+      width: 100%;
+      margin: 20px auto;
+      padding: 16px 14px 32px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .logo {
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-pill {
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.7rem;
+      border: 1px solid var(--accent-strong);
+    }
+
+    .nav-link {
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+    }
+
+    .nav-link:hover {
+      color: var(--text);
+      border-color: var(--border-soft);
+      background: rgba(15,23,42,0.9);
+    }
+
+    main {
+      background: radial-gradient(circle at top left, #1f2937 0, var(--card) 40%);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(148,163,184,0.18);
+      box-shadow: 0 14px 35px rgba(0,0,0,0.55);
+      padding: 20px 16px 22px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin: 0 0 8px;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin: 0 0 14px;
+    }
+
+    h2 {
+      font-size: 1.05rem;
+      margin: 18px 0 6px;
+    }
+
+    h3 {
+      font-size: 0.94rem;
+      margin: 12px 0 4px;
+    }
+
+    p {
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: var(--text);
+      margin: 6px 0;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    ul, ol {
+      font-size: 0.88rem;
+      color: var(--text);
+      line-height: 1.6;
+      padding-left: 20px;
+      margin: 6px 0;
+    }
+
+    code {
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.82rem;
+      background: rgba(15,23,42,0.9);
+      border-radius: 4px;
+      padding: 2px 4px;
+    }
+
+    .highlight-box {
+      margin: 10px 0;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      background: rgba(15,23,42,0.95);
+      border: 1px solid rgba(148,163,184,0.3);
+      font-size: 0.86rem;
+      color: var(--muted);
+    }
+
+    .cta-box {
+      margin-top: 16px;
+      padding: 12px 12px;
+      border-radius: var(--radius-md);
+      background: rgba(34,197,94,0.08);
+      border: 1px solid rgba(34,197,94,0.45);
+      font-size: 0.88rem;
+    }
+
+    .cta-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding: 7px 15px;
+      border-radius: 999px;
+      text-decoration: none;
+      border: 1px solid rgba(34,197,94,0.4);
+      color: #022c22;
+      background: linear-gradient(90deg, #22c55e, #16a34a);
+      font-size: 0.86rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .cta-link:hover {
+      filter: brightness(1.05);
+    }
+
+    footer {
+      margin-top: 16px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 640px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      main {
+        padding: 16px 12px 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <header>
+      <div class="logo">
+        ecuacionesaword.com
+        <span class="logo-pill">Blog</span>
+      </div>
+      <nav>
+        <a class="nav-link" href="/">Volver al conversor</a>
+      </nav>
+    </header>
+
+    <main>
+      <article>
+        <header>
+          <h1>Cómo pasar ecuaciones LaTeX (o de IA) a Word sin perder el formato</h1>
+          <p class="subtitle">
+            Si trabajas con matemáticas, es muy probable que escribas fórmulas en LaTeX o que uses
+            una IA que responde en LaTeX… pero luego tengas que entregar el resultado en Word.
+            Aquí tienes una guía práctica para no volverte loco copiando ecuaciones una por una.
+          </p>
+        </header>
+
+        <section>
+          <h2>El problema: LaTeX por un lado, Word por otro</h2>
+          <p>
+            LaTeX es fantástico para escribir fórmulas matemáticas: potencias, matrices,
+            determinantes… todo se ve limpio y ordenado. Sin embargo, muchos profesores,
+            universidades o empresas siguen pidiendo los trabajos en
+            <strong>Microsoft Word</strong>.
+          </p>
+          <p>
+            Cuando intentas copiar directamente una ecuación LaTeX a Word, tienes dos opciones
+            típicas (y ninguna es perfecta):
+          </p>
+          <ul>
+            <li>
+              Pegar el código tal cual, quedándote con algo del estilo
+              <code>A = \begin{pmatrix}2 &amp; 1 &amp; 1\\ 1 &amp; 2 &amp; 0\\ 1 &amp; 0 &amp; 2\end{pmatrix}</code>
+              en medio del texto.
+            </li>
+            <li>
+              Reescribir la fórmula a mano usando el editor de ecuaciones de Word, que es muy
+              potente pero lento si tienes muchas expresiones.
+            </li>
+          </ul>
+          <p>
+            Si solo tienes una o dos fórmulas, quizá no pasa nada. Pero cuando hay páginas y
+            páginas de expresiones, el tiempo que pierdes es enorme.
+          </p>
+        </section>
+
+        <section>
+          <h2>Por qué las capturas de pantalla no son buena idea</h2>
+          <p>
+            A veces la “solución rápida” es hacer una captura de pantalla de la fórmula y pegarla
+            en el documento de Word como imagen. El problema es que:
+          </p>
+          <ul>
+            <li>No puedes editar el contenido (si cambias un número, hay que rehacer la imagen).</li>
+            <li>Se ve borroso al imprimir o al hacer zoom.</li>
+            <li>Es un dolor ajustar el tamaño para que encaje bien en el párrafo.</li>
+          </ul>
+          <p>
+            La alternativa profesional es usar <strong>ecuaciones nativas de Word</strong> (en formato OMML),
+            que se adaptan al texto, se pueden editar y mantienen buena calidad en pantalla y en papel.
+          </p>
+        </section>
+
+        <section>
+          <h2>Método manual: reescribir las fórmulas en el editor de Word</h2>
+          <p>
+            El método clásico consiste en ir al menú de Word, insertar una ecuación y reescribir
+            cada fórmula a mano. Funciona, pero tiene dos inconvenientes claros:
+          </p>
+          <ol>
+            <li><strong>Consume mucho tiempo</strong>, sobre todo con matrices y expresiones largas.</li>
+            <li>Es fácil cometer errores de copia o de signos al pasar de LaTeX a Word.</li>
+          </ol>
+          <p>
+            Si estás preparando un trabajo de fin de grado, una colección de ejercicios o una hoja
+            de problemas, este método no es sostenible.
+          </p>
+        </section>
+
+        <section>
+          <h2>Método rápido: usar ecuacionesaword.com</h2>
+          <p>
+            Para evitar todo ese trabajo manual, puedes usar
+            <a href="https://www.ecuacionesaword.com/">ecuacionesaword.com</a>, una
+            herramienta pensada precisamente para este problema: convertir
+            <strong>fórmulas LaTeX</strong> en <strong>ecuaciones nativas de Word</strong>.
+          </p>
+
+          <div class="highlight-box">
+            <strong>Idea clave:</strong> en lugar de reescribir todo, creas un documento
+            .txt o .docx con tus fórmulas LaTeX, lo subes y descargas un nuevo .docx donde
+            esas fórmulas ya son ecuaciones de Word (OMML) listas para editar.
+          </div>
+
+          <h3>Paso 1: prepara tu documento con LaTeX</h3>
+          <p>
+            Crea un documento <strong>.txt</strong> o <strong>.docx</strong> y pega ahí tus ecuaciones
+            LaTeX. Puedes copiar el resultado directamente de un chat de IA o de tu editor LaTeX.
+          </p>
+          <p>
+            Es importante que las fórmulas estén delimitadas así:
+          </p>
+          <ul>
+            <li><code>$ ... $</code> para fórmulas en línea.</li>
+            <li><code>$$ ... $$</code> o <code>\[ ... \]</code> para fórmulas centradas (de bloque).</li>
+          </ul>
+
+          <p>Por ejemplo:</p>
+          <pre class="highlight-box"><code>
+Sea $q(x,y,z)=2x^2+2y^2+2z^2+2xy+2xz$.
+La matriz asociada es
+$$A=\begin{pmatrix}2 & 1 & 1\\ 1 & 2 & 0\\ 1 & 0 & 2\end{pmatrix}.$$
+          </code></pre>
+
+          <h3>Paso 2: sube el archivo a ecuacionesaword.com</h3>
+          <p>
+            Entra en <strong>ecuacionesaword.com</strong>, pulsa en “Seleccionar archivo” y elige tu
+            documento .txt o .docx. Luego haz clic en “Convertir documento”.
+          </p>
+          <p>
+            El servidor procesará el contenido, detectará las expresiones LaTeX que entiende
+            (potencias, subíndices, determinantes, matrices sencillas…) y generará un nuevo
+            archivo Word con ecuaciones OMML.
+          </p>
+
+          <h3>Paso 3: abre el nuevo .docx en Word</h3>
+          <p>
+            Descarga el archivo convertido y ábrelo con Word. Verás que:
+          </p>
+          <ul>
+            <li>El texto se mantiene como estaba.</li>
+            <li>
+              Las fórmulas delimitadas por <code>$...$</code>, <code>$$...$$</code> o
+              <code>\[...\]</code> aparecen como ecuaciones nativas de Word, no como texto.
+            </li>
+            <li>
+              Puedes hacer doble clic sobre cualquier ecuación para editarla con el editor de
+              ecuaciones de Word.
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Consejos para que la conversión funcione mejor</h2>
+          <p class="muted">
+            Aunque el conversor está pensado para ser robusto, hay algunos consejos que ayudan a
+            que el resultado sea lo más limpio posible.
+          </p>
+          <ul>
+            <li>
+              <strong>Usa siempre delimitadores claros</strong>:
+              <code>$...$</code> para fórmulas en línea y <code>$$...$$</code> o
+              <code>\[...\]</code> para bloques.
+            </li>
+            <li>
+              <strong>Evita LaTeX muy avanzado</strong> (comandos raros, paquetes externos…).
+              El conversor está optimizado para un subconjunto: potencias, subíndices, productos,
+              determinantes y matrices sencillas.
+            </li>
+            <li>
+              <strong>Comprueba el resultado en Word</strong> por si hay alguna expresión que
+              se haya mantenido como texto normal. En muchos casos bastará con corregir esa
+              ecuación concreta a mano.
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>¿Y si la solución viene de ChatGPT u otra IA?</h2>
+          <p>
+            Cada vez es más habitual pedir a una IA que resuelva ejercicios y devolver la solución
+            en LaTeX. El problema viene cuando quieres entregar ese mismo contenido en Word.
+          </p>
+          <p>
+            Con ecuacionesaword.com el flujo es muy simple:
+          </p>
+          <ol>
+            <li>Pides la solución en LaTeX.</li>
+            <li>Copias la respuesta y la pegas en un .txt o .docx.</li>
+            <li>Subes el archivo al conversor y obtienes un Word con ecuaciones editables.</li>
+          </ol>
+          <p>
+            Así puedes usar la potencia de la IA para generar contenido matemático, pero seguir
+            entregando trabajos en el formato que te piden.
+          </p>
+        </section>
+
+        <section>
+          <h2>Conclusión: evita repetir trabajo</h2>
+          <p>
+            Volver a escribir fórmulas en Word después de haberlas obtenido en LaTeX es un trabajo
+            poco agradecido, propenso a errores y que se come tu tiempo de estudio o preparación
+            de clases.
+          </p>
+          <p>
+            Si te encuentras a menudo copiando ecuaciones desde LaTeX o desde una IA a Word,
+            merece la pena automatizar ese paso y dejar que una herramienta se encargue de la parte
+            mecánica.
+          </p>
+
+          <div class="cta-box">
+            <strong>Prueba el conversor ahora</strong>
+            <p>
+              Sube un documento .txt o .docx con tus fórmulas LaTeX y comprueba cómo se transforman
+              en ecuaciones nativas de Word listas para editar.
+            </p>
+            <a class="cta-link" href="https://www.ecuacionesaword.com/">
+              Ir al conversor LaTeX → Word
+            </a>
+          </div>
+        </section>
+      </article>
+    </main>
+
+    <footer>
+      <span>© <span id="year"></span> ecuacionesaword.com</span>
+      <span>
+        <a href="https://www.ecuacionesaword.com/#privacidad">Política de privacidad</a>
+      </span>
+    </footer>
+  </div>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
