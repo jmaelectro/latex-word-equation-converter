@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <title>Cómo pasar ecuaciones LaTeX o de IA a Word sin perder formato</title>
+  <title>Cómo pasar ecuaciones LaTeX (o de IA) a Word sin perder el formato</title>
 
   <meta
     name="description"
-    content="Guía paso a paso para pasar ecuaciones LaTeX o respuestas de ChatGPT a Word sin perder el formato. Evita reescribir fórmulas y convierte tus documentos en ecuaciones nativas de Word."
+    content="Guía paso a paso para convertir ecuaciones LaTeX o soluciones generadas por IA en ecuaciones nativas de Word, listas para entregar, usando ecuacionesaword.com."
   />
   <meta name="robots" content="index,follow" />
   <link rel="canonical" href="https://www.ecuacionesaword.com/blog" />
@@ -16,10 +16,10 @@
   <!-- Open Graph / Social -->
   <meta property="og:type" content="article" />
   <meta property="og:locale" content="es_ES" />
-  <meta property="og:title" content="Cómo pasar ecuaciones LaTeX o de IA a Word sin perder formato" />
+  <meta property="og:title" content="Cómo pasar ecuaciones LaTeX (o de IA) a Word sin perder el formato" />
   <meta
     property="og:description"
-    content="Aprende a convertir tus ecuaciones LaTeX o resultados de IA a un documento Word con ecuaciones nativas, sin tener que reescribirlas una por una."
+    content="Si copias ecuaciones desde LaTeX o desde un chat de IA a Word y pierdes el formato, esta guía te muestra una forma práctica de solucionarlo."
   />
   <meta property="og:url" content="https://www.ecuacionesaword.com/blog" />
   <meta property="og:site_name" content="ecuacionesaword.com" />
@@ -29,7 +29,7 @@
     href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>∑</text></svg>"
   />
 
-  <!-- Google Analytics 4 (mismo ID que en la home) -->
+  <!-- Google Analytics 4 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-GS589S9BG4"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -216,6 +216,15 @@
       filter: brightness(1.05);
     }
 
+    .related {
+      margin-top: 20px;
+      padding: 12px 12px;
+      border-radius: var(--radius-md);
+      background: rgba(15,23,42,0.95);
+      border: 1px solid rgba(55,65,81,0.9);
+      font-size: 0.88rem;
+    }
+
     footer {
       margin-top: 16px;
       font-size: 0.78rem;
@@ -257,6 +266,7 @@
       </div>
       <nav>
         <a class="nav-link" href="/">Volver al conversor</a>
+        <a class="nav-link" href="/blog2">Guía rápida (blog 2)</a>
       </nav>
     </header>
 
@@ -265,205 +275,191 @@
         <header>
           <h1>Cómo pasar ecuaciones LaTeX (o de IA) a Word sin perder el formato</h1>
           <p class="subtitle">
-            Si trabajas con matemáticas, es muy probable que escribas fórmulas en LaTeX o que uses
-            una IA que responde en LaTeX… pero luego tengas que entregar el resultado en Word.
-            Aquí tienes una guía práctica para no volverte loco copiando ecuaciones una por una.
+            Si alguna vez has copiado una solución con ecuaciones desde LaTeX o desde un chat de IA
+            a Word y el resultado ha sido un desastre de subíndices y símbolos, esta guía es para ti.
           </p>
         </header>
 
         <section>
-          <h2>El problema: LaTeX por un lado, Word por otro</h2>
+          <h2>1. El problema: LaTeX y Word no hablan el mismo idioma</h2>
           <p>
-            LaTeX es fantástico para escribir fórmulas matemáticas: potencias, matrices,
-            determinantes… todo se ve limpio y ordenado. Sin embargo, muchos profesores,
-            universidades o empresas siguen pidiendo los trabajos en
-            <strong>Microsoft Word</strong>.
-          </p>
-          <p>
-            Cuando intentas copiar directamente una ecuación LaTeX a Word, tienes dos opciones
-            típicas (y ninguna es perfecta):
+            LaTeX está pensado para escribir matemáticas de forma perfecta en PDF. Word, en cambio,
+            usa su propio sistema de ecuaciones (OMML). Cuando copias directamente texto en LaTeX a
+            Word, lo que obtienes suele ser:
           </p>
           <ul>
-            <li>
-              Pegar el código tal cual, quedándote con algo del estilo
-              <code>A = \begin{pmatrix}2 &amp; 1 &amp; 1\\ 1 &amp; 2 &amp; 0\\ 1 &amp; 0 &amp; 2\end{pmatrix}</code>
-              en medio del texto.
-            </li>
-            <li>
-              Reescribir la fórmula a mano usando el editor de ecuaciones de Word, que es muy
-              potente pero lento si tienes muchas expresiones.
-            </li>
+            <li>Fórmulas partidas en varias líneas de texto.</li>
+            <li>Símbolos raros en lugar de matrices o fracciones.</li>
+            <li>Expresiones imposibles de editar con el editor de ecuaciones de Word.</li>
           </ul>
           <p>
-            Si solo tienes una o dos fórmulas, quizá no pasa nada. Pero cuando hay páginas y
-            páginas de expresiones, el tiempo que pierdes es enorme.
+            Esto es todavía más frecuente si las soluciones vienen de una <strong>IA</strong>:
+            suelen estar en LaTeX porque es el formato más cómodo para representar matemáticas.
           </p>
         </section>
 
         <section>
-          <h2>Por qué las capturas de pantalla no son buena idea</h2>
+          <h2>2. Primer intento típico (y por qué no funciona bien)</h2>
           <p>
-            A veces la “solución rápida” es hacer una captura de pantalla de la fórmula y pegarla
-            en el documento de Word como imagen. El problema es que:
+            Lo habitual es intentar una de estas opciones:
           </p>
           <ul>
-            <li>No puedes editar el contenido (si cambias un número, hay que rehacer la imagen).</li>
-            <li>Se ve borroso al imprimir o al hacer zoom.</li>
-            <li>Es un dolor ajustar el tamaño para que encaje bien en el párrafo.</li>
+            <li>Pegar directamente en Word y “arreglar” a mano las fórmulas.</li>
+            <li>Escribir de nuevo las ecuaciones con el editor de Word.</li>
+            <li>Buscar conversores generales de LaTeX a Word que no se adaptan bien a tu caso.</li>
           </ul>
           <p>
-            La alternativa profesional es usar <strong>ecuaciones nativas de Word</strong> (en formato OMML),
-            que se adaptan al texto, se pueden editar y mantienen buena calidad en pantalla y en papel.
+            El problema es que pierdes <strong>mucho tiempo</strong> en detalles de formato en lugar
+            de centrarte en el contenido matemático.
           </p>
         </section>
 
         <section>
-          <h2>Método manual: reescribir las fórmulas en el editor de Word</h2>
+          <h2>3. Idea: mantener LaTeX, pero convertir solo las fórmulas a ecuaciones de Word</h2>
           <p>
-            El método clásico consiste en ir al menú de Word, insertar una ecuación y reescribir
-            cada fórmula a mano. Funciona, pero tiene dos inconvenientes claros:
+            En lugar de abandonar LaTeX, la idea de <strong>ecuacionesaword.com</strong> es usarlo a tu favor:
           </p>
           <ol>
-            <li><strong>Consume mucho tiempo</strong>, sobre todo con matrices y expresiones largas.</li>
-            <li>Es fácil cometer errores de copia o de signos al pasar de LaTeX a Word.</li>
+            <li>Escribes (o generas con IA) tus fórmulas en LaTeX.</li>
+            <li>Indicas claramente en el texto qué partes son ecuaciones.</li>
+            <li>
+              Subes el archivo a la web, que se encarga de convertir esas partes en
+              <strong>ecuaciones nativas de Word</strong>.
+            </li>
           </ol>
           <p>
-            Si estás preparando un trabajo de fin de grado, una colección de ejercicios o una hoja
-            de problemas, este método no es sostenible.
+            El resultado es un <strong>.docx</strong> donde puedes editar cada ecuación como si la
+            hubieras escrito a mano en el editor de Word.
           </p>
         </section>
 
         <section>
-          <h2>Método rápido: usar ecuacionesaword.com</h2>
+          <h2>4. Cómo preparar tu archivo antes de convertirlo</h2>
           <p>
-            Para evitar todo ese trabajo manual, puedes usar
-            <a href="https://www.ecuacionesaword.com/">ecuacionesaword.com</a>, una
-            herramienta pensada precisamente para este problema: convertir
-            <strong>fórmulas LaTeX</strong> en <strong>ecuaciones nativas de Word</strong>.
-          </p>
-
-          <div class="highlight-box">
-            <strong>Idea clave:</strong> en lugar de reescribir todo, creas un documento
-            .txt o .docx con tus fórmulas LaTeX, lo subes y descargas un nuevo .docx donde
-            esas fórmulas ya son ecuaciones de Word (OMML) listas para editar.
-          </div>
-
-          <h3>Paso 1: prepara tu documento con LaTeX</h3>
-          <p>
-            Crea un documento <strong>.txt</strong> o <strong>.docx</strong> y pega ahí tus ecuaciones
-            LaTeX. Puedes copiar el resultado directamente de un chat de IA o de tu editor LaTeX.
-          </p>
-          <p>
-            Es importante que las fórmulas estén delimitadas así:
+            Para que la conversión sea lo más limpia posible, es importante seguir unas reglas
+            sencillas. La aplicación reconoce fórmulas LaTeX cuando están delimitadas por:
           </p>
           <ul>
             <li><code>$ ... $</code> para fórmulas en línea.</li>
-            <li><code>$$ ... $$</code> o <code>\[ ... \]</code> para fórmulas centradas (de bloque).</li>
+            <li><code>$$ ... $$</code> para fórmulas centradas (de bloque).</li>
+            <li><code>\[ ... \]</code> para fórmulas centradas.</li>
           </ul>
-
-          <p>Por ejemplo:</p>
-          <pre class="highlight-box"><code>
-Sea $q(x,y,z)=2x^2+2y^2+2z^2+2xy+2xz$.
-La matriz asociada es
-$$A=\begin{pmatrix}2 & 1 & 1\\ 1 & 2 & 0\\ 1 & 0 & 2\end{pmatrix}.$$
-          </code></pre>
-
-          <h3>Paso 2: sube el archivo a ecuacionesaword.com</h3>
+          <p>Ejemplo:</p>
+          <div class="highlight-box">
+            <code>
+              Sea $q(x,y,z)=2x^2+2y^2+2z^2+2xy+2xz$.<br />
+              La matriz asociada es<br />
+              $$A=\begin{pmatrix}2 &amp; 1 &amp; 1\\ 1 &amp; 2 &amp; 0\\ 1 &amp; 0 &amp; 2\end{pmatrix}.$$
+            </code>
+          </div>
           <p>
-            Entra en <strong>ecuacionesaword.com</strong>, pulsa en “Seleccionar archivo” y elige tu
-            documento .txt o .docx. Luego haz clic en “Convertir documento”.
+            Si olvidas los delimitadores o los mezclas, es más fácil que alguna fórmula concreta
+            no se convierta bien.
           </p>
-          <p>
-            El servidor procesará el contenido, detectará las expresiones LaTeX que entiende
-            (potencias, subíndices, determinantes, matrices sencillas…) y generará un nuevo
-            archivo Word con ecuaciones OMML.
-          </p>
-
-          <h3>Paso 3: abre el nuevo .docx en Word</h3>
-          <p>
-            Descarga el archivo convertido y ábrelo con Word. Verás que:
-          </p>
-          <ul>
-            <li>El texto se mantiene como estaba.</li>
-            <li>
-              Las fórmulas delimitadas por <code>$...$</code>, <code>$$...$$</code> o
-              <code>\[...\]</code> aparecen como ecuaciones nativas de Word, no como texto.
-            </li>
-            <li>
-              Puedes hacer doble clic sobre cualquier ecuación para editarla con el editor de
-              ecuaciones de Word.
-            </li>
-          </ul>
-        </section>
-
-        <section>
-          <h2>Consejos para que la conversión funcione mejor</h2>
           <p class="muted">
-            Aunque el conversor está pensado para ser robusto, hay algunos consejos que ayudan a
-            que el resultado sea lo más limpio posible.
+            Si quieres una guía específica para preparar el archivo (elegir entre .txt y .docx,
+            ejemplos completos, etc.), tienes un segundo artículo dedicado solo a eso en el
+            <a href="/blog2" style="color:var(--accent);text-decoration:none;">blog 2</a>.
+          </p>
+        </section>
+
+        <section>
+          <h2>5. Qué tipo de LaTeX soporta mejor la herramienta</h2>
+          <p>
+            La herramienta está optimizada para un <strong>subconjunto de LaTeX</strong> muy
+            habitual en Álgebra Lineal y ejercicios con matrices:
+          </p>
+          <ul>
+            <li>Potencias y subíndices: <code>x^2</code>, <code>y^3</code>, <code>a_{11}</code>, <code>q_1</code>.</li>
+            <li>Productos y determinantes: <code>\cdot</code>, <code>\det(A)</code>.</li>
+            <li>
+              Matrices: <code>\begin{pmatrix} ... \end{pmatrix}</code>,
+              <code>\begin{bmatrix} ... \end{bmatrix}</code>…
+            </li>
+          </ul>
+          <p>
+            Otras expresiones más avanzadas pueden funcionar, pero la conversión está pensada
+            para cubrir bien los casos que se repiten en ejercicios y exámenes típicos.
+          </p>
+        </section>
+
+        <section>
+          <h2>6. Pasos concretos para usar ecuacionesaword.com</h2>
+          <ol>
+            <li>
+              Crea un archivo <strong>.txt</strong> o <strong>.docx</strong> con tus soluciones en LaTeX.
+            </li>
+            <li>
+              Asegúrate de que las fórmulas están delimitadas por <code>$...$</code> o
+              <code>$$...$$</code>.
+            </li>
+            <li>
+              Entra en <a href="https://www.ecuacionesaword.com/" style="color:var(--accent);text-decoration:none;">ecuacionesaword.com</a>.
+            </li>
+            <li>Sube tu archivo y pulsa “Convertir documento”.</li>
+            <li>Descarga el nuevo <strong>.docx</strong> con ecuaciones de Word nativas.</li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>7. ¿Qué hacer si algo no se ve perfecto?</h2>
+          <p>
+            Aun siguiendo los pasos, puede ocurrir que una ecuación concreta no quede como esperabas.
+            Algunos trucos:
           </p>
           <ul>
             <li>
-              <strong>Usa siempre delimitadores claros</strong>:
-              <code>$...$</code> para fórmulas en línea y <code>$$...$$</code> o
-              <code>\[...\]</code> para bloques.
+              Simplifica la fórmula o divídela en varias más cortas para que Word la maneje mejor.
             </li>
             <li>
-              <strong>Evita LaTeX muy avanzado</strong> (comandos raros, paquetes externos…).
-              El conversor está optimizado para un subconjunto: potencias, subíndices, productos,
-              determinantes y matrices sencillas.
+              Comprueba que no haya errores de sintaxis en el LaTeX (paréntesis o llaves sin cerrar).
             </li>
             <li>
-              <strong>Comprueba el resultado en Word</strong> por si hay alguna expresión que
-              se haya mantenido como texto normal. En muchos casos bastará con corregir esa
-              ecuación concreta a mano.
+              Corrige manualmente solo esas pocas ecuaciones en Word si hace falta.
             </li>
           </ul>
-        </section>
-
-        <section>
-          <h2>¿Y si la solución viene de ChatGPT u otra IA?</h2>
           <p>
-            Cada vez es más habitual pedir a una IA que resuelva ejercicios y devolver la solución
-            en LaTeX. El problema viene cuando quieres entregar ese mismo contenido en Word.
-          </p>
-          <p>
-            Con ecuacionesaword.com el flujo es muy simple:
-          </p>
-          <ol>
-            <li>Pides la solución en LaTeX.</li>
-            <li>Copias la respuesta y la pegas en un .txt o .docx.</li>
-            <li>Subes el archivo al conversor y obtienes un Word con ecuaciones editables.</li>
-          </ol>
-          <p>
-            Así puedes usar la potencia de la IA para generar contenido matemático, pero seguir
-            entregando trabajos en el formato que te piden.
+            La idea es que el <strong>90% del trabajo pesado</strong> (sobre todo con matrices y
+            muchas ecuaciones) lo haga la herramienta, y tú solo pulas detalles.
           </p>
         </section>
 
         <section>
-          <h2>Conclusión: evita repetir trabajo</h2>
+          <h2>8. Conclusión</h2>
           <p>
-            Volver a escribir fórmulas en Word después de haberlas obtenido en LaTeX es un trabajo
-            poco agradecido, propenso a errores y que se come tu tiempo de estudio o preparación
-            de clases.
+            Pasar de LaTeX o de soluciones generadas por IA a un documento Word bien presentado
+            ya no tiene por qué ser una tarea tediosa. Si preparas mínimamente tu archivo y usas
+            un conversor orientado a ecuaciones de Word, puedes ahorrar bastante tiempo.
           </p>
           <p>
-            Si te encuentras a menudo copiando ecuaciones desde LaTeX o desde una IA a Word,
-            merece la pena automatizar ese paso y dejar que una herramienta se encargue de la parte
-            mecánica.
+            <strong>ecuacionesaword.com</strong> nace precisamente de esa necesidad: evitar que
+            estudiantes y profesores tengan que reescribir a mano todas sus fórmulas solo para
+            poder entregarlas en Word.
           </p>
 
           <div class="cta-box">
-            <strong>Prueba el conversor ahora</strong>
+            <strong>¿Quieres probarlo ahora?</strong>
             <p>
-              Sube un documento .txt o .docx con tus fórmulas LaTeX y comprueba cómo se transforman
-              en ecuaciones nativas de Word listas para editar.
+              Prepara un pequeño archivo con 2–3 ecuaciones LaTeX, súbelo al conversor y comprueba
+              cómo se ven las ecuaciones en Word. Es gratis y no requiere registro.
             </p>
             <a class="cta-link" href="https://www.ecuacionesaword.com/">
               Ir al conversor LaTeX → Word
             </a>
           </div>
+        </section>
+
+        <section class="related">
+          <h2>También te puede interesar</h2>
+          <p>
+            Si quieres afinar todavía más la calidad de la conversión, tienes esta guía específica
+            sobre cómo preparar el archivo antes de subirlo:
+          </p>
+          <p>
+            <a class="cta-link" href="/blog2">
+              Guía rápida: cómo preparar tu archivo LaTeX (blog 2)
+            </a>
+          </p>
         </section>
       </article>
     </main>
