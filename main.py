@@ -31,6 +31,366 @@ app.add_middleware(
 
 Segment = Tuple[str, str]  # ("text" | "inline" | "display", contenido)
 
+# ================================================================
+#  Blog posts (dinámicos en /blog/{slug})
+# ================================================================
+
+blog_posts: Dict[str, Dict[str, Any]] = {
+    "pasar-ecuaciones-chatgpt-word": {
+        "slug": "pasar-ecuaciones-chatgpt-word",
+        "title": "Cómo pasar ecuaciones de ChatGPT a Word sin copiarlas a mano",
+        "description": (
+            "Guía paso a paso para convertir las soluciones en LaTeX que te da "
+            "ChatGPT u otras IA en ecuaciones nativas de Word usando Ecuaciones a Word."
+        ),
+        "content_html": """
+<h1>Cómo pasar ecuaciones de ChatGPT a Word sin copiarlas a mano</h1>
+
+<p>
+Si usas ChatGPT para resolver ejercicios de matemáticas, seguro que te has encontrado con este problema:
+las ecuaciones salen preciosas en la pantalla… pero luego tienes que pasarlas a Word y
+acabas copiando todo a mano o pegando capturas de pantalla.
+</p>
+
+<p>
+En esta guía te explico un método mucho más rápido usando
+<strong><a href="https://www.ecuacionesaword.com">Ecuaciones a Word</a></strong>,
+una herramienta online que convierte fórmulas LaTeX en ecuaciones nativas de Word.
+</p>
+
+<h2>El problema: ChatGPT escribe en LaTeX, Word no</h2>
+
+<p>
+Cuando ChatGPT genera fórmulas matemáticas, casi siempre lo hace en
+<strong>LaTeX</strong>, por ejemplo:
+</p>
+
+<pre><code>D_1 = 2 &gt; 0, \\quad D_2 = \\begin{vmatrix} 2 &amp; 1 \\\\ 1 &amp; 2 \\end{vmatrix}</code></pre>
+
+<p>
+Eso está muy bien para documentos científicos o para compilar en PDF,
+pero si tu profesor te pide el trabajo en <strong>Word</strong>, necesitas que esas fórmulas
+sean ecuaciones nativas (las que se insertan con “Insertar → Ecuación”).
+</p>
+
+<p>
+Copiar y pegar directamente desde ChatGPT a Word no convierte las fórmulas,
+simplemente pega el texto plano. Ahí es donde entra en juego Ecuaciones a Word.
+</p>
+
+<h2>Paso 1: copia el texto desde ChatGPT</h2>
+
+<p>
+Primero, pídele a ChatGPT que te dé la solución o el desarrollo del ejercicio usando LaTeX.
+Luego, copia todo el texto (incluyendo las fórmulas con <code>$...$</code> o <code>$$...$$</code>).
+</p>
+
+<p>
+Te quedará algo de este estilo:
+</p>
+
+<pre><code>Partimos de la matriz A = \\begin{pmatrix} 2 &amp; 1 \\\\ 1 &amp; 2 \\end{pmatrix}.
+
+D_1 = 2 &gt; 0.
+
+D_2 = \\det(A) = 2\\cdot 2 - 1\\cdot 1 = 3 &gt; 0.</code></pre>
+
+<h2>Paso 2: pega el texto en un archivo .txt o .docx</h2>
+
+<p>
+Ahora abre Word (o cualquier editor de texto) y pega el contenido que has copiado de ChatGPT.
+Puedes guardarlo de dos maneras:
+</p>
+
+<ul>
+  <li>Como archivo de texto: <code>.txt</code></li>
+  <li>Como documento de Word: <code>.docx</code></li>
+</ul>
+
+<p>
+Ambos formatos son aceptados por Ecuaciones a Word.
+</p>
+
+<h2>Paso 3: sube el documento a Ecuaciones a Word</h2>
+
+<ol>
+  <li>Ve a <a href="https://www.ecuacionesaword.com">https://www.ecuacionesaword.com</a>.</li>
+  <li>Haz clic en <strong>“Seleccionar archivo”</strong> y elige tu .txt o .docx.</li>
+  <li>Pulsa en <strong>“Convertir documento”</strong>.</li>
+</ol>
+
+<p>
+La aplicación detectará las fórmulas delimitadas por <code>$...$</code>, <code>$$...$$</code> o <code>\\[...\\]</code>,
+las interpretará como LaTeX sencillo y las transformará en ecuaciones de Word (OMML).
+</p>
+
+<h2>Paso 4: descarga el nuevo .docx con ecuaciones nativas</h2>
+
+<p>
+Cuando termine la conversión, aparecerá un botón para
+<strong>descargar el documento convertido</strong>. Ábrelo con Word y verás que:
+</p>
+
+<ul>
+  <li>El texto normal se mantiene igual.</li>
+  <li>Las fórmulas que antes estaban en LaTeX ahora son ecuaciones nativas de Word.</li>
+</ul>
+
+<p>
+Puedes pulsar sobre cada ecuación y editarla con el editor de ecuaciones de Word, como si la hubieras escrito a mano.
+</p>
+
+<h2>Ventajas de este método</h2>
+
+<ul>
+  <li><strong>Ahorra tiempo</strong>: no tienes que reescribir las fórmulas en Word.</li>
+  <li><strong>Evitas errores</strong>: no hay riesgo de equivocarte al copiar términos, índices o exponentes.</li>
+  <li><strong>Resultado limpio</strong>: Word trata las ecuaciones como objetos matemáticos, no como imágenes.</li>
+</ul>
+
+<h2>Conclusión</h2>
+
+<p>
+Si usas ChatGPT para resolver ejercicios de matemáticas y luego necesitas entregar el trabajo en Word,
+Ecuaciones a Word te ahorra muchos pasos intermedios. Solo tienes que copiar el texto de ChatGPT,
+guardarlo en un .txt o .docx, subirlo a la web y descargar el documento ya con las ecuaciones convertidas.
+</p>
+
+<p>
+Puedes probarlo ahora mismo en <a href="https://www.ecuacionesaword.com">Ecuaciones a Word</a>.
+</p>
+        """,
+    },
+    "convertir-documento-latex-word": {
+        "slug": "convertir-documento-latex-word",
+        "title": "Cómo convertir un documento LaTeX a ecuaciones de Word",
+        "description": (
+            "Aprende a convertir contenido LaTeX (con fórmulas matemáticas) "
+            "en un documento Word con ecuaciones nativas usando Ecuaciones a Word."
+        ),
+        "content_html": """
+<h1>Cómo convertir un documento LaTeX a ecuaciones de Word</h1>
+
+<p>
+Muchos trabajos de matemáticas, física o ingeniería se escriben originalmente en LaTeX.
+Sin embargo, a veces la universidad, una revista o una empresa exige que el documento final
+se entregue en <strong>Microsoft Word</strong>. Ahí empieza el dolor de cabeza:
+¿cómo pasar todas esas fórmulas a Word sin reescribirlas a mano?
+</p>
+
+<p>
+En este artículo veremos una forma práctica de hacerlo usando
+<strong><a href="https://www.ecuacionesaword.com">Ecuaciones a Word</a></strong>,
+una herramienta online que convierte fórmulas LaTeX en ecuaciones Word (OMML).
+</p>
+
+<h2>LaTeX vs Word: dos mundos diferentes</h2>
+
+<p>
+LaTeX está pensado para componer documentos científicos de alta calidad tipográfica.
+Word, en cambio, es un procesador de texto más general. Aunque Word tiene un editor
+de ecuaciones bastante potente, no entiende directamente el código LaTeX estándar.
+</p>
+
+<p>
+Esto significa que no puedes simplemente pegar esto en Word y esperar que se convierta solo:
+</p>
+
+<pre><code>\\int_0^1 x^2 \\, dx = \\frac{1}{3}</code></pre>
+
+<p>
+Lo que necesitas es una conversión intermedia que interprete el LaTeX y genere
+ecuaciones en el formato interno de Word, llamado <strong>OMML</strong>.
+</p>
+
+<h2>Preparar el contenido LaTeX</h2>
+
+<p>
+Ecuaciones a Word funciona mejor cuando el contenido está en formato texto con las
+fórmulas delimitadas. Por ejemplo:
+</p>
+
+<ul>
+  <li><code>$ ... $</code> para fórmulas en línea.</li>
+  <li><code>$$ ... $$</code> o <code>\\[ ... \\]</code> para fórmulas en bloque.</li>
+</ul>
+
+<p>
+Supongamos que tienes un documento LaTeX con párrafos y fórmulas como:
+</p>
+
+<pre><code>
+Sea la función $f(x) = x^2 + 2x + 1$. Su derivada es $f'(x) = 2x + 2$.
+
+La integral definida es
+\\[
+\\int_0^1 x^2 \\, dx = \\frac{1}{3}.
+\\]
+</code></pre>
+
+<p>
+Puedes copiar el contenido relevante (sin el preámbulo de LaTeX si no es necesario) a un archivo
+de texto plano o a un documento de Word.
+</p>
+
+<h2>Subir el documento a Ecuaciones a Word</h2>
+
+<p>
+Una vez tengas el texto con LaTeX:
+</p>
+
+<ol>
+  <li>Guarda el archivo como <code>.txt</code> o <code>.docx</code>.</li>
+  <li>Ve a <a href="https://www.ecuacionesaword.com">https://www.ecuacionesaword.com</a>.</li>
+  <li>Haz clic en <strong>“Seleccionar archivo”</strong> y elige tu documento.</li>
+  <li>Pulsa <strong>“Convertir documento”</strong> y espera unos segundos.</li>
+</ol>
+
+<p>
+La herramienta analizará el texto, localizará las fórmulas LaTeX y generará internamente
+las ecuaciones en formato OMML, el que utiliza Word.
+</p>
+
+<h2>Descargar y abrir el .docx convertido</h2>
+
+<p>
+Al terminar la conversión, podrás descargar un nuevo archivo <code>.docx</code>.
+Ábrelo con Word y comprueba:
+</p>
+
+<ul>
+  <li>Las fórmulas en línea aparecen integradas en los párrafos.</li>
+  <li>Las fórmulas en bloque aparecen centradas y separadas del texto.</li>
+  <li>Al hacer clic en una ecuación, se activa el editor de ecuaciones de Word.</li>
+</ul>
+
+<p>
+Desde ahí puedes ajustar el estilo, el tamaño de letra o incluso reescribir partes de las fórmulas.
+</p>
+
+<h2>Consejos para una conversión más limpia</h2>
+
+<ul>
+  <li>Usa LaTeX sencillo: potencias, subíndices, fracciones, matrices, etc.</li>
+  <li>Evita comandos muy específicos de paquetes raros que Word no sabrá representar.</li>
+  <li>
+    Asegúrate de que las fórmulas estén bien delimitadas con <code>$...$</code>,
+    <code>$$...$$</code> o <code>\\[...\\]</code>.
+  </li>
+</ul>
+
+<h2>Conclusión</h2>
+
+<p>
+Convertir un documento LaTeX a Word no tiene por qué ser una pesadilla.
+Con una herramienta como <a href="https://www.ecuacionesaword.com">Ecuaciones a Word</a> puedes
+mantener la comodidad de escribir en LaTeX y, al mismo tiempo, obtener un documento Word con
+ecuaciones nativas, listo para entregar.
+</p>
+
+<p>
+Si estás preparando tu TFG, TFM o apuntes de clase y necesitas Word como formato final,
+prueba esta solución y ahórrate horas de trabajo manual.
+</p>
+        """,
+    },
+    "ia-chatgpt-a-word-ejercicios": {
+        "slug": "ia-chatgpt-a-word-ejercicios",
+        "title": "Usar IA + Ecuaciones a Word para hacer tus ejercicios en Word",
+        "description": (
+            "Cómo combinar inteligencias artificiales como ChatGPT con Ecuaciones a Word "
+            "para crear rápidamente ejercicios y soluciones en documentos Word."
+        ),
+        "content_html": """
+<h1>Usar IA + Ecuaciones a Word para hacer tus ejercicios en Word</h1>
+
+<p>
+Cada vez más estudiantes y profesores utilizan <strong>inteligencias artificiales</strong> como
+ChatGPT, Gemini o Copilot para generar enunciados, soluciones o resúmenes de matemáticas.
+El problema llega cuando todo eso hay que entregarlo en <strong>formato Word</strong>.
+</p>
+
+<p>
+En este artículo te explico un flujo de trabajo práctico para combinar IA con
+<strong><a href="https://www.ecuacionesaword.com">Ecuaciones a Word</a></strong> y así obtener
+documentos limpios, con ecuaciones nativas y listos para entregar.
+</p>
+
+<h2>Paso 1: pide a la IA que te dé las soluciones en LaTeX</h2>
+
+<p>
+Cuando uses ChatGPT u otra IA, es buena idea indicarle que te escriba las fórmulas en LaTeX.
+Por ejemplo:
+</p>
+
+<pre><code>Escribe la solución detallada usando LaTeX. Utiliza $...$ para fórmulas en línea
+y $$...$$ para fórmulas en bloque.</code></pre>
+
+<p>
+Así obtendrás un texto estructurado, con fórmulas fáciles de detectar y convertir.
+</p>
+
+<h2>Paso 2: copia el resultado a un .docx o .txt</h2>
+
+<p>
+Una vez tengas la respuesta de la IA:
+</p>
+
+<ul>
+  <li>Copia todo el texto, incluyendo las fórmulas.</li>
+  <li>Pégalo en un documento nuevo de Word o en un editor de texto.</li>
+  <li>Guarda el archivo como <strong>.docx</strong> o <strong>.txt</strong>.</li>
+</ul>
+
+<p>
+No es necesario que las ecuaciones se vean bien en este punto; lo importante es que el LaTeX esté correcto.
+</p>
+
+<h2>Paso 3: convierte el documento con Ecuaciones a Word</h2>
+
+<ol>
+  <li>Ve a <a href="https://www.ecuacionesaword.com">https://www.ecuacionesaword.com</a>.</li>
+  <li>Selecciona tu archivo .docx o .txt.</li>
+  <li>Haz clic en <strong>“Convertir documento”</strong>.</li>
+</ol>
+
+<p>
+La herramienta buscará las fórmulas delimitadas por <code>$...$</code>, <code>$$...$$</code> o <code>\\[...\\]</code>
+y las transformará en ecuaciones de Word.
+</p>
+
+<h2>Paso 4: revisa y personaliza el documento en Word</h2>
+
+<p>
+Descarga el nuevo .docx y ábrelo en Word. Verás que:
+</p>
+
+<ul>
+  <li>Las ecuaciones son <strong>nativas</strong>, no imágenes.</li>
+  <li>Puedes cambiarles el estilo, el tamaño de letra o el formato.</li>
+  <li>Si algo no te convence, puedes editar directamente la ecuación en Word.</li>
+</ul>
+
+<h2>Ventajas de este flujo IA + Ecuaciones a Word</h2>
+
+<ul>
+  <li><strong>Velocidad</strong>: la IA genera el contenido y Ecuaciones a Word se ocupa del formato matemático.</li>
+  <li><strong>Calidad</strong>: las ecuaciones se integran perfectamente con el texto de Word.</li>
+  <li><strong>Flexibilidad</strong>: puedes corregir, ampliar o traducir el documento sin perder las fórmulas.</li>
+</ul>
+
+<h2>Conclusión</h2>
+
+<p>
+Las inteligencias artificiales son una herramienta muy potente para generar contenido matemático,
+pero por sí solas no resuelven el problema del formato en Word. Combinarlas con
+<a href="https://www.ecuacionesaword.com">Ecuaciones a Word</a> te permite tener lo mejor de ambos mundos:
+rapidez y comodidad, sin renunciar a un documento final profesional y editable.
+</p>
+        """,
+    },
+}
+
 
 # ================================================================
 #  1. Normalización y 'prettify' específico de tu ejercicio
@@ -642,6 +1002,71 @@ async def blog2():
             return f.read()
     except FileNotFoundError:
         return "<h1>No se encuentra blog2.html</h1>"
+
+
+# ================================================================
+#  8-ter. Blog dinámico en /blog/{slug}
+# ================================================================
+
+@app.get("/blog/{slug}", response_class=HTMLResponse)
+async def blog_post(slug: str):
+    """
+    Devuelve una entrada del blog generada dinámicamente según el slug.
+    Ejemplos:
+      - /blog/pasar-ecuaciones-chatgpt-word
+      - /blog/convertir-documento-latex-word
+      - /blog/ia-chatgpt-a-word-ejercicios
+    """
+    post = blog_posts.get(slug)
+    if not post:
+        raise HTTPException(status_code=404, detail="Artículo no encontrado")
+
+    title = post["title"] + " | Ecuaciones a Word"
+    description = post["description"]
+    body_html = post["content_html"]
+
+    html = (
+        "<!DOCTYPE html>"
+        "<html lang='es'>"
+        "<head>"
+        "<meta charset='UTF-8'/>"
+        "<meta name='viewport' content='width=device-width, initial-scale=1.0'/>"
+        f"<title>{title}</title>"
+        f"<meta name='description' content='{description}'/>"
+        "<link rel='canonical' href='https://www.ecuacionesaword.com/blog/" + slug + "'/>"
+        "<style>"
+        "body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;"
+        "background:#020617;color:#e5e7eb;margin:0;padding:0;}"
+        ".page{max-width:900px;margin:0 auto;padding:24px 16px 40px;}"
+        "a{color:#22c55e;text-decoration:none;}a:hover{text-decoration:underline;}"
+        "header{margin-bottom:20px;}"
+        "header a{font-weight:600;font-size:14px;}"
+        "h1{font-size:24px;margin-bottom:12px;color:#f9fafb;}"
+        "h2{font-size:18px;margin-top:18px;margin-bottom:8px;color:#f9fafb;}"
+        "p{font-size:14px;line-height:1.6;margin-bottom:8px;}"
+        "ul,ol{font-size:14px;line-height:1.6;margin:4px 0 10px 20px;}"
+        "pre{background:#020617;border-radius:8px;padding:10px;font-size:13px;"
+        "overflow-x:auto;border:1px solid #1f2937;}"
+        "code{font-family:ui-monospace,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;}"
+        "footer{margin-top:24px;font-size:12px;color:#9ca3af;border-top:1px solid #1f2937;padding-top:10px;}"
+        "</style>"
+        "</head>"
+        "<body>"
+        "<div class='page'>"
+        "<header>"
+        "<a href='/'>&larr; Volver a Ecuaciones a Word</a>"
+        "</header>"
+        "<main>"
+        + body_html +
+        "</main>"
+        "<footer>"
+        "© Ecuaciones a Word · LaTeX → ecuaciones de Word"
+        "</footer>"
+        "</div>"
+        "</body>"
+        "</html>"
+    )
+    return HTMLResponse(content=html)
 
 
 # ================================================================
