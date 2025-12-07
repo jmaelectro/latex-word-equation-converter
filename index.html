@@ -2,27 +2,27 @@
 <html lang="es">
 <head>
   <!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-GS589S9BG4');
-</script>
-<!-- Fin Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-GS589S9BG4"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-GS589S9BG4');
+  </script>
+  <!-- Fin Google Analytics -->
 
   <meta charset="UTF-8" />
   <title>LaTeX → Ecuaciones de Word</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta
     name="description"
-    content="Convierte documentos .txt o .docx con fórmulas LaTeX en ecuaciones nativas de Word (OMML)."
+    content="Convierte documentos .txt o .docx con fórmulas LaTeX en ecuaciones nativas de Word (OMML), perfectas para trabajos hechos con IA."
   />
 
   <style>
     :root {
-      --bg: #050816;
-      --bg-card: #0b1020;
+      --bg: #020617;
+      --bg-card: #020617;
       --accent: #22c55e;
       --accent-soft: rgba(34, 197, 94, 0.1);
       --accent-danger: #f97373;
@@ -42,17 +42,25 @@
       margin: 0;
       padding: 0;
       min-height: 100vh;
-      background: radial-gradient(circle at top, #1f2937, #020617);
+      background: radial-gradient(circle at top, #111827, #020617);
       color: var(--text);
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
     }
 
     .app {
       max-width: 960px;
       width: 100%;
-      padding: 32px 16px;
+      padding: 32px 16px 48px;
     }
 
     .card {
@@ -60,13 +68,34 @@
         linear-gradient(135deg, #22c55e33, #22c55e00) border-box;
       border: 1px solid transparent;
       border-radius: 20px;
-      padding: 28px 24px 32px;
+      padding: 28px 24px 24px;
       box-shadow: 0 22px 45px rgba(0, 0, 0, 0.5);
     }
 
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.8);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .header-badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
+    }
+
     h1 {
-      font-size: 1.8rem;
-      margin: 0 0 8px;
+      font-size: 1.9rem;
+      margin: 0 0 6px;
       letter-spacing: 0.02em;
     }
 
@@ -125,7 +154,7 @@
     .panel {
       margin-top: 8px;
       border-radius: var(--radius);
-      background: rgba(15, 23, 42, 0.8);
+      background: rgba(15, 23, 42, 0.85);
       border: 1px solid var(--border);
       padding: 18px 16px 14px;
     }
@@ -225,18 +254,81 @@
       color: var(--text-muted);
     }
 
+    .extra {
+      margin-top: 26px;
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr);
+      gap: 20px;
+    }
+
+    .extra-card {
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.9);
+      padding: 18px 16px 16px;
+    }
+
+    .extra-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .extra-text {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .example-box {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px dashed var(--border);
+      font-size: 0.84rem;
+    }
+
+    .example-label {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .example-code {
+      font-family: "JetBrains Mono", "Consolas", monospace;
+      font-size: 0.8rem;
+      background: #020617;
+      padding: 4px 6px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-top: 2px;
+    }
+
+    .footer {
+      margin-top: 14px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
     @media (max-width: 720px) {
       .card {
-        padding: 20px 16px 24px;
+        padding: 20px 16px 20px;
       }
       .steps {
         grid-template-columns: 1fr;
       }
       h1 {
-        font-size: 1.5rem;
+        font-size: 1.55rem;
       }
       .subtitle {
-        font-size: 0.88rem;
+        font-size: 0.9rem;
+      }
+      .extra {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -245,10 +337,15 @@
 <body>
   <div class="app">
     <div class="card">
+      <div class="header-badge">
+        <span class="header-badge-dot"></span>
+        Convierte resultados de IA en documentos Word limpios
+      </div>
+
       <h1>LaTeX → Ecuaciones de Word</h1>
       <p class="subtitle">
         Sube un archivo <strong>.txt</strong> o <strong>.docx</strong> con fórmulas
-        LaTeX sencillas (como las que genera ChatGPT) y descarga un
+        LaTeX (por ejemplo, las que genera ChatGPT) y descarga un nuevo
         <strong>.docx</strong> con ecuaciones nativas de Word (OMML), totalmente
         editables.
       </p>
@@ -272,8 +369,8 @@
             <div class="step-title">Convierte</div>
           </div>
           <div class="step-body">
-            El archivo se envía al servidor, se analizan las fórmulas LaTeX y se
-            crean ecuaciones de Word (OMML).
+            En segundo plano se detectan las fórmulas LaTeX y se transforman en
+            ecuaciones de Word (OMML).
           </div>
         </div>
 
@@ -301,8 +398,9 @@
 
         <p class="hint">
           Dentro del texto, usa notación como
-          <code>$x^2$</code>, <code>$q_1$</code>, <code>\det(A)</code>,
-          <code>\left[\matrix{...}\right]</code>, etc.
+          <code>$x^2$</code>, <code>$q_1$</code>, <code>\det(A)</code> o
+          <code>\left[\matrix{...}\right]</code>. Ideal para pasar ejercicios
+          generados por IA a un Word presentable.
         </p>
       </div>
 
@@ -314,6 +412,54 @@
         <p id="status" class="status status-info">
           Esperando archivo…
         </p>
+      </div>
+
+      <div class="extra">
+        <div class="extra-card">
+          <div class="extra-title">¿Cómo funciona?</div>
+          <p class="extra-text">
+            La aplicación busca las fórmulas LaTeX delimitadas en el documento,
+            las interpreta (potencias, subíndices, productos, determinantes y
+            matrices sencillas) y genera ecuaciones nativas de Word usando
+            OMML. Esto te permite editar el resultado directamente en Word sin
+            tener que rehacer todas las fórmulas a mano.
+          </p>
+
+          <div class="example-box">
+            <div class="example-label">Ejemplo rápido</div>
+            <div>
+              <strong>Entrada (en el documento):</strong>
+              <div class="example-code">
+                Sea $q(x,y,z)=2x^2+2y^2+2z^2+2xy+2xz$.<br />
+                La matriz asociada es
+                $$A=\begin{pmatrix}2 & 1 & 1\\ 1 & 2 & 0\\ 1 & 0 & 2\end{pmatrix}.$$
+              </div>
+            </div>
+            <div style="margin-top: 6px;">
+              <strong>Salida:</strong> el texto se mantiene igual, pero las
+              expresiones anteriores se convierten en ecuaciones de Word
+              perfectamente editables.
+            </div>
+          </div>
+        </div>
+
+        <div class="extra-card">
+          <div class="extra-title">Privacidad y seguridad</div>
+          <p class="extra-text">
+            Los archivos que subes se procesan temporalmente en el servidor
+            para generar el documento convertido y <strong>no se almacenan de forma
+            permanente</strong>. El objetivo es ayudarte a maquetar tus trabajos de
+            matemáticas de forma rápida y cómoda.
+          </p>
+          <p class="extra-text" style="margin-top: 8px;">
+            Para cualquier documento sensible, recuerda que siempre puedes
+            revisar y limpiar el contenido antes de subirlo.
+          </p>
+        </div>
+      </div>
+
+      <div class="footer">
+        Herramienta experimental para convertir fórmulas LaTeX a ecuaciones de Word.
       </div>
     </div>
   </div>
@@ -408,4 +554,3 @@
   </script>
 </body>
 </html>
-
