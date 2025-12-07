@@ -1,5 +1,8 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.ecuacionesaword.com/sitemap.xml
+# Opcional: no tiene sentido que los bots prueben estos endpoints de API
+Disallow: /convert
+Disallow: /health
 
+Sitemap: https://www.ecuacionesaword.com/sitemap.xml
