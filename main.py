@@ -627,6 +627,24 @@ async def blog():
 
 
 # ================================================================
+#  8-bis. Servir blog2.html en "/blog2" y "/blog2.html"
+# ================================================================
+
+@app.get("/blog2", response_class=HTMLResponse)
+@app.get("/blog2.html", response_class=HTMLResponse)
+async def blog2():
+    """
+    Devuelve el segundo artículo del blog (blog2.html).
+    """
+    blog2_path = os.path.join(BASE_DIR, "blog2.html")
+    try:
+        with open(blog2_path, "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        return "<h1>No se encuentra blog2.html</h1>"
+
+
+# ================================================================
 #  9. Servir sitemap.xml y robots.txt
 # ================================================================
 
