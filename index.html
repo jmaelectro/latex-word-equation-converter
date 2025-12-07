@@ -1,556 +1,802 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <!-- Google Analytics -->
+  <meta charset="UTF-8" />
+  <title>LaTeX → Ecuaciones de Word | ecuacionesaword.com</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description"
+        content="Convierte documentos con fórmulas LaTeX sencillas en ecuaciones nativas de Word (.docx) listas para editar." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>∑</text></svg>">
+
+  <!-- Google Analytics 4 -->
+  <!-- NOTA: si en el futuro cambias de propiedad solo tienes que sustituir el ID G-GS589S9BG4 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-GS589S9BG4"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-GS589S9BG4');
+    function gtag(){ dataLayer.push(arguments); }
+    gtag("js", new Date());
+    gtag("config", "G-GS589S9BG4");
   </script>
-  <!-- Fin Google Analytics -->
-
-  <meta charset="UTF-8" />
-  <title>LaTeX → Ecuaciones de Word</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta
-    name="description"
-    content="Convierte documentos .txt o .docx con fórmulas LaTeX en ecuaciones nativas de Word (OMML), perfectas para trabajos hechos con IA."
-  />
 
   <style>
     :root {
-      --bg: #020617;
-      --bg-card: #020617;
+      --bg: #050816;
+      --bg-soft: #0b1020;
+      --card: #111827;
       --accent: #22c55e;
-      --accent-soft: rgba(34, 197, 94, 0.1);
-      --accent-danger: #f97373;
+      --accent-soft: rgba(34, 197, 94, 0.12);
+      --accent-strong: rgba(34, 197, 94, 0.25);
       --text: #f9fafb;
-      --text-muted: #9ca3af;
-      --border: #1f2937;
-      --radius: 12px;
+      --muted: #9ca3af;
+      --danger: #f97373;
+      --border-soft: #1f2937;
+      --radius-lg: 18px;
+      --radius-md: 10px;
+      --shadow-soft: 0 18px 40px rgba(0,0,0,0.45);
+      --shadow-card: 0 12px 30px rgba(0,0,0,0.4);
+      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    * {
-      box-sizing: border-box;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-        sans-serif;
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at top, #1f2933 0, #020617 45%, #000 100%);
+      color: var(--text);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
     }
 
     body {
-      margin: 0;
-      padding: 0;
       min-height: 100vh;
-      background: radial-gradient(circle at top, #111827, #020617);
-      color: var(--text);
       display: flex;
       flex-direction: column;
-      align-items: center;
     }
 
-    a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
-
-    .app {
+    .page {
       max-width: 960px;
       width: 100%;
-      padding: 32px 16px 48px;
+      margin: 20px auto;
+      padding: 20px 16px 32px;
     }
 
-    .card {
-      background: linear-gradient(135deg, #020617, #020617) padding-box,
-        linear-gradient(135deg, #22c55e33, #22c55e00) border-box;
-      border: 1px solid transparent;
-      border-radius: 20px;
-      padding: 28px 24px 24px;
-      box-shadow: 0 22px 45px rgba(0, 0, 0, 0.5);
-    }
-
-    .header-badge {
-      display: inline-flex;
+    header {
+      display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: rgba(15, 23, 42, 0.8);
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      margin-bottom: 10px;
-    }
-
-    .header-badge-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: var(--accent);
-      box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
-    }
-
-    h1 {
-      font-size: 1.9rem;
-      margin: 0 0 6px;
-      letter-spacing: 0.02em;
-    }
-
-    .subtitle {
-      margin: 0 0 24px;
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      line-height: 1.5;
-    }
-
-    .steps {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
+      justify-content: space-between;
+      gap: 12px;
       margin-bottom: 24px;
     }
 
-    .step {
-      background: #020617;
-      border-radius: var(--radius);
-      padding: 14px 14px 16px;
-      border: 1px solid var(--border);
-    }
-
-    .step-header {
+    .brand {
       display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 6px;
+      flex-direction: column;
+      gap: 4px;
     }
 
-    .step-number {
+    .brand-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .brand-pill {
+      padding: 2px 9px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      border: 1px solid var(--accent-strong);
+    }
+
+    .brand-subtitle {
+      color: var(--muted);
+      font-size: 0.9rem;
+      max-width: 520px;
+    }
+
+    nav a {
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+    }
+
+    nav a:hover {
+      color: var(--text);
+      border-color: var(--border-soft);
+      background: rgba(15,23,42,0.9);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.8fr) minmax(0, 1.4fr);
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    @media (max-width: 860px) {
+      .grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .page {
+        margin-top: 10px;
+      }
+    }
+
+    .card {
+      background: radial-gradient(circle at top left, #1f2937 0, var(--card) 35%);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(148,163,184,0.16);
+      box-shadow: var(--shadow-card);
+      padding: 20px 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top right, rgba(56,189,248,0.12), transparent 55%);
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    .card-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    h2 {
+      margin: 0 0 10px;
+      font-size: 1.2rem;
+    }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .step {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 8px 10px;
+      border-radius: var(--radius-md);
+      background: rgba(15,23,42,0.6);
+      border: 1px solid rgba(55,65,81,0.7);
+    }
+
+    .step-badge {
       width: 22px;
       height: 22px;
-      border-radius: 999px;
+      border-radius: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.8rem;
-      background: var(--accent-soft);
-      color: var(--accent);
-      border: 1px solid rgba(34, 197, 94, 0.5);
+      flex-shrink: 0;
+      border: 1px solid var(--accent);
     }
 
-    .step-title {
-      font-size: 0.9rem;
+    .step-text-title {
+      font-size: 0.92rem;
       font-weight: 600;
+      margin-bottom: 2px;
     }
 
-    .step-body {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      line-height: 1.4;
+    .step-text-body {
+      font-size: 0.84rem;
+      color: var(--muted);
     }
 
-    .panel {
-      margin-top: 8px;
-      border-radius: var(--radius);
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid var(--border);
-      padding: 18px 16px 14px;
+    .upload-area {
+      margin-top: 16px;
+      border-radius: var(--radius-md);
+      border: 1px dashed rgba(148,163,184,0.5);
+      background: rgba(15,23,42,0.85);
+      padding: 12px 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
-    .panel-label {
-      font-size: 0.82rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--text-muted);
-      margin-bottom: 10px;
-    }
-
-    .file-row {
+    .upload-row {
       display: flex;
       flex-wrap: wrap;
-      align-items: center;
       gap: 10px;
-      margin-bottom: 6px;
+      align-items: center;
+      justify-content: flex-start;
     }
 
-    #fileInput {
-      display: none;
-    }
-
-    .btn {
-      border-radius: 999px;
-      border: none;
-      padding: 8px 18px;
-      font-size: 0.9rem;
-      cursor: pointer;
+    .file-input-label {
+      position: relative;
+      overflow: hidden;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
+      padding: 8px 12px;
+      background: rgba(15,23,42,0.9);
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.5);
+      cursor: pointer;
+      font-size: 0.85rem;
       white-space: nowrap;
     }
 
-    .btn-primary {
-      background: var(--accent);
-      color: #022c22;
-      font-weight: 600;
-      box-shadow: 0 12px 25px rgba(34, 197, 94, 0.35);
-      transition: transform 0.12s ease, box-shadow 0.12s ease,
-        background 0.12s ease;
+    .file-input-label:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(34,197,94,0.4);
     }
 
-    .btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 18px 30px rgba(34, 197, 94, 0.45);
-      background: #16a34a;
+    .file-input-label input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
     }
 
-    .btn-primary:disabled {
-      opacity: 0.6;
-      cursor: default;
-      transform: none;
-      box-shadow: none;
-    }
-
-    .btn-outline {
-      border: 1px solid var(--border);
-      background: #020617;
-      color: var(--text);
-      font-size: 0.85rem;
+    .small-pill {
+      font-size: 0.7rem;
+      color: var(--muted);
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(55,65,81,0.9);
+      background: rgba(15,23,42,0.9);
     }
 
     .file-name {
-      font-size: 0.86rem;
-      color: var(--text-muted);
-      flex: 1 1 auto;
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      font-size: 0.84rem;
+      color: var(--muted);
     }
 
-    .hint {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-top: 4px;
+    .convert-btn {
+      padding: 9px 22px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      background-image: linear-gradient(90deg, #22c55e, #16a34a);
+      color: #04101a;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 12px 25px rgba(34,197,94,0.25);
+    }
+
+    .convert-btn[disabled] {
+      opacity: 0.55;
+      cursor: default;
+      box-shadow: none;
     }
 
     .status {
-      margin-top: 12px;
-      font-size: 0.86rem;
-      min-height: 1.2em;
+      font-size: 0.8rem;
+      margin-top: 6px;
+      min-height: 16px;
     }
 
-    .status-ok {
+    .status span {
+      padding: 3px 7px;
+      border-radius: 999px;
+    }
+
+    .status--idle span {
+      background: rgba(15,23,42,0.9);
+      color: var(--muted);
+      border: 1px solid rgba(55,65,81,0.8);
+    }
+
+    .status--working span {
+      background: rgba(34,197,94,0.12);
       color: var(--accent);
+      border: 1px solid var(--accent-soft);
     }
 
-    .status-error {
-      color: var(--accent-danger);
+    .status--error span {
+      background: rgba(248,113,113,0.12);
+      color: var(--danger);
+      border: 1px solid rgba(248,113,113,0.4);
     }
 
-    .status-info {
-      color: var(--text-muted);
+    .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: var(--accent);
+      text-decoration: none;
+      padding: 7px 13px;
+      border-radius: 999px;
+      border: 1px solid var(--accent-soft);
+      background: var(--accent-soft);
     }
 
-    .extra {
-      margin-top: 26px;
-      display: grid;
-      grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr);
-      gap: 20px;
+    .download-link.hidden {
+      display: none;
     }
 
-    .extra-card {
-      border-radius: 18px;
-      border: 1px solid var(--border);
-      background: rgba(15, 23, 42, 0.9);
+    .download-link:hover {
+      border-color: var(--accent);
+      background: rgba(34,197,94,0.18);
+    }
+
+    /* Lateral derecho: explicación y privacidad */
+
+    .right-card {
+      background: radial-gradient(circle at top left, #020617 0, #020617 30%, #020617 100%);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(31,41,55,0.9);
       padding: 18px 16px 16px;
+      box-shadow: var(--shadow-soft);
     }
 
-    .extra-title {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 6px;
+    .right-title {
+      margin: 0 0 8px;
+      font-size: 1.05rem;
     }
 
-    .extra-text {
-      font-size: 0.86rem;
-      color: var(--text-muted);
+    .right-text {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .right-list {
+      font-size: 0.82rem;
+      color: var(--muted);
+      padding-left: 16px;
+      margin-top: 4px;
+      margin-bottom: 10px;
+    }
+
+    .pill-header {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px rgba(34,197,94,0.2);
+    }
+
+    .privacy-link {
+      font-size: 0.8rem;
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .privacy-link:hover {
+      text-decoration: underline;
+    }
+
+    footer {
+      margin-top: 26px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(31,41,55,0.9);
+      font-size: 0.78rem;
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Sección de privacidad */
+
+    .privacy-section {
+      margin-top: 20px;
+      background: rgba(15,23,42,0.9);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(55,65,81,0.9);
+      padding: 14px 12px 12px;
+      font-size: 0.8rem;
+      color: var(--muted);
       line-height: 1.5;
     }
 
-    .example-box {
-      margin-top: 10px;
+    .privacy-section h3 {
+      margin: 0 0 6px;
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+
+    .privacy-section p {
+      margin: 4px 0;
+    }
+
+    .privacy-section ul {
+      margin: 4px 0 0 18px;
+      padding: 0;
+    }
+
+    .privacy-section li {
+      margin-bottom: 2px;
+    }
+
+    /* Aviso de cookies / Analytics */
+
+    #cookie-banner {
+      position: fixed;
+      left: 50%;
+      bottom: 16px;
+      transform: translateX(-50%);
+      max-width: 520px;
+      width: calc(100% - 32px);
+      background: rgba(15,23,42,0.98);
+      border-radius: 14px;
+      border: 1px solid rgba(55,65,81,0.9);
       padding: 10px 12px;
-      border-radius: 12px;
-      background: rgba(15, 23, 42, 0.95);
-      border: 1px dashed var(--border);
-      font-size: 0.84rem;
-    }
-
-    .example-label {
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-    }
-
-    .example-code {
-      font-family: "JetBrains Mono", "Consolas", monospace;
-      font-size: 0.8rem;
-      background: #020617;
-      padding: 4px 6px;
-      border-radius: 6px;
-      display: inline-block;
-      margin-top: 2px;
-    }
-
-    .footer {
-      margin-top: 14px;
+      display: none;
+      align-items: center;
+      gap: 10px;
       font-size: 0.78rem;
-      color: var(--text-muted);
-      text-align: center;
+      color: var(--muted);
+      box-shadow: 0 14px 35px rgba(0,0,0,0.6);
+      z-index: 50;
     }
 
-    @media (max-width: 720px) {
-      .card {
-        padding: 20px 16px 20px;
-      }
-      .steps {
-        grid-template-columns: 1fr;
-      }
-      h1 {
-        font-size: 1.55rem;
-      }
-      .subtitle {
-        font-size: 0.9rem;
-      }
-      .extra {
-        grid-template-columns: 1fr;
+    #cookie-banner button {
+      border: none;
+      border-radius: 999px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    #cookie-accept {
+      background: var(--accent);
+      color: #04101a;
+    }
+
+    #cookie-more {
+      background: rgba(15,23,42,0.9);
+      color: var(--muted);
+      border: 1px solid rgba(75,85,99,0.9);
+    }
+
+    @media (max-width: 520px) {
+      #cookie-banner {
+        flex-direction: column;
+        align-items: flex-start;
       }
     }
   </style>
 </head>
 
 <body>
-  <div class="app">
-    <div class="card">
-      <div class="header-badge">
-        <span class="header-badge-dot"></span>
-        Convierte resultados de IA en documentos Word limpios
+<div class="page">
+  <header>
+    <div class="brand">
+      <div class="brand-title">
+        LaTeX → Ecuaciones de Word
+        <span class="brand-pill">ecuacionesaword.com</span>
       </div>
-
-      <h1>LaTeX → Ecuaciones de Word</h1>
-      <p class="subtitle">
-        Sube un archivo <strong>.txt</strong> o <strong>.docx</strong> con fórmulas
-        LaTeX (por ejemplo, las que genera ChatGPT) y descarga un nuevo
-        <strong>.docx</strong> con ecuaciones nativas de Word (OMML), totalmente
-        editables.
+      <p class="brand-subtitle">
+        Sube un documento .docx o .txt con fórmulas LaTeX sencillas y obtén un .docx nuevo con
+        ecuaciones nativas de Word (OMML), listas para editar.
       </p>
+    </div>
+    <nav>
+      <a href="#como-funciona">Cómo funciona</a>
+      <a href="#privacidad">Privacidad</a>
+    </nav>
+  </header>
 
-      <div class="steps">
-        <div class="step">
-          <div class="step-header">
-            <div class="step-number">1</div>
-            <div class="step-title">Elige archivo</div>
-          </div>
-          <div class="step-body">
-            Selecciona un <code>.txt</code> o <code>.docx</code> con fórmulas
-            delimitadas por <code>$...$</code>, <code>$$...$$</code> o
-            <code>\[...\]</code>.
-          </div>
-        </div>
-
-        <div class="step">
-          <div class="step-header">
-            <div class="step-number">2</div>
-            <div class="step-title">Convierte</div>
-          </div>
-          <div class="step-body">
-            En segundo plano se detectan las fórmulas LaTeX y se transforman en
-            ecuaciones de Word (OMML).
-          </div>
-        </div>
-
-        <div class="step">
-          <div class="step-header">
-            <div class="step-number">3</div>
-            <div class="step-title">Descarga</div>
-          </div>
-          <div class="step-body">
-            Descarga el nuevo <code>.docx</code>, ábrelo en Word y edita las
-            ecuaciones como cualquier ecuación nativa.
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-label">1. Elige un archivo .docx o .txt</div>
-
-        <div class="file-row">
-          <label for="fileInput" class="btn btn-outline">Seleccionar archivo</label>
-          <span id="fileName" class="file-name">Ningún archivo seleccionado</span>
-        </div>
-
-        <input type="file" id="fileInput" accept=".txt,.docx" />
-
-        <p class="hint">
-          Dentro del texto, usa notación como
-          <code>$x^2$</code>, <code>$q_1$</code>, <code>\det(A)</code> o
-          <code>\left[\matrix{...}\right]</code>. Ideal para pasar ejercicios
-          generados por IA a un Word presentable.
-        </p>
-      </div>
-
-      <div class="panel" style="margin-top: 16px;">
-        <div class="panel-label">2. Ejecuta la conversión</div>
-        <button id="convertBtn" class="btn btn-primary">
-          2. Convertir documento
-        </button>
-        <p id="status" class="status status-info">
-          Esperando archivo…
-        </p>
-      </div>
-
-      <div class="extra">
-        <div class="extra-card">
-          <div class="extra-title">¿Cómo funciona?</div>
-          <p class="extra-text">
-            La aplicación busca las fórmulas LaTeX delimitadas en el documento,
-            las interpreta (potencias, subíndices, productos, determinantes y
-            matrices sencillas) y genera ecuaciones nativas de Word usando
-            OMML. Esto te permite editar el resultado directamente en Word sin
-            tener que rehacer todas las fórmulas a mano.
-          </p>
-
-          <div class="example-box">
-            <div class="example-label">Ejemplo rápido</div>
+  <main class="grid">
+    <!-- Columna izquierda: app -->
+    <section class="card">
+      <div class="card-inner">
+        <h2>Convierte tu documento en 3 pasos</h2>
+        <div class="steps">
+          <div class="step">
+            <div class="step-badge">1</div>
             <div>
-              <strong>Entrada (en el documento):</strong>
-              <div class="example-code">
-                Sea $q(x,y,z)=2x^2+2y^2+2z^2+2xy+2xz$.<br />
-                La matriz asociada es
-                $$A=\begin{pmatrix}2 & 1 & 1\\ 1 & 2 & 0\\ 1 & 0 & 2\end{pmatrix}.$$
+              <div class="step-text-title">Elige un archivo .docx o .txt</div>
+              <div class="step-text-body">
+                El documento debe contener fórmulas delimitadas por <code>$...$</code>,
+                <code>$$...$$</code> o <code>\[...\]</code>.
               </div>
             </div>
-            <div style="margin-top: 6px;">
-              <strong>Salida:</strong> el texto se mantiene igual, pero las
-              expresiones anteriores se convierten en ecuaciones de Word
-              perfectamente editables.
+          </div>
+          <div class="step">
+            <div class="step-badge">2</div>
+            <div>
+              <div class="step-text-title">Envía el archivo y espera la conversión</div>
+              <div class="step-text-body">
+                El servidor detecta las fórmulas LaTeX soportadas y las convierte en ecuaciones de
+                Word (OMML) manteniendo el resto del texto.
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-badge">3</div>
+            <div>
+              <div class="step-text-title">Descarga el nuevo .docx</div>
+              <div class="step-text-body">
+                Abre el archivo en Word: verás las fórmulas como ecuaciones nativas, editables y
+                bien alineadas.
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="extra-card">
-          <div class="extra-title">Privacidad y seguridad</div>
-          <p class="extra-text">
-            Los archivos que subes se procesan temporalmente en el servidor
-            para generar el documento convertido y <strong>no se almacenan de forma
-            permanente</strong>. El objetivo es ayudarte a maquetar tus trabajos de
-            matemáticas de forma rápida y cómoda.
-          </p>
-          <p class="extra-text" style="margin-top: 8px;">
-            Para cualquier documento sensible, recuerda que siempre puedes
-            revisar y limpiar el contenido antes de subirlo.
-          </p>
+        <div class="upload-area" id="upload-area">
+          <div class="upload-row">
+            <label class="file-input-label">
+              <span>Seleccionar archivo</span>
+              <input id="file-input" type="file" accept=".docx,.txt" />
+            </label>
+            <span class="small-pill">
+              Admite .docx y .txt · Tamaño máx. ~10&nbsp;MB
+            </span>
+          </div>
+          <div class="file-name" id="file-name">
+            Ningún archivo seleccionado.
+          </div>
+          <div class="upload-row">
+            <button id="convert-btn" class="convert-btn" disabled>
+              <span>Convertir documento</span>
+            </button>
+          </div>
+          <div class="status status--idle" id="status">
+            <span>Selecciona un archivo para empezar.</span>
+          </div>
+          <a id="download-link" href="#" class="download-link hidden">
+            Descargar documento convertido
+          </a>
         </div>
       </div>
+    </section>
 
-      <div class="footer">
-        Herramienta experimental para convertir fórmulas LaTeX a ecuaciones de Word.
+    <!-- Columna derecha: texto y privacidad rápida -->
+    <aside class="right-card" id="como-funciona">
+      <div class="pill-header">
+        <span class="pill-dot"></span>
+        Pensado para estudiantes y docentes
       </div>
-    </div>
+      <h3 class="right-title">Ahorra tiempo preparando tus apuntes</h3>
+      <p class="right-text">
+        Esta herramienta está pensada para quien usa LaTeX (o IA que responde en LaTeX) pero
+        necesita entregar ejercicios, apuntes o exámenes en Word, con ecuaciones editables.
+      </p>
+      <p class="right-text">
+        El conversor soporta un subconjunto de LaTeX orientado a formas matriciales y
+        expresiones habituales en Álgebra Lineal:
+      </p>
+      <ul class="right-list">
+        <li>Potencias y subíndices: <code>x^2</code>, <code>a_{11}</code>, etc.</li>
+        <li>Productos y determinantes: <code>\cdot</code>, <code>\det(A)</code>.</li>
+        <li>Matrices con <code>\left(\matrix{...}\right)</code> o <code>\left[\matrix{...}\right]</code>.</li>
+        <li>Filas separadas por <code>\\</code> y columnas por <code>&amp;</code>.</li>
+      </ul>
+      <p class="right-text">
+        No pretende sustituir a LaTeX completo, pero sí cubrir los casos más frecuentes en
+        ejercicios y soluciones explicadas.
+      </p>
+      <p class="right-text">
+        Para más detalles sobre el tratamiento de archivos y datos, consulta la
+        <a href="#privacidad" class="privacy-link">Política de privacidad</a>.
+      </p>
+    </aside>
+  </main>
+
+  <!-- Bloque de privacidad/resumen legal -->
+  <section class="privacy-section" id="privacidad">
+    <h3>Política de privacidad (resumen)</h3>
+    <p>
+      Este texto es meramente informativo y orientativo. Si necesitas garantías jurídicas
+      completas, consulta con un profesional legal.
+    </p>
+    <p><strong>1. Responsable del sitio</strong></p>
+    <p>
+      El responsable del tratamiento es el titular de este sitio web
+      (<code>ecuacionesaword.com</code>). No se requiere registro de usuario ni se recogen
+      datos personales como nombre o correo electrónico para usar la herramienta.
+    </p>
+    <p><strong>2. Tratamiento de los archivos subidos</strong></p>
+    <ul>
+      <li>Los archivos que subes (.docx o .txt) se envían al servidor únicamente para procesarlos.</li>
+      <li>El documento se analiza para detectar fórmulas LaTeX y generar un nuevo .docx.</li>
+      <li>No se utilizan los contenidos para ningún otro fin distinto a la conversión.</li>
+      <li>No se crean perfiles de usuario en base al contenido de los archivos.</li>
+    </ul>
+    <p style="margin-top:6px;"><strong>3. Google Analytics y cookies</strong></p>
+    <ul>
+      <li>
+        Este sitio utiliza Google Analytics (un servicio de Google LLC) para obtener estadísticas
+        de uso anónimas y mejorar la herramienta.
+      </li>
+      <li>
+        Google Analytics puede utilizar cookies y recoger información como tipo de dispositivo,
+        navegador, páginas visitadas y tiempos de uso. No se intenta identificar personalmente
+        a los visitantes.
+      </li>
+      <li>
+        Puedes limitar o bloquear estas cookies mediante la configuración de tu navegador
+        o usando herramientas específicas de bloqueo.
+      </li>
+    </ul>
+    <p style="margin-top:6px;"><strong>4. Derechos de los usuarios</strong></p>
+    <p>
+      Si lo deseas, puedes contactar con el titular del sitio para solicitar información sobre el
+      tratamiento de datos asociado a Google Analytics o para pedir la eliminación de registros
+      vinculados a tu IP, siempre dentro de lo que permita la propia plataforma de Google.
+    </p>
+    <p style="margin-top:6px;"><strong>5. Cambios en esta política</strong></p>
+    <p>
+      Esta política podrá ajustarse en el futuro para adaptarse a mejoras del servicio o cambios
+      normativos. La versión vigente será siempre la publicada en esta página.
+    </p>
+  </section>
+
+  <footer>
+    <span>© <span id="year"></span> ecuacionesaword.com · LaTeX → Ecuaciones de Word</span>
+    <span>
+      <a href="#privacidad">Política de privacidad</a>
+    </span>
+  </footer>
+</div>
+
+<!-- Aviso sencillo sobre uso de Analytics -->
+<div id="cookie-banner">
+  <div>
+    Este sitio utiliza cookies de terceros (Google Analytics) para medir visitas y mejorar la
+    herramienta. Puedes continuar navegando si estás de acuerdo.
   </div>
+  <div style="display:flex; gap:6px; margin-left:auto;">
+    <button id="cookie-more" type="button" onclick="document.location.hash='#privacidad'">
+      Ver más
+    </button>
+    <button id="cookie-accept" type="button">
+      Aceptar
+    </button>
+  </div>
+</div>
 
-  <script>
-    const fileInput = document.getElementById("fileInput");
-    const fileNameSpan = document.getElementById("fileName");
-    const convertBtn = document.getElementById("convertBtn");
-    const statusEl = document.getElementById("status");
+<script>
+  // Año en el pie de página
+  document.getElementById("year").textContent = new Date().getFullYear();
 
-    let selectedFile = null;
+  // Lógica del conversor
+  const fileInput = document.getElementById("file-input");
+  const fileNameSpan = document.getElementById("file-name");
+  const convertBtn = document.getElementById("convert-btn");
+  const statusDiv = document.getElementById("status");
+  const downloadLink = document.getElementById("download-link");
 
-    function setStatus(message, type) {
-      statusEl.textContent = message || "";
-      statusEl.classList.remove("status-ok", "status-error", "status-info");
-      if (type === "ok") statusEl.classList.add("status-ok");
-      else if (type === "error") statusEl.classList.add("status-error");
-      else statusEl.classList.add("status-info");
+  let lastBlobUrl = null;
+
+  function setStatus(mode, text) {
+    statusDiv.className = "status status--" + mode;
+    statusDiv.innerHTML = "<span>" + text + "</span>";
+  }
+
+  fileInput.addEventListener("change", () => {
+    downloadLink.classList.add("hidden");
+    if (lastBlobUrl) {
+      URL.revokeObjectURL(lastBlobUrl);
+      lastBlobUrl = null;
     }
 
-    fileInput.addEventListener("change", () => {
-      const files = fileInput.files;
-      if (!files || files.length === 0) {
-        selectedFile = null;
-        fileNameSpan.textContent = "Ningún archivo seleccionado";
-        setStatus("Esperando archivo…", "info");
-        return;
-      }
-      selectedFile = files[0];
-      fileNameSpan.textContent = selectedFile.name;
-      setStatus("Archivo listo para convertir.", "info");
-    });
-
-    convertBtn.addEventListener("click", async () => {
-      if (!selectedFile) {
-        setStatus("Primero selecciona un archivo .txt o .docx.", "error");
-        return;
-      }
-
+    const file = fileInput.files[0];
+    if (!file) {
+      fileNameSpan.textContent = "Ningún archivo seleccionado.";
       convertBtn.disabled = true;
-      setStatus("Enviando archivo y convirtiendo…", "info");
+      setStatus("idle", "Selecciona un archivo para empezar.");
+      return;
+    }
 
+    fileNameSpan.textContent = "Archivo seleccionado: " + file.name;
+    convertBtn.disabled = false;
+    setStatus("idle", "Pulsa «Convertir documento» para iniciar la conversión.");
+  });
+
+  convertBtn.addEventListener("click", async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    convertBtn.disabled = true;
+    setStatus("working", "Convirtiendo… esto puede tardar unos segundos.");
+    downloadLink.classList.add("hidden");
+
+    try {
       const formData = new FormData();
-      formData.append("file", selectedFile);
+      formData.append("file", file);
 
-      try {
-        const response = await fetch("/convert", {
-          method: "POST",
-          body: formData,
-        });
+      const response = await fetch("/convert", {
+        method: "POST",
+        body: formData
+      });
 
-        if (!response.ok) {
-          let detail = "";
-          try {
-            const data = await response.json();
-            detail = data.detail || "";
-          } catch (e) {
-            /* ignoramos si no hay JSON */
-          }
-          setStatus(
-            "Error durante la conversión" +
-              (detail ? `: ${detail}` : ". Revisa el archivo de entrada."),
-            "error"
-          );
-          convertBtn.disabled = false;
-          return;
-        }
-
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-
-        const originalName = selectedFile.name.replace(/\.(txt|docx)$/i, "");
-        a.href = url;
-        a.download = originalName + "_convertido.docx";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(url);
-
-        setStatus(
-          "Conversión completada. Se ha descargado el documento convertido.",
-          "ok"
-        );
-      } catch (err) {
-        console.error(err);
-        setStatus("Error al conectar con el servidor.", "error");
-      } finally {
-        convertBtn.disabled = false;
+      if (!response.ok) {
+        throw new Error("Error HTTP " + response.status);
       }
-    });
-  </script>
+
+      const blob = await response.blob();
+      if (lastBlobUrl) URL.revokeObjectURL(lastBlobUrl);
+      lastBlobUrl = URL.createObjectURL(blob);
+
+      downloadLink.href = lastBlobUrl;
+      downloadLink.download = "documento_convertido.docx";
+      downloadLink.classList.remove("hidden");
+
+      setStatus("idle", "Conversión completada. Descarga el documento convertido.");
+    } catch (err) {
+      console.error(err);
+      setStatus("error",
+        "Error durante la conversión. Inténtalo de nuevo más tarde.");
+    } finally {
+      convertBtn.disabled = !fileInput.files[0];
+    }
+  });
+
+  // Aviso de cookies / Analytics sencillo
+  (function () {
+    const banner = document.getElementById("cookie-banner");
+    const acceptBtn = document.getElementById("cookie-accept");
+    const STORAGE_KEY = "ew_analytics_ok";
+
+    try {
+      if (!localStorage.getItem(STORAGE_KEY)) {
+        banner.style.display = "flex";
+      }
+      acceptBtn.addEventListener("click", () => {
+        localStorage.setItem(STORAGE_KEY, "1");
+        banner.style.display = "none";
+      });
+    } catch (e) {
+      // Si localStorage no está disponible, simplemente mostramos el banner sin guardar nada
+      banner.style.display = "flex";
+    }
+  })();
+</script>
 </body>
 </html>
