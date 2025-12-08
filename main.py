@@ -1,245 +1,647 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, HTMLResponse, PlainTextResponse
-from docx import Document
-import math2docx
-import io
-import os
-import re
-from typing import List, Tuple
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ecuaciones a Word: de LaTeX/ChatGPT a ecuaciones nativas de Word (.docx)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Convierte documentos .docx o .txt con fórmulas LaTeX (por ejemplo generadas por ChatGPT, Gemini o Copilot) en ecuaciones nativas de Word (OMML) listas para editar y entregar.">
+  <meta name="keywords" content="latex a word, pasar ecuaciones de ChatGPT a Word, convertir soluciones de ChatGPT a Word, convertir latex a ecuaciones de Word, ecuaciones nativas Word, ia matemáticas word ecuaciones">
+  <link rel="canonical" href="https://www.ecuacionesaword.com/">
 
-# ================================================================
-# Configuración básica de FastAPI
-# ================================================================
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Ecuaciones a Word: de LaTeX/ChatGPT a ecuaciones nativas de Word">
+  <meta property="og:description" content="Pega tus fórmulas en LaTeX (ChatGPT, IA, etc.) y descárgalas como ecuaciones nativas de Word en un .docx listo para entregar.">
+  <meta property="og:url" content="https://www.ecuacionesaword.com/">
+  <meta property="og:site_name" content="Ecuaciones a Word">
 
-app = FastAPI(
-    title="Ecuaciones a Word",
-    description=(
-        "Convierte documentos .txt/.docx con fórmulas en LaTeX "
-        "en ecuaciones nativas de Word (OMML) dentro de un .docx."
-    ),
-)
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Ecuaciones a Word">
+  <meta name="twitter:description" content="De LaTeX/ChatGPT a ecuaciones nativas de Word en 3 clics.">
 
-# CORS para poder llamar desde cualquier origen (útil si sirves frontend aparte)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-Segment = Tuple[str, str]  # (tipo, contenido) tipo ∈ {"text", "inline", "display"}
-
-# ================================================================
-# Utilidades de parsing LaTeX
-# ================================================================
-
-LATEX_PATTERN = re.compile(
-    r"(\$\$.*?\$\$|\$.*?\$|\\\[.*?\\\])",
-    re.DOTALL,
-)
-
-
-def split_latex_segments(text: str) -> List[Segment]:
-    """
-    Divide un texto en segmentos:
-    - ("text", texto normal)
-    - ("inline", contenido LaTeX entre $...$)
-    - ("display", contenido LaTeX entre $$...$$ o \[...\]
-    """
-    segments: List[Segment] = []
-    pos = 0
-
-    for match in LATEX_PATTERN.finditer(text):
-        start, end = match.span()
-        if start > pos:
-            segments.append(("text", text[pos:start]))
-
-        raw = match.group(0)
-        if raw.startswith("$$"):
-            latex = raw[2:-2].strip()
-            segments.append(("display", latex))
-        elif raw.startswith("\\["):
-            latex = raw[2:-2].strip()
-            segments.append(("display", latex))
-        else:
-            # $...$
-            latex = raw[1:-1].strip()
-            segments.append(("inline", latex))
-
-        pos = end
-
-    if pos < len(text):
-        segments.append(("text", text[pos:]))
-
-    return segments
-
-
-# ================================================================
-# Funciones de conversión a DOCX
-# ================================================================
-
-
-def build_docx_from_text(text: str) -> Document:
-    """
-    Crea un Document de python-docx a partir de texto plano
-    con LaTeX delimitado por $...$, $$...$$ o \[...\].
-    """
-    document = Document()
-
-    lines = text.splitlines() or [text]
-    for line in lines:
-        segments = split_latex_segments(line)
-        paragraph = document.add_paragraph()
-        for kind, content in segments:
-            if not content:
-                continue
-            if kind == "text":
-                paragraph.add_run(content)
-            else:
-                # Para fórmulas de bloque, podemos forzar un párrafo nuevo
-                if kind == "display" and paragraph.text.strip():
-                    paragraph = document.add_paragraph()
-                math2docx.add_math(paragraph, content)
-
-    return document
-
-
-def build_docx_from_docx_bytes(data: bytes) -> Document:
-    """
-    Lee un .docx de entrada, detecta LaTeX en el texto y crea
-    un nuevo Document con ecuaciones nativas.
-    """
-    source = Document(io.BytesIO(data))
-    document = Document()
-
-    if not source.paragraphs:
-        # Documento vacío: devolvemos documento vacío
-        return document
-
-    for para in source.paragraphs:
-        text = para.text or ""
-        # Si no hay patrones LaTeX, copiamos el párrafo tal cual
-        if not LATEX_PATTERN.search(text):
-            document.add_paragraph(text)
-            continue
-
-        segments = split_latex_segments(text)
-        paragraph = document.add_paragraph()
-        for kind, content in segments:
-            if not content:
-                continue
-            if kind == "text":
-                paragraph.add_run(content)
-            else:
-                if kind == "display" and paragraph.text.strip():
-                    paragraph = document.add_paragraph()
-                math2docx.add_math(paragraph, content)
-
-    return document
-
-
-# ================================================================
-# Rutas auxiliares (HTML, robots, sitemap, health)
-# ================================================================
-
-
-def _read_text_file(path: str) -> str:
-    if not os.path.exists(path):
-        raise HTTPException(status_code=500, detail=f"Fichero {path} no encontrado en el servidor.")
-    with open(path, "r", encoding="utf-8") as f:
-        return f.read()
-
-
-@app.get("/", response_class=HTMLResponse)
-async def index() -> HTMLResponse:
-    """Página principal con el formulario de subida."""
-    html = _read_text_file("index.html")
-    return HTMLResponse(html)
-
-
-@app.get("/blog", response_class=HTMLResponse)
-async def blog() -> HTMLResponse:
-    """Primer artículo del blog."""
-    html = _read_text_file("blog.html")
-    return HTMLResponse(html)
-
-
-@app.get("/blog2", response_class=HTMLResponse)
-async def blog2() -> HTMLResponse:
-    """Segundo artículo del blog."""
-    html = _read_text_file("blog2.html")
-    return HTMLResponse(html)
-
-
-@app.get("/robots.txt", response_class=PlainTextResponse)
-async def robots_txt() -> PlainTextResponse:
-    text = _read_text_file("robots.txt")
-    return PlainTextResponse(text)
-
-
-@app.get("/sitemap.xml", response_class=PlainTextResponse)
-async def sitemap_xml() -> PlainTextResponse:
-    xml = _read_text_file("sitemap.xml")
-    return PlainTextResponse(xml, media_type="application/xml")
-
-
-@app.get("/health")
-async def health() -> dict:
-    return {"status": "ok"}
-
-
-# ================================================================
-# Endpoint principal de conversión
-# ================================================================
-
-
-@app.post("/convert")
-async def convert_document(file: UploadFile = File(...)) -> StreamingResponse:
-    """
-    Recibe un .txt o .docx con fórmulas LaTeX y devuelve
-    un .docx con ecuaciones nativas de Word.
-    """
-    filename = file.filename or "documento"
-    _, ext = os.path.splitext(filename)
-    ext = ext.lower()
-
-    if ext not in {".txt", ".docx"}:
-        raise HTTPException(
-            status_code=400,
-            detail="Solo se aceptan archivos .txt o .docx.",
-        )
-
-    data = await file.read()
-    if not data:
-        raise HTTPException(status_code=400, detail="El archivo está vacío.")
-
-    try:
-        if ext == ".txt":
-            text = data.decode("utf-8", errors="ignore")
-            output_doc = build_docx_from_text(text)
-        else:
-            output_doc = build_docx_from_docx_bytes(data)
-    except Exception as exc:  # noqa: BLE001
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error al convertir el documento: {exc}",
-        ) from exc
-
-    buffer = io.BytesIO()
-    output_doc.save(buffer)
-    buffer.seek(0)
-
-    base_name = re.sub(r"\.(txt|docx)$", "", filename, flags=re.IGNORECASE)
-    output_filename = f"{base_name or 'documento'}_ecuaciones.docx"
-
-    headers = {
-        "Content-Disposition": f'attachment; filename="{output_filename}"'
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #0f172a;
+      --bg-soft: #111827;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.15);
+      --border-soft: rgba(148, 163, 184, 0.4);
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --radius-lg: 18px;
+      --radius-xl: 24px;
+      --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.7);
+      --shadow-subtle: 0 10px 30px rgba(15, 23, 42, 0.5);
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    return StreamingResponse(
-        buffer,
-        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        headers=headers,
-    )
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font-sans);
+      background: radial-gradient(circle at top left, #1d283a, #020617 55%);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 1100px;
+      padding: 1.5rem 1.5rem 3rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 30% 0, #38bdf8, #0ea5e9 35%, #020617 70%);
+      box-shadow: 0 0 40px rgba(56, 189, 248, 0.5);
+      font-size: 1.35rem;
+    }
+
+    .brand-title {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+
+    .brand-title span:first-child {
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+    }
+    .brand-title span:last-child {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    nav {
+      display: flex;
+      gap: 0.9rem;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+
+    nav a {
+      color: var(--text-muted);
+      padding: 0.3rem 0.65rem;
+      border-radius: 999px;
+      border: 1px solid transparent;
+    }
+    nav a:hover {
+      border-color: var(--border-soft);
+      color: var(--text-main);
+      text-decoration: none;
+    }
+
+    .lang-toggle {
+      padding: 0.25rem 0.5rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      font-size: 0.75rem;
+      cursor: pointer;
+      background: rgba(15, 23, 42, 0.8);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      color: var(--text-muted);
+    }
+
+    .lang-toggle span {
+      padding: 0.1rem 0.35rem;
+      border-radius: 999px;
+    }
+
+    body.lang-es .lang-toggle .es,
+    body.lang-en .lang-toggle .en {
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.1fr);
+      gap: 1.75rem;
+    }
+
+    @media (max-width: 900px) {
+      main {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .hero {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      width: fit-content;
+    }
+
+    .pill span.badge {
+      background: var(--accent-soft);
+      color: var(--accent);
+      padding: 0.05rem 0.4rem;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.7rem;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.9rem, 3vw, 2.3rem);
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      margin: 0;
+      font-size: 0.98rem;
+      color: var(--text-muted);
+      max-width: 34rem;
+    }
+
+    .hero-list {
+      margin: 0.5rem 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 0.35rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .hero-list li::before {
+      content: "•";
+      margin-right: 0.4rem;
+      color: var(--accent);
+    }
+
+    .hero-metas {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 0.6rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .hero-metas span {
+      padding: 0.3rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      background: rgba(15, 23, 42, 0.7);
+    }
+
+    .card {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.98));
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      padding: 1.35rem 1.3rem 1.5rem;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-header h2 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+
+    .status-pill {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      background: rgba(22, 163, 74, 0.18);
+      border: 1px solid rgba(34, 197, 94, 0.7);
+      color: #bbf7d0;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .file-input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    input[type="file"] {
+      font-size: 0.85rem;
+      color: var(--text-main);
+      max-width: 100%;
+    }
+
+    .hint {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      margin-top: 0.4rem;
+    }
+
+    button.primary {
+      border: none;
+      border-radius: 999px;
+      padding: 0.55rem 1.2rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: radial-gradient(circle at 20% -20%, #38bdf8, #0ea5e9 45%, #0369a1);
+      color: white;
+      box-shadow: var(--shadow-subtle);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    button.primary:hover {
+      filter: brightness(1.05);
+    }
+
+    .status-text {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .secondary-info {
+      margin-top: 0.8rem;
+      padding-top: 0.7rem;
+      border-top: 1px dashed rgba(148, 163, 184, 0.5);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .step-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-top: 0.4rem;
+    }
+
+    .step-badges span {
+      font-size: 0.75rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      padding: 0.2rem 0.5rem;
+      background: rgba(15, 23, 42, 0.8);
+    }
+
+    .info-grid {
+      margin-top: 1.75rem;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1.25rem;
+      font-size: 0.9rem;
+    }
+
+    .info-grid section {
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(15, 23, 42, 0.9);
+      padding: 1rem 1.1rem;
+    }
+
+    .info-grid h2 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
+    }
+
+    .info-grid h3 {
+      margin: 0.7rem 0 0.2rem;
+      font-size: 0.9rem;
+    }
+
+    .info-grid p {
+      margin: 0.2rem 0;
+    }
+
+    .info-grid ul {
+      margin: 0.2rem 0 0.4rem 1.1rem;
+      padding: 0;
+    }
+
+    .info-grid li {
+      margin-bottom: 0.15rem;
+    }
+
+    .badge-inline {
+      display: inline-block;
+      padding: 0.12rem 0.45rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      font-size: 0.75rem;
+      margin-left: 0.25rem;
+      color: var(--text-muted);
+    }
+
+    .faq-list dt {
+      font-weight: 600;
+      margin-top: 0.6rem;
+    }
+
+    .faq-list dd {
+      margin: 0.15rem 0 0.3rem 0;
+      color: var(--text-muted);
+    }
+
+    .blog-links ul {
+      margin: 0.2rem 0 0.4rem 1.1rem;
+      padding: 0;
+    }
+
+    footer {
+      margin-top: 2rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      border-top: 1px solid rgba(30, 64, 175, 0.7);
+      padding-top: 0.9rem;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body class="lang-es">
+  <div class="page">
+    <header>
+      <div class="brand">
+        <div class="logo">∑</div>
+        <div class="brand-title">
+          <span>Ecuaciones a Word</span>
+          <span>De LaTeX / IA a Word en 3 clics</span>
+        </div>
+      </div>
+      <nav>
+        <a href="#como-funciona">Cómo funciona</a>
+        <a href="#para-quien-es">Para quién</a>
+        <a href="#faq">FAQ</a>
+        <a href="#blog">Blog</a>
+        <button type="button" class="lang-toggle" id="langToggle">
+          <span class="es">ES</span>
+          <span class="en">EN</span>
+        </button>
+      </nav>
+    </header>
+
+    <main>
+      <div class="hero">
+        <div class="pill">
+          <span class="badge">Nuevo</span>
+          <span>Convierte LaTeX de ChatGPT a Word con ecuaciones nativas</span>
+        </div>
+        <h1>
+          De LaTeX / ChatGPT a ecuaciones nativas de Word listas para entregar.
+        </h1>
+        <p class="subtitle">
+          Sube un documento <strong>.docx</strong> o <strong>.txt</strong> con fórmulas en LaTeX
+          (por ejemplo generadas por <strong>ChatGPT, Gemini o Copilot</strong>)
+          y descarga un <strong>.docx</strong> con ecuaciones nativas de Word (<strong>OMML</strong>).
+        </p>
+        <ul class="hero-list">
+          <li>Ideal para <strong>ejercicios de mates</strong>, física o ingeniería hechos con IA.</li>
+          <li>Perfecto para <strong>TFG, TFM, prácticas y apuntes</strong> que se entregan en Word.</li>
+          <li>Sin instalar nada: todo se hace desde el navegador.</li>
+        </ul>
+        <div class="hero-metas">
+          <span>Soporta <code>$...$</code>, <code>$$...$$</code> y <code>\[...\]</code></span>
+          <span>Potencias · subíndices · fracciones · matrices · determinantes…</span>
+        </div>
+      </div>
+
+      <aside class="card">
+        <div class="card-header">
+          <h2>Conversor LaTeX → ecuaciones de Word</h2>
+          <span class="status-pill" id="statusText">Estado: listo para convertir</span>
+        </div>
+
+        <form action="/convert" method="post" enctype="multipart/form-data">
+          <div class="field">
+            <label for="file">
+              1. Elige un archivo <strong>.docx</strong> o <strong>.txt</strong> con fórmulas en LaTeX
+            </label>
+            <div class="file-input-wrapper">
+              <input type="file" id="file" name="file" accept=".txt,.docx" required>
+            </div>
+            <p class="hint">
+              Recomendado: copia la respuesta de la IA con fórmulas en LaTeX a un documento vacío,
+              guárdalo como <code>.docx</code> o <code>.txt</code> y súbelo aquí.
+            </p>
+          </div>
+
+          <div class="field">
+            <label>
+              2. Pulsa en “Convertir documento” y espera la descarga del nuevo <strong>.docx</strong>.
+            </label>
+            <div class="actions">
+              <button type="submit" class="primary">
+                Convertir documento
+                <span>⬇</span>
+              </button>
+              <div class="status-text">
+                El navegador descargará un archivo <strong>_convertido.docx</strong> con las fórmulas como
+                ecuaciones de Word.
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <div class="secondary-info">
+          <div><strong>Conversión directa a Word:</strong> nada de imágenes ni capturas; solo ecuaciones nativas.</div>
+          <div class="step-badges">
+            <span>1. IA → LaTeX</span>
+            <span>2. LaTeX → archivo .txt/.docx</span>
+            <span>3. Archivo → Ecuaciones a Word</span>
+            <span>4. Descargas Word con ecuaciones</span>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <div class="info-grid">
+      <section id="como-funciona">
+        <h2>¿Cómo funciona Ecuaciones a Word?</h2>
+        <p>
+          Microsoft Word no entiende directamente el código LaTeX que generan muchas IA. Esta herramienta actúa como
+          <strong>puente</strong>: detecta las fórmulas delimitadas por <code>$...$</code>, <code>$$...$$</code> o <code>\[...\]</code>
+          y las convierte a ecuaciones en <strong>formato OMML</strong>, el formato interno de Word.
+        </p>
+        <h3>Paso a paso</h3>
+        <ol>
+          <li>Pide a la IA que te dé las fórmulas en <strong>LaTeX</strong>.</li>
+          <li>Copia la respuesta a un <strong>.docx</strong> o <strong>.txt</strong> vacío.</li>
+          <li>Sube el archivo a <strong>Ecuaciones a Word</strong>.</li>
+          <li>Descarga un <strong>.docx</strong> con las ecuaciones ya como objetos de Word.</li>
+        </ol>
+        <p>
+          Así evitas reescribir las fórmulas a mano en el editor de ecuaciones de Word y reduces errores.
+        </p>
+      </section>
+
+      <section id="para-quien-es">
+        <h2>¿Para quién es esta herramienta?</h2>
+
+        <h3>Estudiantes de universidad y bachillerato</h3>
+        <ul>
+          <li>Usas <strong>ChatGPT</strong> u otra IA para resolver ejercicios y las soluciones vienen en LaTeX.</li>
+          <li>Tu profesor te pide el trabajo en <strong>Word</strong> con ecuaciones editables.</li>
+          <li>Quieres centrarte en las mates, no en pelearte con el formato.</li>
+        </ul>
+
+        <h3>Profesores y docentes</h3>
+        <ul>
+          <li>Preparas enunciados y soluciones en LaTeX o con IA.</li>
+          <li>Compartes material en Word con estudiantes o compañeros.</li>
+          <li>Necesitas un flujo rápido <strong>LaTeX → Word</strong> sin instalar nada.</li>
+        </ul>
+
+        <h3>TFG, TFM, prácticas y apuntes</h3>
+        <ul>
+          <li>Tu universidad te exige entregar el trabajo en <strong>.docx</strong>.</li>
+          <li>Quieres aprovechar LaTeX para las partes matemáticas y luego integrarlo todo en Word.</li>
+        </ul>
+      </section>
+
+      <section id="faq">
+        <h2>Preguntas frecuentes</h2>
+        <dl class="faq-list">
+          <dt>¿Qué tipos de archivos acepta la herramienta?</dt>
+          <dd>Acepta documentos <strong>.docx</strong> y archivos <strong>.txt</strong> con texto y fórmulas LaTeX.</dd>
+
+          <dt>¿Sirve también para fórmulas generadas por ChatGPT u otra IA?</dt>
+          <dd>Sí. De hecho, está especialmente pensada para eso: copias la respuesta de la IA, la pegas en un documento y la conviertes.</dd>
+
+          <dt>¿Qué tipo de LaTeX soporta?</dt>
+          <dd>
+            Está optimizada para un <strong>subconjunto sencillo de LaTeX matemático</strong> típico de ejercicios
+            de mates, física e ingeniería: potencias, subíndices, fracciones, matrices, determinantes, etc.
+          </dd>
+
+          <dt>¿Mis documentos se guardan en algún sitio?</dt>
+          <dd>
+            No. El archivo se procesa en el servidor únicamente para generar el <strong>.docx convertido</strong> y
+            después se descarta.
+          </dd>
+        </dl>
+      </section>
+
+      <section id="blog" class="blog-links">
+        <h2>Guías y recursos sobre IA, LaTeX y Word</h2>
+        <p>
+          Si quieres aprender trucos para combinar LaTeX, IA y Word, puedes leer estas entradas del blog:
+        </p>
+        <ul>
+          <li><a href="/blog">Cómo pasar ecuaciones de ChatGPT a Word con ecuaciones nativas (guía paso a paso)</a></li>
+          <li><a href="/blog2">De LaTeX a Word para tu TFG/TFM sin perder las fórmulas</a></li>
+        </ul>
+        <p class="hint">
+          Consejo rápido: en tu prompt a la IA, añade algo como
+          <span class="badge-inline">“Devuélveme las fórmulas en LaTeX usando $ y $$.”</span>
+          para que la conversión sea más limpia.
+        </p>
+      </section>
+    </div>
+
+    <footer>
+      <div>© Ecuaciones a Word. Hecho por y para estudiantes que usan IA y Word.</div>
+      <div class="footer-links">
+        <span>Legal: esta herramienta solo procesa el archivo que subes para generar el documento convertido.</span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Pequeño script para el selector de idioma (solo cambia clase, por si en el futuro
+    // quieres mostrar textos específicos ES/EN con CSS).
+    const toggle = document.getElementById("langToggle");
+    if (toggle) {
+      toggle.addEventListener("click", () => {
+        const body = document.body;
+        if (body.classList.contains("lang-es")) {
+          body.classList.remove("lang-es");
+          body.classList.add("lang-en");
+        } else {
+          body.classList.remove("lang-en");
+          body.classList.add("lang-es");
+        }
+      });
+    }
+  </script>
+</body>
+</html>
