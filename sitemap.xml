@@ -1,46 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset
-    xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
->
-  <!-- Página principal -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.ecuacionesaword.com/</loc>
     <lastmod>2025-12-08</lastmod>
     <priority>1.0</priority>
   </url>
-
-  <!-- Página de listado de blog (blog.html o /blog) -->
   <url>
     <loc>https://www.ecuacionesaword.com/blog</loc>
     <lastmod>2025-12-08</lastmod>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
-
-  <!-- Post 1: ChatGPT -> Word -->
-  <url>
-    <loc>https://www.ecuacionesaword.com/blog/pasar-ecuaciones-chatgpt-word</loc>
-    <lastmod>2025-12-08</lastmod>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- Post 2: LaTeX -> Word -->
-  <url>
-    <loc>https://www.ecuacionesaword.com/blog/convertir-documento-latex-word</loc>
-    <lastmod>2025-12-08</lastmod>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- Post 3: IA + Ecuaciones a Word -->
-  <url>
-    <loc>https://www.ecuacionesaword.com/blog/ia-chatgpt-a-word-ejercicios</loc>
-    <lastmod>2025-12-08</lastmod>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- Página antigua /blog2 (si la sigues usando) -->
   <url>
     <loc>https://www.ecuacionesaword.com/blog2</loc>
     <lastmod>2025-12-08</lastmod>
-    <priority>0.4</priority>
+    <priority>0.5</priority>
   </url>
 </urlset>
