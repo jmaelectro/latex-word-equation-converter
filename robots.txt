@@ -1,7 +1,7 @@
 User-agent: *
 Allow: /
 
-# Opcional: no tiene sentido que los bots prueben estos endpoints de API
+# No tiene sentido que los bots prueben estos endpoints de API
 Disallow: /convert
 Disallow: /health
 
