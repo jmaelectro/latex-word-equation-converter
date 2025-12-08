@@ -1,58 +1,53 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
+  <meta charset="UTF-8">
+  <title>Ecuaciones a Word: de LaTeX/ChatGPT a ecuaciones nativas de Word (.docx)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Convierte documentos .docx o .txt con fórmulas LaTeX (por ejemplo generadas por ChatGPT, Gemini o Copilot) en ecuaciones nativas de Word (OMML) listas para editar y entregar.">
+  <meta name="keywords" content="latex a word, pasar ecuaciones de ChatGPT a Word, convertir soluciones de ChatGPT a Word, convertir latex a ecuaciones de Word, ecuaciones nativas Word, ia matemáticas word ecuaciones">
+  <link rel="canonical" href="https://www.ecuacionesaword.com/">
 
-  <title>
-    Convertir fórmulas LaTeX (también desde IA como ChatGPT) a ecuaciones de Word (.docx) online | Ecuaciones a Word
-  </title>
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Ecuaciones a Word: de LaTeX/ChatGPT a ecuaciones nativas de Word">
+  <meta property="og:description" content="Pega tus fórmulas en LaTeX (ChatGPT, IA, etc.) y descárgalas como ecuaciones nativas de Word en un .docx listo para entregar.">
+  <meta property="og:url" content="https://www.ecuacionesaword.com/">
+  <meta property="og:site_name" content="Ecuaciones a Word">
 
-  <meta
-    name="description"
-    content="Convierte documentos .docx o .txt con fórmulas LaTeX, incluso generadas por ChatGPT u otras IA, en ecuaciones nativas de Word (OMML). Ideal para pasar ejercicios de matemáticas desde IA a Word de forma rápida y automática."
-  />
-
-  <meta
-    name="keywords"
-    content="latex a word, ecuaciones word, pasar latex a word, chatgpt a word, convertir latex docx, ecuaciones omml, matemáticas word"
-  />
-
-  <link rel="canonical" href="https://www.ecuacionesaword.com/" />
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Ecuaciones a Word">
+  <meta name="twitter:description" content="De LaTeX/ChatGPT a ecuaciones nativas de Word en 3 clics.">
 
   <style>
     :root {
-      --bg: #050816;
-      --bg-soft: #0b1020;
-      --accent: #22c55e;
-      --accent-soft: rgba(34, 197, 94, 0.1);
-      --accent-strong: #16a34a;
-      --fg: #f9fafb;
-      --muted: #9ca3af;
-      --border: #1f2933;
-      --error: #f97373;
-      --card-radius: 18px;
-      --transition: 0.2s ease-in-out;
-      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-        sans-serif;
+      color-scheme: light dark;
+      --bg: #0f172a;
+      --bg-soft: #111827;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.15);
+      --border-soft: rgba(148, 163, 184, 0.4);
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --radius-lg: 18px;
+      --radius-xl: 24px;
+      --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.7);
+      --shadow-subtle: 0 10px 30px rgba(15, 23, 42, 0.5);
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     * {
       box-sizing: border-box;
-      margin: 0;
-      padding: 0;
     }
 
     body {
-      font-family: var(--font);
-      background: radial-gradient(circle at top, #111827, #020617 60%);
-      color: var(--fg);
+      margin: 0;
       min-height: 100vh;
+      font-family: var(--font-sans);
+      background: radial-gradient(circle at top left, #1d283a, #020617 55%);
+      color: var(--text-main);
       display: flex;
       flex-direction: column;
+      align-items: center;
     }
 
     a {
@@ -64,1022 +59,589 @@
     }
 
     .page {
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 24px 16px 40px;
       width: 100%;
+      max-width: 1100px;
+      padding: 1.5rem 1.5rem 3rem;
     }
 
     header {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 28px;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.75rem;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 0.75rem;
     }
 
-    .brand-logo {
-      width: 32px;
-      height: 32px;
-      border-radius: 10px;
-      background: radial-gradient(circle at 30% 0, #22c55e 0, #22d3ee 45%, #111827 100%);
+    .logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
-      font-size: 18px;
-      color: #020617;
-    }
-
-    .brand-text {
-      display: flex;
-      flex-direction: column;
+      background: radial-gradient(circle at 30% 0, #38bdf8, #0ea5e9 35%, #020617 70%);
+      box-shadow: 0 0 40px rgba(56, 189, 248, 0.5);
+      font-size: 1.35rem;
     }
 
     .brand-title {
-      font-weight: 650;
-      letter-spacing: 0.03em;
-      font-size: 17px;
-    }
-
-    .brand-sub {
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .nav-right {
       display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+
+    .brand-title span:first-child {
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+    }
+    .brand-title span:last-child {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    nav {
+      display: flex;
+      gap: 0.9rem;
       align-items: center;
-      gap: 10px;
+      font-size: 0.85rem;
     }
 
-    .lang-switch {
-      position: relative;
-    }
-
-    .lang-select {
-      background: var(--bg-soft);
+    nav a {
+      color: var(--text-muted);
+      padding: 0.3rem 0.65rem;
       border-radius: 999px;
-      padding: 6px 10px;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      font-size: 13px;
-      cursor: pointer;
+      border: 1px solid transparent;
+    }
+    nav a:hover {
+      border-color: var(--border-soft);
+      color: var(--text-main);
+      text-decoration: none;
     }
 
-    .lang-select:hover {
-      border-color: var(--accent);
+    .lang-toggle {
+      padding: 0.25rem 0.5rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      font-size: 0.75rem;
+      cursor: pointer;
+      background: rgba(15, 23, 42, 0.8);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      color: var(--text-muted);
+    }
+
+    .lang-toggle span {
+      padding: 0.1rem 0.35rem;
+      border-radius: 999px;
+    }
+
+    body.lang-es .lang-toggle .es,
+    body.lang-en .lang-toggle .en {
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 600;
     }
 
     main {
-      display: flex;
-      flex-direction: column;
-      gap: 28px;
-    }
-
-    .hero-card {
-      background: linear-gradient(135deg, #020617, #020617 55%, #111827 100%);
-      border-radius: 24px;
-      padding: 24px 22px 26px;
-      border: 1px solid rgba(148, 163, 184, 0.25);
-      box-shadow: 0 30px 80px rgba(15, 23, 42, 0.9);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: rgba(34, 197, 94, 0.1);
-      border: 1px solid rgba(34, 197, 94, 0.35);
-      font-size: 11px;
-      color: var(--accent);
-      margin-bottom: 10px;
-    }
-
-    .hero-title {
-      font-size: 24px;
-      line-height: 1.2;
-      margin-bottom: 8px;
-      font-weight: 700;
-    }
-
-    .hero-subtitle {
-      font-size: 13px;
-      color: var(--muted);
-      max-width: 560px;
-      margin-bottom: 18px;
-    }
-
-    .hero-grid {
       display: grid;
-      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-      gap: 20px;
-      align-items: flex-start;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.1fr);
+      gap: 1.75rem;
     }
 
-    .upload-card {
-      background: rgba(15, 23, 42, 0.85);
-      border-radius: 18px;
-      padding: 16px 16px 14px;
-      border: 1px solid rgba(31, 41, 55, 0.9);
+    @media (max-width: 900px) {
+      main {
+        grid-template-columns: minmax(0, 1fr);
+      }
     }
 
-    .upload-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-
-    .upload-title {
-      font-size: 15px;
-      font-weight: 600;
-    }
-
-    .upload-hint {
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    .upload-body {
+    .hero {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 1.25rem;
     }
 
-    .file-row {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .file-label {
-      flex: 1;
-      border-radius: 999px;
-      border: 1px dashed rgba(148, 163, 184, 0.4);
-      padding: 9px 12px;
-      font-size: 13px;
-      color: var(--muted);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      background: rgba(15, 23, 42, 0.8);
-    }
-
-    .file-label span.filename {
-      color: #e5e7eb;
-      font-weight: 500;
-    }
-
-    .file-input {
-      display: none;
-    }
-
-    .convert-btn {
-      border-radius: 999px;
-      border: none;
-      padding: 10px 18px;
-      font-size: 14px;
-      font-weight: 600;
-      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-      color: #020617;
-      cursor: pointer;
+    .pill {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      gap: 6px;
-      min-width: 160px;
-      box-shadow: 0 10px 30px rgba(34, 197, 94, 0.6);
-      transition: transform var(--transition), box-shadow var(--transition),
-        filter var(--transition);
+      gap: 0.5rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      width: fit-content;
     }
 
-    .convert-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 18px 40px rgba(34, 197, 94, 0.8);
-      filter: brightness(1.05);
+    .pill span.badge {
+      background: var(--accent-soft);
+      color: var(--accent);
+      padding: 0.05rem 0.4rem;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.7rem;
     }
 
-    .convert-btn:disabled {
-      opacity: 0.6;
-      cursor: wait;
-      box-shadow: none;
+    h1 {
+      margin: 0;
+      font-size: clamp(1.9rem, 3vw, 2.3rem);
+      letter-spacing: -0.03em;
     }
 
-    .status-row {
-      font-size: 12px;
-      color: var(--muted);
+    .subtitle {
+      margin: 0;
+      font-size: 0.98rem;
+      color: var(--text-muted);
+      max-width: 34rem;
+    }
+
+    .hero-list {
+      margin: 0.5rem 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 0.35rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .hero-list li::before {
+      content: "•";
+      margin-right: 0.4rem;
+      color: var(--accent);
+    }
+
+    .hero-metas {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 0.6rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .hero-metas span {
+      padding: 0.3rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      background: rgba(15, 23, 42, 0.7);
+    }
+
+    .card {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.98));
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      padding: 1.35rem 1.3rem 1.5rem;
+    }
+
+    .card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 4px;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-header h2 {
+      margin: 0;
+      font-size: 1.1rem;
     }
 
     .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      padding: 4px 8px;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.6rem;
       border-radius: 999px;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(31, 41, 55, 0.9);
-      color: var(--muted);
+      background: rgba(22, 163, 74, 0.18);
+      border: 1px solid rgba(34, 197, 94, 0.7);
+      color: #bbf7d0;
     }
 
-    .status-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      background: var(--accent);
-      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
-    }
-
-    .status-dot.error {
-      background: var(--error);
-      box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.25);
-    }
-
-    .side-card {
-      background: radial-gradient(circle at top left, rgba(34, 197, 94, 0.12), transparent 55%),
-        rgba(15, 23, 42, 0.9);
-      border-radius: 18px;
-      padding: 14px 14px 12px;
-      border: 1px solid rgba(31, 41, 55, 0.9);
-      font-size: 12px;
-      color: var(--muted);
+    form {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
     }
 
-    .side-card h2 {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--fg);
+    label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
     }
 
-    .side-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(31, 41, 55, 0.9);
-      color: var(--muted);
-    }
-
-    .badge-ia {
-      font-size: 11px;
-      color: #22d3ee;
-    }
-
-    .how-section {
-      margin-top: 4px;
-      display: grid;
-      grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.4fr);
-      gap: 18px;
-    }
-
-    .how-card {
-      background: rgba(15, 23, 42, 0.9);
-      border-radius: var(--card-radius);
-      padding: 14px 16px 12px;
-      border: 1px solid rgba(31, 41, 55, 0.9);
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    .how-card h2 {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--fg);
-      margin-bottom: 6px;
-    }
-
-    .how-steps {
-      list-style: none;
+    .field {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      margin-top: 4px;
+      gap: 0.4rem;
     }
 
-    .how-step {
-      display: flex;
-      gap: 8px;
-      align-items: flex-start;
-    }
-
-    .how-step-number {
-      width: 18px;
-      height: 18px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 1);
-      border: 1px solid rgba(55, 65, 81, 1);
+    .file-input-wrapper {
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 2px;
+      gap: 0.75rem;
     }
 
-    .how-step-text {
-      flex: 1;
-      font-size: 12px;
+    input[type="file"] {
+      font-size: 0.85rem;
+      color: var(--text-main);
+      max-width: 100%;
     }
 
-    .mini-note {
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 6px;
+    .hint {
+      font-size: 0.8rem;
+      color: var(--text-muted);
     }
 
-    .faq-privacy-section {
-      display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-      gap: 16px;
-      margin-top: 6px;
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      margin-top: 0.4rem;
     }
 
-    details {
-      background: rgba(15, 23, 42, 0.9);
-      border-radius: var(--card-radius);
-      border: 1px solid rgba(31, 41, 55, 0.9);
-      padding: 10px 14px;
-      font-size: 13px;
-    }
-
-    summary {
+    button.primary {
+      border: none;
+      border-radius: 999px;
+      padding: 0.55rem 1.2rem;
+      font-size: 0.9rem;
+      font-weight: 600;
       cursor: pointer;
-      list-style: none;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      color: var(--fg);
-      font-weight: 500;
-    }
-
-    summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .summary-label {
+      background: radial-gradient(circle at 20% -20%, #38bdf8, #0ea5e9 45%, #0369a1);
+      color: white;
+      box-shadow: var(--shadow-subtle);
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 0.4rem;
     }
 
-    .summary-badge {
-      font-size: 11px;
-      padding: 2px 7px;
+    button.primary:hover {
+      filter: brightness(1.05);
+    }
+
+    .status-text {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .secondary-info {
+      margin-top: 0.8rem;
+      padding-top: 0.7rem;
+      border-top: 1px dashed rgba(148, 163, 184, 0.5);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .step-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-top: 0.4rem;
+    }
+
+    .step-badges span {
+      font-size: 0.75rem;
       border-radius: 999px;
-      background: rgba(15, 23, 42, 1);
-      border: 1px solid rgba(55, 65, 81, 1);
-      color: var(--muted);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      padding: 0.2rem 0.5rem;
+      background: rgba(15, 23, 42, 0.8);
     }
 
-    .chevron {
-      font-size: 12px;
-      color: var(--muted);
+    .info-grid {
+      margin-top: 1.75rem;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1.25rem;
+      font-size: 0.9rem;
     }
 
-    details[open] .chevron {
-      transform: rotate(90deg);
-    }
-
-    details > div {
-      margin-top: 8px;
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.4;
-    }
-
-    .faq-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-top: 4px;
-    }
-
-    .faq-q {
-      font-weight: 500;
-      color: var(--fg);
-      margin-bottom: 2px;
-    }
-
-    .faq-a {
-      margin-left: 4px;
-    }
-
-    .blog-section {
-      margin-top: 10px;
+    .info-grid section {
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(148, 163, 184, 0.35);
       background: rgba(15, 23, 42, 0.9);
-      border-radius: var(--card-radius);
-      border: 1px solid rgba(31, 41, 55, 0.9);
-      padding: 12px 14px 10px;
-      font-size: 13px;
-      color: var(--muted);
+      padding: 1rem 1.1rem;
     }
 
-    .blog-section h2 {
-      font-size: 14px;
-      color: var(--fg);
-      margin-bottom: 6px;
+    .info-grid h2 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
     }
 
-    .blog-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
+    .info-grid h3 {
+      margin: 0.7rem 0 0.2rem;
+      font-size: 0.9rem;
     }
 
-    .blog-list a {
-      font-size: 13px;
+    .info-grid p {
+      margin: 0.2rem 0;
+    }
+
+    .info-grid ul {
+      margin: 0.2rem 0 0.4rem 1.1rem;
+      padding: 0;
+    }
+
+    .info-grid li {
+      margin-bottom: 0.15rem;
+    }
+
+    .badge-inline {
+      display: inline-block;
+      padding: 0.12rem 0.45rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      font-size: 0.75rem;
+      margin-left: 0.25rem;
+      color: var(--text-muted);
+    }
+
+    .faq-list dt {
+      font-weight: 600;
+      margin-top: 0.6rem;
+    }
+
+    .faq-list dd {
+      margin: 0.15rem 0 0.3rem 0;
+      color: var(--text-muted);
+    }
+
+    .blog-links ul {
+      margin: 0.2rem 0 0.4rem 1.1rem;
+      padding: 0;
     }
 
     footer {
-      margin-top: 24px;
-      font-size: 11px;
-      color: var(--muted);
+      margin-top: 2rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
       display: flex;
       justify-content: space-between;
+      gap: 0.75rem;
       flex-wrap: wrap;
-      gap: 8px;
+      border-top: 1px solid rgba(30, 64, 175, 0.7);
+      padding-top: 0.9rem;
     }
 
-    .hidden {
-      display: none !important;
-    }
-
-    @media (max-width: 840px) {
-      .hero-grid {
-        grid-template-columns: minmax(0, 1fr);
-      }
-
-      .how-section {
-        grid-template-columns: minmax(0, 1fr);
-      }
-
-      .faq-privacy-section {
-        grid-template-columns: minmax(0, 1fr);
-      }
-
-      header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .nav-right {
-        align-self: stretch;
-        justify-content: space-between;
-      }
+    .footer-links {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
     }
   </style>
 </head>
-<body>
+<body class="lang-es">
   <div class="page">
     <header>
       <div class="brand">
-        <div class="brand-logo">∑</div>
-        <div class="brand-text">
-          <div class="brand-title">Ecuaciones a Word</div>
-          <div class="brand-sub" data-i18n="brand-sub" data-lang="es">
-            Convierte fórmulas LaTeX (también desde IA) a ecuaciones de Word
-          </div>
-          <div class="brand-sub hidden" data-i18n="brand-sub" data-lang="en">
-            Convert LaTeX formulas (also from AI) into Word equations
-          </div>
+        <div class="logo">∑</div>
+        <div class="brand-title">
+          <span>Ecuaciones a Word</span>
+          <span>De LaTeX / IA a Word en 3 clics</span>
         </div>
       </div>
-
-      <div class="nav-right">
-        <div class="lang-switch">
-          <select id="lang-select" class="lang-select">
-            <option value="es">Español</option>
-            <option value="en">English</option>
-          </select>
-        </div>
-      </div>
+      <nav>
+        <a href="#como-funciona">Cómo funciona</a>
+        <a href="#para-quien-es">Para quién</a>
+        <a href="#faq">FAQ</a>
+        <a href="#blog">Blog</a>
+        <button type="button" class="lang-toggle" id="langToggle">
+          <span class="es">ES</span>
+          <span class="en">EN</span>
+        </button>
+      </nav>
     </header>
 
     <main>
-      <section class="hero-card">
-        <div class="hero-pill">
-          <span>⚡</span>
-          <span data-i18n="hero-pill" data-lang="es">
-            Ideal para pasar ejercicios de matemáticas desde ChatGPT u otras IA a Word
-          </span>
-          <span class="hidden" data-i18n="hero-pill" data-lang="en">
-            Perfect for turning math solutions from ChatGPT or other AIs into Word
-          </span>
+      <div class="hero">
+        <div class="pill">
+          <span class="badge">Nuevo</span>
+          <span>Convierte LaTeX de ChatGPT a Word con ecuaciones nativas</span>
         </div>
-
-        <div class="hero-title" data-i18n="hero-title" data-lang="es">
-          Convierte fórmulas LaTeX a ecuaciones de Word en un solo clic
-        </div>
-        <div class="hero-title hidden" data-i18n="hero-title" data-lang="en">
-          Convert LaTeX formulas into Word equations in one click
-        </div>
-
-        <p class="hero-subtitle" data-i18n="hero-sub" data-lang="es">
-          Sube un documento <strong>.docx</strong> o <strong>.txt</strong> con fórmulas LaTeX
-          (por ejemplo, generadas por ChatGPT, Gemini u otra IA) y obtén un
-          <strong>Word con ecuaciones nativas</strong>, listo para entregar.
+        <h1>
+          De LaTeX / ChatGPT a ecuaciones nativas de Word listas para entregar.
+        </h1>
+        <p class="subtitle">
+          Sube un documento <strong>.docx</strong> o <strong>.txt</strong> con fórmulas en LaTeX
+          (por ejemplo generadas por <strong>ChatGPT, Gemini o Copilot</strong>)
+          y descarga un <strong>.docx</strong> con ecuaciones nativas de Word (<strong>OMML</strong>).
         </p>
-        <p class="hero-subtitle hidden" data-i18n="hero-sub" data-lang="en">
-          Upload a <strong>.docx</strong> or <strong>.txt</strong> file with LaTeX formulas
-          (for example, generated by ChatGPT, Gemini or any other AI) and get a
-          <strong>Word document with native equations</strong>, ready to submit.
-        </p>
-
-        <div class="hero-grid">
-          <!-- FORMULARIO PRINCIPAL -->
-          <div class="upload-card">
-            <div class="upload-header">
-              <div class="upload-title" data-i18n="upload-title" data-lang="es">
-                1. Elige un archivo .docx o .txt
-              </div>
-              <div class="upload-title hidden" data-i18n="upload-title" data-lang="en">
-                1. Choose a .docx or .txt file
-              </div>
-              <div class="upload-hint" data-i18n="upload-hint" data-lang="es">
-                Soporta fórmulas delimitadas por <code>$...$</code>, <code>$$...$$</code> o <code>\[...\]</code>.
-              </div>
-              <div class="upload-hint hidden" data-i18n="upload-hint" data-lang="en">
-                Supports formulas delimited by <code>$...$</code>, <code>$$...$$</code> or <code>\[...\]</code>.
-              </div>
-            </div>
-
-            <form id="upload-form" enctype="multipart/form-data">
-              <div class="upload-body">
-                <div class="file-row">
-                  <label for="file-input" class="file-label">
-                    <span data-i18n="file-label" data-lang="es">
-                      Seleccionar archivo (.docx o .txt)
-                    </span>
-                    <span class="hidden" data-i18n="file-label" data-lang="en">
-                      Select file (.docx or .txt)
-                    </span>
-                    <span class="filename" id="file-name-display"></span>
-                  </label>
-                  <input
-                    id="file-input"
-                    class="file-input"
-                    type="file"
-                    name="file"
-                    accept=".docx,.txt"
-                    required
-                  />
-                  <button class="convert-btn" id="convert-btn" type="submit">
-                    <span data-i18n="convert-btn" data-lang="es">Convertir documento</span>
-                    <span class="hidden" data-i18n="convert-btn" data-lang="en">Convert document</span>
-                    <span>⬇</span>
-                  </button>
-                </div>
-
-                <div class="status-row">
-                  <span id="status-text" data-i18n="status-ready" data-lang="es">
-                    Estado: listo para convertir.
-                  </span>
-                  <span
-                    id="status-text-en"
-                    class="hidden"
-                    data-i18n="status-ready"
-                    data-lang="en"
-                  >
-                    Status: ready to convert.
-                  </span>
-                  <span class="status-pill">
-                    <span class="status-dot" id="status-dot"></span>
-                    <span data-i18n="status-pill" data-lang="es">Conversión directa a Word</span>
-                    <span class="hidden" data-i18n="status-pill" data-lang="en">
-                      Direct conversion to Word
-                    </span>
-                  </span>
-                </div>
-              </div>
-            </form>
-          </div>
-
-          <!-- LADO IA / BENEFICIOS -->
-          <div class="side-card">
-            <h2 data-i18n="side-title" data-lang="es">
-              Pensado para resultados de Inteligencia Artificial
-            </h2>
-            <h2 class="hidden" data-i18n="side-title" data-lang="en">
-              Designed for AI-generated results
-            </h2>
-
-            <p data-i18n="side-text1" data-lang="es">
-              Copia las soluciones que te da ChatGPT, Gemini, Copilot u otra IA
-              (en LaTeX) a un .docx o .txt y deja que la herramienta se encargue
-              de convertirlas en ecuaciones de Word reales.
-            </p>
-            <p class="hidden" data-i18n="side-text1" data-lang="en">
-              Copy the solutions that ChatGPT, Gemini, Copilot or any other AI
-              gives you (in LaTeX) into a .docx or .txt file and let this tool
-              turn them into real Word equations.
-            </p>
-
-            <p data-i18n="side-text2" data-lang="es">
-              Ideal para TFG, TFM, prácticas, hojas de ejercicios o apuntes que
-              tienes que entregar obligatoriamente en Word.
-            </p>
-            <p class="hidden" data-i18n="side-text2" data-lang="en">
-              Perfect for theses, assignments, exercises or notes that must be
-              delivered in Word.
-            </p>
-
-            <div class="side-tag">
-              <span>✅</span>
-              <span data-i18n="side-tag" data-lang="es">
-                Convierte LaTeX generado por IA en ecuaciones editables
-              </span>
-              <span class="hidden" data-i18n="side-tag" data-lang="en">
-                Turns AI-generated LaTeX into editable Word equations
-              </span>
-            </div>
-
-            <div class="badge-ia">
-              IA-friendly · ChatGPT · Gemini · Copilot · etc.
-            </div>
-          </div>
-        </div>
-
-        <!-- CÓMO FUNCIONA + DETALLES -->
-        <section class="how-section">
-          <div class="how-card">
-            <h2 data-i18n="how-title" data-lang="es">Cómo funciona</h2>
-            <h2 class="hidden" data-i18n="how-title" data-lang="en">How it works</h2>
-
-            <ul class="how-steps">
-              <li class="how-step">
-                <div class="how-step-number">1</div>
-                <div class="how-step-text" data-i18n="how-step1" data-lang="es">
-                  Copia el texto (con fórmulas LaTeX) desde ChatGPT, otra IA,
-                  LaTeX o cualquier fuente, y guárdalo como <strong>.docx</strong> o
-                  <strong>.txt</strong>.
-                </div>
-                <div class="how-step-text hidden" data-i18n="how-step1" data-lang="en">
-                  Copy the text (with LaTeX formulas) from ChatGPT, any other AI
-                  or LaTeX source, and save it as <strong>.docx</strong> or
-                  <strong>.txt</strong>.
-                </div>
-              </li>
-              <li class="how-step">
-                <div class="how-step-number">2</div>
-                <div class="how-step-text" data-i18n="how-step2" data-lang="es">
-                  Sube el archivo a esta página y pulsa en
-                  <strong>“Convertir documento”</strong>.
-                </div>
-                <div class="how-step-text hidden" data-i18n="how-step2" data-lang="en">
-                  Upload the file to this page and click
-                  <strong>“Convert document”</strong>.
-                </div>
-              </li>
-              <li class="how-step">
-                <div class="how-step-number">3</div>
-                <div class="how-step-text" data-i18n="how-step3" data-lang="es">
-                  Descarga el nuevo <strong>.docx</strong> con ecuaciones nativas
-                  de Word, listas para editar o entregar.
-                </div>
-                <div class="how-step-text hidden" data-i18n="how-step3" data-lang="en">
-                  Download the new <strong>.docx</strong> with native Word
-                  equations, ready to edit or submit.
-                </div>
-              </li>
-            </ul>
-
-            <p class="mini-note" data-i18n="how-note" data-lang="es">
-              La herramienta entiende LaTeX sencillo: potencias, subíndices,
-              matrices, productos, determinantes, etc.
-            </p>
-            <p class="mini-note hidden" data-i18n="how-note" data-lang="en">
-              The tool handles simple LaTeX: powers, subscripts, matrices,
-              products, determinants, etc.
-            </p>
-          </div>
-
-          <div class="how-card">
-            <h2 data-i18n="seo-title" data-lang="es">
-              Convertir LaTeX a Word sin reescribir las ecuaciones
-            </h2>
-            <h2 class="hidden" data-i18n="seo-title" data-lang="en">
-              Convert LaTeX to Word without rewriting equations
-            </h2>
-
-            <p data-i18n="seo-text1" data-lang="es">
-              Microsoft Word no entiende directamente el código LaTeX que
-              generan muchas IA. Ecuaciones a Word actúa como puente: lee el
-              LaTeX y genera ecuaciones en formato OMML, el formato interno de
-              Word.
-            </p>
-            <p class="hidden" data-i18n="seo-text1" data-lang="en">
-              Microsoft Word does not directly understand the LaTeX code that
-              many AIs produce. Ecuaciones a Word acts as a bridge: it reads the
-              LaTeX and generates OMML equations, Word’s internal format.
-            </p>
-
-            <p data-i18n="seo-text2" data-lang="es">
-              Esto te ahorra tiempo, evita errores al copiar a mano y mantiene
-              tus documentos limpios y editables.
-            </p>
-            <p class="hidden" data-i18n="seo-text2" data-lang="en">
-              This saves time, avoids copy mistakes and keeps your documents
-              clean and fully editable.
-            </p>
-          </div>
-        </section>
-      </section>
-
-      <!-- FAQ + PRIVACIDAD (EN ACORDEONES) -->
-      <section class="faq-privacy-section">
-        <details>
-          <summary>
-            <span class="summary-label">
-              <span class="summary-badge">FAQ</span>
-              <span data-i18n="faq-title" data-lang="es">Preguntas frecuentes</span>
-              <span class="hidden" data-i18n="faq-title" data-lang="en">Frequently asked questions</span>
-            </span>
-            <span class="chevron">›</span>
-          </summary>
-          <div>
-            <ul class="faq-list">
-              <li>
-                <div class="faq-q" data-i18n="faq-q1" data-lang="es">
-                  ¿Qué tipos de archivos acepta la herramienta?
-                </div>
-                <div class="faq-q hidden" data-i18n="faq-q1" data-lang="en">
-                  What file types does the tool accept?
-                </div>
-                <div class="faq-a" data-i18n="faq-a1" data-lang="es">
-                  Acepta documentos <strong>.docx</strong> y archivos
-                  <strong>.txt</strong> con texto y fórmulas LaTeX.
-                </div>
-                <div class="faq-a hidden" data-i18n="faq-a1" data-lang="en">
-                  It accepts <strong>.docx</strong> documents and
-                  <strong>.txt</strong> files containing text and LaTeX formulas.
-                </div>
-              </li>
-
-              <li>
-                <div class="faq-q" data-i18n="faq-q2" data-lang="es">
-                  ¿Sirve también para fórmulas generadas por ChatGPT u otra IA?
-                </div>
-                <div class="faq-q hidden" data-i18n="faq-q2" data-lang="en">
-                  Does it work with formulas generated by ChatGPT or other AIs?
-                </div>
-                <div class="faq-a" data-i18n="faq-a2" data-lang="es">
-                  Sí. De hecho, está especialmente pensada para eso: copias la
-                  respuesta de la IA (en LaTeX), la pegas en un documento y la
-                  conviertes a ecuaciones de Word.
-                </div>
-                <div class="faq-a hidden" data-i18n="faq-a2" data-lang="en">
-                  Yes. It is especially designed for that: you copy the AI’s
-                  answer (in LaTeX), paste it into a document and convert it to
-                  Word equations.
-                </div>
-              </li>
-
-              <li>
-                <div class="faq-q" data-i18n="faq-q3" data-lang="es">
-                  ¿Mis documentos se guardan en algún sitio?
-                </div>
-                <div class="faq-q hidden" data-i18n="faq-q3" data-lang="en">
-                  Are my documents stored anywhere?
-                </div>
-                <div class="faq-a" data-i18n="faq-a3" data-lang="es">
-                  No. Los archivos se procesan en el servidor para generar el
-                  .docx convertido y después se descartan.
-                </div>
-                <div class="faq-a hidden" data-i18n="faq-a3" data-lang="en">
-                  No. The files are processed on the server to generate the
-                  converted .docx and then discarded.
-                </div>
-              </li>
-            </ul>
-          </div>
-        </details>
-
-        <details>
-          <summary>
-            <span class="summary-label">
-              <span class="summary-badge">Legal</span>
-              <span data-i18n="privacy-title" data-lang="es">Política de privacidad (resumen)</span>
-              <span class="hidden" data-i18n="privacy-title" data-lang="en">
-                Privacy policy (summary)
-              </span>
-            </span>
-            <span class="chevron">›</span>
-          </summary>
-          <div>
-            <p data-i18n="privacy-text1" data-lang="es">
-              Esta herramienta procesa únicamente el archivo que subes para
-              generar el documento convertido. No se utilizan tus datos para
-              publicidad ni se comparten con terceros.
-            </p>
-            <p class="hidden" data-i18n="privacy-text1" data-lang="en">
-              This tool only processes the file you upload in order to generate
-              the converted document. Your data is not used for advertising nor
-              shared with third parties.
-            </p>
-
-            <p data-i18n="privacy-text2" data-lang="es">
-              Para más detalles, consulta la política completa en el apartado
-              legal del sitio (en preparación).
-            </p>
-            <p class="hidden" data-i18n="privacy-text2" data-lang="en">
-              For more details, see the full policy in the legal section of the
-              site (coming soon).
-            </p>
-          </div>
-        </details>
-      </section>
-
-      <!-- BLOG / RECURSOS -->
-      <section class="blog-section">
-        <h2 data-i18n="blog-title" data-lang="es">Guías y recursos</h2>
-        <h2 class="hidden" data-i18n="blog-title" data-lang="en">Guides and resources</h2>
-
-        <p data-i18n="blog-text" data-lang="es">
-          Si quieres aprender trucos para combinar LaTeX, IA y Word, puedes leer
-          estas entradas del blog:
-        </p>
-        <p class="hidden" data-i18n="blog-text" data-lang="en">
-          If you want to learn tricks to combine LaTeX, AI and Word, check these
-          blog posts:
-        </p>
-
-        <ul class="blog-list">
-          <li>
-            <a href="/blog/pasar-ecuaciones-chatgpt-word">
-              Cómo pasar ecuaciones de ChatGPT a Word sin copiarlas a mano
-            </a>
-          </li>
-          <li>
-            <a href="/blog/convertir-documento-latex-word">
-              Cómo convertir un documento LaTeX a ecuaciones de Word
-            </a>
-          </li>
-          <li>
-            <a href="/blog/ia-chatgpt-a-word-ejercicios">
-              Usar IA + Ecuaciones a Word para hacer tus ejercicios en Word
-            </a>
-          </li>
+        <ul class="hero-list">
+          <li>Ideal para <strong>ejercicios de mates</strong>, física o ingeniería hechos con IA.</li>
+          <li>Perfecto para <strong>TFG, TFM, prácticas y apuntes</strong> que se entregan en Word.</li>
+          <li>Sin instalar nada: todo se hace desde el navegador.</li>
         </ul>
-      </section>
+        <div class="hero-metas">
+          <span>Soporta <code>$...$</code>, <code>$$...$$</code> y <code>\[...\]</code></span>
+          <span>Potencias · subíndices · fracciones · matrices · determinantes…</span>
+        </div>
+      </div>
+
+      <aside class="card">
+        <div class="card-header">
+          <h2>Conversor LaTeX → ecuaciones de Word</h2>
+          <span class="status-pill" id="statusText">Estado: listo para convertir</span>
+        </div>
+
+        <form action="/convert" method="post" enctype="multipart/form-data">
+          <div class="field">
+            <label for="file">
+              1. Elige un archivo <strong>.docx</strong> o <strong>.txt</strong> con fórmulas en LaTeX
+            </label>
+            <div class="file-input-wrapper">
+              <input type="file" id="file" name="file" accept=".txt,.docx" required>
+            </div>
+            <p class="hint">
+              Recomendado: copia la respuesta de la IA con fórmulas en LaTeX a un documento vacío,
+              guárdalo como <code>.docx</code> o <code>.txt</code> y súbelo aquí.
+            </p>
+          </div>
+
+          <div class="field">
+            <label>
+              2. Pulsa en “Convertir documento” y espera la descarga del nuevo <strong>.docx</strong>.
+            </label>
+            <div class="actions">
+              <button type="submit" class="primary">
+                Convertir documento
+                <span>⬇</span>
+              </button>
+              <div class="status-text">
+                El navegador descargará un archivo <strong>_ecuaciones.docx</strong> con las fórmulas como
+                ecuaciones de Word.
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <div class="secondary-info">
+          <div><strong>Conversión directa a Word:</strong> nada de imágenes ni capturas; solo ecuaciones nativas.</div>
+          <div class="step-badges">
+            <span>1. IA → LaTeX</span>
+            <span>2. LaTeX → archivo .txt/.docx</span>
+            <span>3. Archivo → Ecuaciones a Word</span>
+            <span>4. Descargas Word con ecuaciones</span>
+          </div>
+        </div>
+      </aside>
     </main>
 
+    <div class="info-grid">
+      <section id="como-funciona">
+        <h2>¿Cómo funciona Ecuaciones a Word?</h2>
+        <p>
+          Microsoft Word no entiende directamente el código LaTeX que generan muchas IA. Esta herramienta actúa como
+          <strong>puente</strong>: detecta las fórmulas delimitadas por <code>$...$</code>, <code>$$...$$</code> o <code>\[...\]</code>
+          y las convierte a ecuaciones en <strong>formato OMML</strong>, el formato interno de Word.
+        </p>
+        <h3>Paso a paso</h3>
+        <ol>
+          <li>Pide a la IA que te dé las fórmulas en <strong>LaTeX</strong>.</li>
+          <li>Copia la respuesta a un <strong>.docx</strong> o <strong>.txt</strong> vacío.</li>
+          <li>Sube el archivo a <strong>Ecuaciones a Word</strong>.</li>
+          <li>Descarga un <strong>.docx</strong> con las ecuaciones ya como objetos de Word.</li>
+        </ol>
+        <p>
+          Así evitas reescribir las fórmulas a mano en el editor de ecuaciones de Word y reduces errores.
+        </p>
+      </section>
+
+      <section id="para-quien-es">
+        <h2>¿Para quién es esta herramienta?</h2>
+
+        <h3>Estudiantes de universidad y bachillerato</h3>
+        <ul>
+          <li>Usas <strong>ChatGPT</strong> u otra IA para resolver ejercicios y las soluciones vienen en LaTeX.</li>
+          <li>Tu profesor te pide el trabajo en <strong>Word</strong> con ecuaciones editables.</li>
+          <li>Quieres centrarte en las mates, no en pelearte con el formato.</li>
+        </ul>
+
+        <h3>Profesores y docentes</h3>
+        <ul>
+          <li>Preparas enunciados y soluciones en LaTeX o con IA.</li>
+          <li>Compartes material en Word con estudiantes o compañeros.</li>
+          <li>Necesitas un flujo rápido <strong>LaTeX → Word</strong> sin instalar nada.</li>
+        </ul>
+
+        <h3>TFG, TFM, prácticas y apuntes</h3>
+        <ul>
+          <li>Tu universidad te exige entregar el trabajo en <strong>.docx</strong>.</li>
+          <li>Quieres aprovechar LaTeX para las partes matemáticas y luego integrarlo todo en Word.</li>
+        </ul>
+      </section>
+
+      <section id="faq">
+        <h2>Preguntas frecuentes</h2>
+        <dl class="faq-list">
+          <dt>¿Qué tipos de archivos acepta la herramienta?</dt>
+          <dd>Acepta documentos <strong>.docx</strong> y archivos <strong>.txt</strong> con texto y fórmulas LaTeX.</dd>
+
+          <dt>¿Sirve también para fórmulas generadas por ChatGPT u otra IA?</dt>
+          <dd>Sí. De hecho, está especialmente pensada para eso: copias la respuesta de la IA, la pegas en un documento y la conviertes.</dd>
+
+          <dt>¿Qué tipo de LaTeX soporta?</dt>
+          <dd>
+            Está optimizada para un <strong>subconjunto sencillo de LaTeX matemático</strong> típico de ejercicios
+            de mates, física e ingeniería: potencias, subíndices, fracciones, matrices, determinantes, etc.
+          </dd>
+
+          <dt>¿Mis documentos se guardan en algún sitio?</dt>
+          <dd>
+            No. El archivo se procesa en el servidor únicamente para generar el <strong>.docx convertido</strong> y
+            después se descarta.
+          </dd>
+        </dl>
+      </section>
+
+      <section id="blog" class="blog-links">
+        <h2>Guías y recursos sobre IA, LaTeX y Word</h2>
+        <p>
+          Si quieres aprender trucos para combinar LaTeX, IA y Word, puedes leer estas entradas del blog:
+        </p>
+        <ul>
+          <li><a href="/blog">Cómo pasar ecuaciones de ChatGPT a Word con ecuaciones nativas (guía paso a paso)</a></li>
+          <li><a href="/blog2">De LaTeX a Word para tu TFG/TFM sin perder las fórmulas</a></li>
+        </ul>
+        <p class="hint">
+          Consejo rápido: en tu prompt a la IA, añade algo como
+          <span class="badge-inline">“Devuélveme las fórmulas en LaTeX usando $ y $$.”</span>
+          para que la conversión sea más limpia.
+        </p>
+      </section>
+    </div>
+
     <footer>
-      <div>
-        © <span id="year"></span> Ecuaciones a Word.
-        <span data-i18n="footer-text" data-lang="es">
-          Hecho por y para estudiantes que usan IA y Word.
-        </span>
-        <span class="hidden" data-i18n="footer-text" data-lang="en">
-          Built for students who use AI and Word.
-        </span>
-      </div>
-      <div>
-        <a href="https://www.ecuacionesaword.com/" rel="noopener">Inicio</a>
-        ·
-        <a href="/blog" rel="noopener">Blog</a>
+      <div>© Ecuaciones a Word. Hecho por y para estudiantes que usan IA y Word.</div>
+      <div class="footer-links">
+        <span>Legal: esta herramienta solo procesa el archivo que subes para generar el documento convertido.</span>
       </div>
     </footer>
   </div>
 
   <script>
-    // Año dinámico en el pie de página
-    document.getElementById("year").textContent = new Date().getFullYear();
-
-    // Gestión de idioma (ES/EN) mostrando/ocultando elementos
-    const langSelect = document.getElementById("lang-select");
-    function updateLanguage(lang) {
-      document.documentElement.lang = lang;
-
-      document
-        .querySelectorAll("[data-lang]")
-        .forEach((el) => {
-          const elLang = el.getAttribute("data-lang");
-          if (elLang === lang) {
-            el.classList.remove("hidden");
-          } else {
-            el.classList.add("hidden");
-          }
-        });
-    }
-
-    langSelect.addEventListener("change", (e) => {
-      updateLanguage(e.target.value);
-    });
-
-    // Idioma por defecto: español
-    updateLanguage("es");
-
-    // Lógica de subida y conversión (fetch + descarga)
-    const uploadForm = document.getElementById("upload-form");
-    const fileInput = document.getElementById("file-input");
-    const fileNameDisplay = document.getElementById("file-name-display");
-    const convertBtn = document.getElementById("convert-btn");
-    const statusDot = document.getElementById("status-dot");
-    const statusTextEs = document.getElementById("status-text");
-    const statusTextEn = document.getElementById("status-text-en");
-
-    fileInput.addEventListener("change", () => {
-      if (fileInput.files.length > 0) {
-        fileNameDisplay.textContent = fileInput.files[0].name;
-      } else {
-        fileNameDisplay.textContent = "";
-      }
-    });
-
-    function setStatus(type, messageEs, messageEn) {
-      if (type === "error") {
-        statusDot.classList.add("error");
-      } else {
-        statusDot.classList.remove("error");
-      }
-      statusTextEs.textContent = messageEs;
-      statusTextEn.textContent = messageEn;
-    }
-
-    uploadForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      if (!fileInput.files.length) {
-        setStatus(
-          "error",
-          "Por favor, selecciona un archivo primero.",
-          "Please select a file first."
-        );
-        return;
-      }
-
-      convertBtn.disabled = true;
-      setStatus(
-        "ok",
-        "Convirtiendo documento…",
-        "Converting document..."
-      );
-
-      try {
-        const formData = new FormData();
-        formData.append("file", fileInput.files[0]);
-
-        const response = await fetch("/convert", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error("Respuesta no válida del servidor");
+    // Pequeño script para el selector de idioma (solo cambia clase, por si en el futuro
+    // quieres mostrar textos específicos ES/EN con CSS).
+    const toggle = document.getElementById("langToggle");
+    if (toggle) {
+      toggle.addEventListener("click", () => {
+        const body = document.body;
+        if (body.classList.contains("lang-es")) {
+          body.classList.remove("lang-es");
+          body.classList.add("lang-en");
+        } else {
+          body.classList.remove("lang-en");
+          body.classList.add("lang-es");
         }
-
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        const originalName = fileInput.files[0].name.replace(/\.[^.]+$/, "");
-        a.href = url;
-        a.download = originalName + "_convertido.docx";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(url);
-
-        setStatus(
-          "ok",
-          "Conversión completada. El archivo se ha descargado.",
-          "Conversion completed. The file has been downloaded."
-        );
-      } catch (error) {
-        console.error(error);
-        setStatus(
-          "error",
-          "Error durante la conversión. Inténtalo de nuevo.",
-          "Error during conversion. Please try again."
-        );
-      } finally {
-        convertBtn.disabled = false;
-      }
-    });
+      });
+    }
   </script>
 </body>
 </html>
