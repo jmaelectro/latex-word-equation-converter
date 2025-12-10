@@ -8,58 +8,100 @@
       name="description"
       content="Cómo pasar capítulos de un TFG o TFM escritos en LaTeX a Word sin reescribir todas las ecuaciones a mano."
     >
+    <meta property="og:title" content="De LaTeX a Word para tu TFG/TFM sin perder las fórmulas | Ecuaciones a Word">
+    <meta
+      property="og:description"
+      content="Cómo pasar capítulos de un TFG o TFM escritos en LaTeX a Word sin reescribir todas las ecuaciones a mano."
+    >
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://www.ecuacionesaword.com/blog2">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="De LaTeX a Word para tu TFG/TFM sin perder las fórmulas">
+    <meta name="twitter:description" content="Convierte capítulos en LaTeX de tu TFG/TFM a Word sin perder las ecuaciones.">
+    <meta name="theme-color" content="#0b1226">
     <link rel="canonical" href="https://www.ecuacionesaword.com/blog2">
     <style>
+      :root {
+        color-scheme: light dark;
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --bg: #0b1226;
+        --card: #111827;
+        --muted: #cbd5e1;
+        --border: rgba(148, 163, 184, 0.35);
+        --accent: #38bdf8;
+        --text: #e2e8f0;
+      }
+      * {
+        box-sizing: border-box;
+      }
       body {
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         margin: 0;
         padding: 0;
-        background: #0f172a;
-        color: #e5e7eb;
+        background: radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.2), transparent 30%),
+          radial-gradient(circle at 85% 10%, rgba(99, 102, 241, 0.2), transparent 30%),
+          var(--bg);
+        color: var(--text);
       }
       .page {
-        max-width: 760px;
+        max-width: 880px;
         margin: 0 auto;
         padding: 2rem 1.5rem 3rem;
       }
+      header {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        margin-bottom: 1.5rem;
+      }
       a {
-        color: #7dd3fc;
+        color: var(--accent);
       }
       a:hover {
         text-decoration: underline;
       }
-      header {
-        margin-bottom: 1.5rem;
-      }
       h1 {
-        font-size: 1.7rem;
-        margin-bottom: 1rem;
+        font-size: clamp(1.9rem, 3vw, 2.2rem);
+        margin: 0;
       }
       h2 {
         margin-top: 1.75rem;
-        font-size: 1.2rem;
+        font-size: 1.25rem;
       }
       p {
-        line-height: 1.6;
-        color: #cbd5e1;
+        line-height: 1.7;
+        color: var(--muted);
       }
       pre {
-        background: #020617;
+        background: var(--card);
         padding: 1rem;
-        border-radius: 0.5rem;
+        border-radius: 0.75rem;
         overflow-x: auto;
-        font-size: 0.9rem;
+        font-size: 0.95rem;
+        border: 1px solid var(--border);
       }
-      ul {
-        padding-left: 1.2rem;
+      ul,
+      ol {
+        padding-left: 1.15rem;
       }
       li {
-        margin-bottom: 0.3rem;
+        margin-bottom: 0.35rem;
+        color: var(--muted);
       }
       footer {
         margin-top: 2rem;
-        font-size: 0.85rem;
-        color: #9ca3af;
+        font-size: 0.95rem;
+        color: #94a3b8;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.2rem 0.6rem;
+        border-radius: 999px;
+        background: rgba(56, 189, 248, 0.15);
+        border: 1px solid rgba(56, 189, 248, 0.35);
+        color: #7dd3fc;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
       }
     </style>
   </head>
@@ -67,29 +109,26 @@
     <div class="page">
       <header>
         <a href="/">← Volver al conversor</a>
+        <div class="chip">Guía práctica</div>
         <h1>De LaTeX a Word para tu TFG/TFM sin perder las fórmulas</h1>
       </header>
 
       <main>
         <p>
-          Muchos trabajos finales (TFG, TFM) se entregan en Word, pero la parte matemática a menudo se prepara en LaTeX
-          o con ayuda de IA que genera fórmulas en LaTeX.
+          Muchos trabajos finales (TFG, TFM) se entregan en Word, pero la parte matemática a menudo se prepara en LaTeX o con ayuda de IA que genera fórmulas en LaTeX.
         </p>
 
         <p>
-          El problema: ¿cómo pasar de LaTeX a Word sin perder el formato de las ecuaciones ni tener que reescribirlas
-          todas a mano en el editor de ecuaciones de Word?
+          El problema: ¿cómo pasar de LaTeX a Word sin perder el formato de las ecuaciones ni tener que reescribirlas todas a mano en el editor de ecuaciones de Word?
         </p>
 
         <p>
-          En esta guía te enseño un flujo de trabajo práctico usando
-          <a href="/">Ecuaciones a Word</a>, para integrar tus ecuaciones en Word como ecuaciones nativas (OMML).
+          En esta guía te enseño un flujo de trabajo práctico usando <a href="/">Ecuaciones a Word</a>, para integrar tus ecuaciones en Word como ecuaciones nativas (OMML).
         </p>
 
         <h2>1. ¿Por qué tantos TFG/TFM se escriben en Word?</h2>
         <p>
-          Aunque LaTeX es fantástico para escribir documentos científicos, muchas universidades y tribunales piden
-          explícitamente que el documento final se entregue en .docx o en un formato que se pueda editar en Word.
+          Aunque LaTeX es fantástico para escribir documentos científicos, muchas universidades y tribunales piden explícitamente que el documento final se entregue en .docx o en un formato que se pueda editar en Word.
         </p>
 
         <p>Esto significa que:</p>
@@ -129,8 +168,7 @@
         </ol>
 
         <p>
-          Así, trabajas tus fórmulas en el entorno que prefieras (LaTeX, IA…) y solo al final las integras en Word sin
-          perder el tiempo reescribiendo.
+          Así, trabajas tus fórmulas en el entorno que prefieras (LaTeX, IA…) y solo al final las integras en Word sin perder el tiempo reescribiendo.
         </p>
 
         <h2>5. Ejemplo de capítulo con fórmulas en LaTeX</h2>
@@ -144,11 +182,10 @@ y analizamos la respuesta al escalón unitario:
 
 $$y(t) = 1 - \frac{1}{\sqrt{1-\zeta^2}} e^{-\zeta \omega_n t} \sin\left(\omega_n \sqrt{1-\zeta^2} t + \phi\right)$$
 
-donde $0 &lt; \zeta &lt; 1$ es el factor de amortiguamiento.</pre>
+donde $0 < \zeta < 1$ es el factor de amortiguamiento.</pre>
 
         <p>
-          Ese texto, tal cual, se puede pegar en un .docx o .txt y subirlo a Ecuaciones a Word para obtener las
-          ecuaciones como objetos nativos de Word.
+          Ese texto, tal cual, se puede pegar en un .docx o .txt y subirlo a Ecuaciones a Word para obtener las ecuaciones como objetos nativos de Word.
         </p>
 
         <h2>6. Buenas prácticas para un TFG/TFM con muchas ecuaciones</h2>
@@ -156,10 +193,7 @@ donde $0 &lt; \zeta &lt; 1$ es el factor de amortiguamiento.</pre>
           <li>Trabaja cada capítulo matemático en un archivo separado para convertirlo de forma independiente.</li>
           <li>Haz una prueba de conversión con un capítulo corto para ver cómo queda el resultado en Word.</li>
           <li>Una vez validado el flujo, aplica el mismo proceso al resto de capítulos.</li>
-          <li>
-            Evita mezclar demasiadas cosas (tablas muy complejas, imágenes, etc.) en la misma conversión si puedes
-            separarlas.
-          </li>
+          <li>Evita mezclar demasiadas cosas (tablas muy complejas, imágenes, etc.) en la misma conversión si puedes separarlas.</li>
         </ul>
 
         <h2>7. Qué tipo de LaTeX soporta la herramienta</h2>
@@ -180,5 +214,28 @@ donde $0 &lt; \zeta &lt; 1$ es el factor de amortiguamiento.</pre>
         © Ecuaciones a Word
       </footer>
     </div>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "De LaTeX a Word para tu TFG/TFM sin perder las fórmulas",
+        "description": "Cómo pasar capítulos de un TFG o TFM escritos en LaTeX a Word sin reescribir todas las ecuaciones a mano.",
+        "inLanguage": "es",
+        "author": {
+          "@type": "Organization",
+          "name": "Ecuaciones a Word",
+          "url": "https://www.ecuacionesaword.com/"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Ecuaciones a Word"
+        },
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": "https://www.ecuacionesaword.com/blog2"
+        }
+      }
+    </script>
   </body>
 </html>
