@@ -1,436 +1,407 @@
-<!doctype html>
-<html lang="es">
-  <head>
-    <meta charset="utf-8">
-    <title>
-      Convertir fórmulas LaTeX (también desde IA como ChatGPT) a ecuaciones de Word (.docx) online | Ecuaciones a Word
-    </title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta
-      name="description"
-      content="Convierte fórmulas LaTeX (incluidas las generadas por IA como ChatGPT, Gemini o Copilot) en ecuaciones nativas de Word (.docx) listas para editar y entregar."
-    >
-    <link rel="canonical" href="https://www.ecuacionesaword.com/">
-    <style>
-      :root {
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        color-scheme: light dark;
-      }
-      body {
-        margin: 0;
-        padding: 0;
-        background: #0f172a;
-        color: #e5e7eb;
-      }
-      .page {
-        max-width: 960px;
-        margin: 0 auto;
-        padding: 2rem 1.5rem 3rem;
-      }
-      header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 2rem;
-      }
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-      }
-      .logo {
-        width: 32px;
-        height: 32px;
-        border-radius: 999px;
-        border: 1px solid #38bdf8;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-      }
-      .brand-title {
-        font-weight: 600;
-        font-size: 1.1rem;
-      }
-      nav a {
-        color: #9ca3af;
-        text-decoration: none;
-        margin-left: 1rem;
-        font-size: 0.95rem;
-      }
-      nav a:hover {
-        color: #e5e7eb;
-      }
-      h1 {
-        font-size: clamp(1.8rem, 3vw, 2.2rem);
-        margin-bottom: 0.75rem;
-      }
-      .subtitle {
-        font-size: 1rem;
-        color: #9ca3af;
-        margin-bottom: 1rem;
-      }
-      .pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-        padding: 0.35rem 0.75rem;
-        border-radius: 999px;
-        background: rgba(56, 189, 248, 0.1);
-        color: #7dd3fc;
-        font-size: 0.8rem;
-        margin-bottom: 1.25rem;
-      }
-      .converter-card {
-        margin-top: 1.5rem;
-        background: rgba(15, 23, 42, 0.9);
-        border-radius: 1rem;
-        padding: 1.5rem;
-        border: 1px solid rgba(148, 163, 184, 0.4);
-      }
-      .converter-card h2 {
-        font-size: 1.1rem;
-        margin-top: 0;
-      }
-      .converter-card p {
-        font-size: 0.95rem;
-        color: #cbd5f5;
-        margin: 0.25rem 0 0.5rem;
-      }
-      .steps {
-        font-size: 0.9rem;
-        margin: 0.5rem 0 1rem;
-      }
-      .steps li {
-        margin: 0.15rem 0;
-      }
-      .upload-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        align-items: center;
-        margin: 1rem 0 0.5rem;
-      }
-      .upload-row input[type="file"] {
-        max-width: 260px;
-        font-size: 0.9rem;
-      }
-      button.primary {
-        border: none;
-        border-radius: 999px;
-        padding: 0.6rem 1.5rem;
-        font-size: 0.95rem;
-        font-weight: 500;
-        cursor: pointer;
-        background: linear-gradient(to right, #38bdf8, #6366f1);
-        color: #0b1120;
-      }
-      button.primary:hover {
-        filter: brightness(1.05);
-      }
-      .status {
-        font-size: 0.9rem;
-        margin-top: 0.5rem;
-        color: #9ca3af;
-      }
-      .status.status-working {
-        color: #fbbf24;
-      }
-      .status.status-success {
-        color: #22c55e;
-      }
-      .status.status-error {
-        color: #f97373;
-      }
-      section {
-        margin-top: 2.25rem;
-      }
-      section h2 {
-        font-size: 1.2rem;
-        margin-bottom: 0.5rem;
-      }
-      section p,
-      section li {
-        font-size: 0.95rem;
-        color: #cbd5e1;
-      }
-      section ul {
-        padding-left: 1.1rem;
-      }
-      a.link {
-        color: #7dd3fc;
-        text-decoration: none;
-      }
-      a.link:hover {
-        text-decoration: underline;
-      }
-      footer {
-        margin-top: 2rem;
-        padding-top: 1.25rem;
-        border-top: 1px solid rgba(148, 163, 184, 0.4);
-        font-size: 0.85rem;
-        color: #9ca3af;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        gap: 0.75rem;
-      }
-      footer nav a {
-        font-size: 0.85rem;
-      }
-      @media (max-width: 600px) {
-        .upload-row {
-          flex-direction: column;
-          align-items: stretch;
-        }
-        .upload-row input[type="file"] {
-          max-width: 100%;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="page">
-      <header>
-        <div class="brand">
-          <div class="logo">∑</div>
-          <div class="brand-text">
-            <div class="brand-title">Ecuaciones a Word</div>
-            <div style="font-size: 0.8rem; color: #9ca3af;">LaTeX → Word (.docx)</div>
-          </div>
-        </div>
-        <nav>
-          <a href="#faq">FAQ</a>
-          <a href="#guides">Blog</a>
-        </nav>
-      </header>
-
-      <main>
-        <section>
-          <div class="pill">
-            <span>ES</span><span>/</span><span>EN</span>
-          </div>
-          <h1>
-            Convierte fórmulas LaTeX (también desde IA) a ecuaciones de Word (.docx) online
-          </h1>
-          <p class="subtitle">
-            Convert LaTeX formulas (also from AI like ChatGPT, Gemini or Copilot) into native Word equations inside a .docx file.
-          </p>
-        </section>
-
-        <section class="converter-card" aria-label="Conversor LaTeX a Word">
-          <h2>Conversor LaTeX → ecuaciones de Word / LaTeX → Word equations</h2>
-          <p>
-            ES · Sube un documento .docx o .txt con fórmulas LaTeX y descarga un Word con ecuaciones nativas, listo para entregar.
-          </p>
-          <p>
-            EN · Upload a .docx or .txt file with LaTeX formulas and get back a .docx with native Word equations, ready to submit.
-          </p>
-
-          <ul class="steps">
-            <li>1. ES · Elige un archivo .docx o .txt · EN · Choose a .docx or .txt file.</li>
-            <li>2. ES · Pulsa «Convertir documento» · EN · Click “Convert document”.</li>
-            <li>3. ES · Descarga el .docx con ecuaciones de Word · EN · Download the .docx with Word equations.</li>
-          </ul>
-
-          <form id="upload-form">
-            <div class="upload-row">
-              <input id="file-input" type="file" name="file" accept=".txt,.docx" required>
-              <button class="primary" type="submit">Convertir documento · Convert document</button>
-            </div>
-            <p id="status" class="status">
-              ES · Estado: listo para convertir. · EN · Status: ready to convert.
-            </p>
-          </form>
-        </section>
-
-        <section>
-          <h2>Pensado para resultados de Inteligencia Artificial / Designed for AI-generated results</h2>
-          <p>
-            ES · Copia las soluciones que te da ChatGPT, Gemini, Copilot u otra IA (en LaTeX)
-            a un .docx o .txt y deja que la herramienta convierta las fórmulas en ecuaciones
-            de Word reales.
-          </p>
-          <p>
-            EN · Copy the solutions that ChatGPT, Gemini, Copilot or any other AI gives you
-            (in LaTeX) into a .docx or .txt file and let this tool turn them into real Word
-            equations.
-          </p>
-          <p>
-            ES · Ideal para TFG, TFM, prácticas, hojas de ejercicios o apuntes que debes
-            entregar en Word. EN · Perfect for theses, assignments, exercise sheets or notes
-            that must be delivered in Word.
-          </p>
-        </section>
-
-        <section>
-          <h2>Cómo funciona / How it works</h2>
-          <ol>
-            <li>
-              ES · Copia el texto con fórmulas LaTeX desde ChatGPT, otra IA o LaTeX y guárdalo
-              como .docx o .txt. EN · Copy the text with LaTeX formulas from ChatGPT, another AI
-              or LaTeX and save it as .docx or .txt.
-            </li>
-            <li>
-              ES · Sube el archivo a esta página y pulsa «Convertir documento». EN · Upload the
-              file to this page and click “Convert document”.
-            </li>
-            <li>
-              ES · Descarga el nuevo .docx con ecuaciones nativas de Word. EN · Download the new
-              .docx with native Word equations.
-            </li>
-          </ol>
-          <p>
-            ES · La herramienta entiende LaTeX sencillo: potencias, subíndices, matrices,
-            productos, determinantes, etc. EN · The tool handles simple LaTeX: powers,
-            subscripts, matrices, products, determinants, and so on.
-          </p>
-        </section>
-
-        <section id="faq">
-          <h2>FAQ · Preguntas frecuentes · Frequently asked questions</h2>
-          <h3>¿Qué tipos de archivos acepta la herramienta? / What file types does the tool accept?</h3>
-          <p>
-            Acepta documentos .docx y archivos .txt con texto y fórmulas LaTeX. /
-            It accepts .docx documents and .txt files containing text and LaTeX formulas.
-          </p>
-
-          <h3>¿Sirve también para fórmulas generadas por ChatGPT u otra IA? / Does it work with AI-generated formulas?</h3>
-          <p>
-            Sí, está especialmente pensada para eso: copias la respuesta de la IA en LaTeX,
-            la pegas en un documento y la conviertes a ecuaciones de Word. /
-            Yes. It is designed for that use case: copy the AI answer in LaTeX, paste it into
-            a document and convert it to Word equations.
-          </p>
-
-          <h3>¿Mis documentos se guardan en algún sitio? / Are my documents stored anywhere?</h3>
-          <p>
-            No. Los archivos se procesan en el servidor para generar el documento convertido
-            y después se descartan. /
-            No. Files are processed on the server to generate the converted document and then
-            discarded.
-          </p>
-        </section>
-
-        <section>
-          <h2>Legal · Política de privacidad (resumen) / Privacy policy (summary)</h2>
-          <p>
-            ES · Esta herramienta procesa únicamente el archivo que subes para generar el
-            documento convertido. No se utilizan tus datos para publicidad ni se comparten
-            con terceros.
-          </p>
-          <p>
-            EN · This tool only processes the file you upload in order to generate the
-            converted document. Your data is not used for advertising nor shared with
-            third parties.
-          </p>
-        </section>
-
-        <section id="guides">
-          <h2>Guías y recursos / Guides and resources</h2>
-          <p>
-            ES · Si quieres aprender trucos para combinar LaTeX, IA y Word, puedes leer estas
-            entradas del blog. EN · If you want to learn tips to combine LaTeX, AI and Word,
-            read these blog posts:
-          </p>
-          <ul>
-            <li><a class="link" href="/blog">Cómo pasar ecuaciones de ChatGPT a Word sin copiarlas a mano</a></li>
-            <li><a class="link" href="/blog2">De LaTeX a Word para tu TFG/TFM sin perder las fórmulas</a></li>
-          </ul>
-        </section>
-      </main>
-
-      <footer>
-        <div>
-          © Ecuaciones a Word. Hecho por y para estudiantes que usan IA y Word. ·
-          Built for students who use AI and Word.
-        </div>
-        <nav>
-          <a href="/">Inicio</a> ·
-          <a href="/blog">Blog</a>
-        </nav>
-      </footer>
-    </div>
-
-    <script>
-      (function () {
-        const form = document.getElementById("upload-form");
-        const fileInput = document.getElementById("file-input");
-        const statusEl = document.getElementById("status");
-
-        if (!form || !fileInput || !statusEl) {
-          return;
-        }
-
-        form.addEventListener("submit", async function (event) {
-          event.preventDefault();
-
-          if (!fileInput.files || fileInput.files.length === 0) {
-            statusEl.textContent =
-              "ES · Por favor, selecciona un archivo .txt o .docx. · EN · Please select a .txt or .docx file.";
-            statusEl.className = "status status-error";
-            return;
-          }
-
-          const file = fileInput.files[0];
-          const formData = new FormData();
-          formData.append("file", file);
-
-          statusEl.textContent =
-            "ES · Convirtiendo documento... · EN · Converting document...";
-          statusEl.className = "status status-working";
-
-          try {
-            const response = await fetch("/convert", {
-              method: "POST",
-              body: formData,
-            });
-
-            if (!response.ok) {
-              let message =
-                "ES · Ha ocurrido un error al convertir el documento. · EN · There was an error converting the document.";
-              try {
-                const data = await response.json();
-                if (data && data.detail) {
-                  message = data.detail;
-                }
-              } catch (e) {
-                // ignorar error al parsear JSON
-              }
-              statusEl.textContent = message;
-              statusEl.className = "status status-error";
-              return;
-            }
-
-            const blob = await response.blob();
-            let filename = "documento_ecuaciones.docx";
-            const disposition = response.headers.get("Content-Disposition");
-            if (disposition) {
-              const match = disposition.match(/filename="([^"]+)"/i);
-              if (match && match[1]) {
-                filename = match[1];
-              }
-            }
-
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            window.URL.revokeObjectURL(url);
-
-            statusEl.textContent =
-              "ES · Conversión completada, se ha descargado el archivo. · EN · Conversion completed, the file has been downloaded.";
-            statusEl.className = "status status-success";
-          } catch (error) {
-            statusEl.textContent =
-              "ES · Error de conexión con el servidor. · EN · Connection error with the server.";
-            statusEl.className = "status status-error";
-          }
-        });
-      })();
-    </script>
-  </body>
-</html>
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/index.html b/index.html
+index d9fd7e5ed1f61775601470d21e3a53b65e421ae4..923a61be520e9229fa35ff6264b34bb5b617714f 100644
+--- a/index.html
++++ b/index.html
+@@ -1,42 +1,56 @@
+ <!doctype html>
+ <html lang="es">
+   <head>
+-    <meta charset="utf-8">
+-    <title>
+-      Convertir fórmulas LaTeX (también desde IA como ChatGPT) a ecuaciones de Word (.docx) online | Ecuaciones a Word
+-    </title>
+-    <meta name="viewport" content="width=device-width, initial-scale=1">
+-    <meta
+-      name="description"
+-      content="Convierte fórmulas LaTeX (incluidas las generadas por IA como ChatGPT, Gemini o Copilot) en ecuaciones nativas de Word (.docx) listas para editar y entregar."
+-    >
+-    <link rel="canonical" href="https://www.ecuacionesaword.com/">
+-    <style>
+-      :root {
+-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+-        color-scheme: light dark;
++    <meta charset="utf-8">
++    <title>
++      Convertir fórmulas LaTeX (también desde IA como ChatGPT) a ecuaciones de Word (.docx) online | Ecuaciones a Word
++    </title>
++    <meta name="viewport" content="width=device-width, initial-scale=1">
++    <meta
++      name="description"
++      content="Convierte fórmulas LaTeX (incluidas las generadas por IA como ChatGPT, Gemini o Copilot) en ecuaciones nativas de Word (.docx) listas para editar y entregar."
++    >
++    <meta property="og:title" content="Convertir fórmulas LaTeX a ecuaciones de Word (.docx) | Ecuaciones a Word">
++    <meta
++      property="og:description"
++      content="Convierte fórmulas LaTeX (también de IA como ChatGPT) en ecuaciones nativas de Word dentro de un .docx listo para entregar."
++    >
++    <meta property="og:type" content="website">
++    <meta property="og:url" content="https://www.ecuacionesaword.com/">
++    <meta name="twitter:card" content="summary">
++    <meta name="twitter:title" content="Convierte fórmulas LaTeX a Word (.docx)">
++    <meta
++      name="twitter:description"
++      content="Sube un .docx o .txt con fórmulas LaTeX y descárgalo con ecuaciones nativas de Word."
++    >
++    <meta name="theme-color" content="#0f172a">
++    <link rel="canonical" href="https://www.ecuacionesaword.com/">
++    <style>
++      :root {
++        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
++        color-scheme: light dark;
+       }
+       body {
+         margin: 0;
+         padding: 0;
+         background: #0f172a;
+         color: #e5e7eb;
+       }
+       .page {
+         max-width: 960px;
+         margin: 0 auto;
+         padding: 2rem 1.5rem 3rem;
+       }
+       header {
+         display: flex;
+         align-items: center;
+         justify-content: space-between;
+         margin-bottom: 2rem;
+       }
+       .brand {
+         display: flex;
+         align-items: center;
+         gap: 0.75rem;
+       }
+       .logo {
+         width: 32px;
+@@ -153,118 +167,143 @@
+       section li {
+         font-size: 0.95rem;
+         color: #cbd5e1;
+       }
+       section ul {
+         padding-left: 1.1rem;
+       }
+       a.link {
+         color: #7dd3fc;
+         text-decoration: none;
+       }
+       a.link:hover {
+         text-decoration: underline;
+       }
+       footer {
+         margin-top: 2rem;
+         padding-top: 1.25rem;
+         border-top: 1px solid rgba(148, 163, 184, 0.4);
+         font-size: 0.85rem;
+         color: #9ca3af;
+         display: flex;
+         flex-wrap: wrap;
+         justify-content: space-between;
+         gap: 0.75rem;
+       }
+-      footer nav a {
+-        font-size: 0.85rem;
+-      }
+-      @media (max-width: 600px) {
+-        .upload-row {
+-          flex-direction: column;
+-          align-items: stretch;
+-        }
++      footer nav a {
++        font-size: 0.85rem;
++      }
++      .sr-only {
++        position: absolute;
++        width: 1px;
++        height: 1px;
++        padding: 0;
++        margin: -1px;
++        overflow: hidden;
++        clip: rect(0, 0, 0, 0);
++        white-space: nowrap;
++        border: 0;
++      }
++      @media (max-width: 600px) {
++        .upload-row {
++          flex-direction: column;
++          align-items: stretch;
++        }
+         .upload-row input[type="file"] {
+           max-width: 100%;
+         }
+       }
+     </style>
+   </head>
+   <body>
+     <div class="page">
+       <header>
+         <div class="brand">
+           <div class="logo">∑</div>
+           <div class="brand-text">
+             <div class="brand-title">Ecuaciones a Word</div>
+             <div style="font-size: 0.8rem; color: #9ca3af;">LaTeX → Word (.docx)</div>
+           </div>
+         </div>
+         <nav>
+           <a href="#faq">FAQ</a>
+           <a href="#guides">Blog</a>
+         </nav>
+       </header>
+ 
+       <main>
+         <section>
+           <div class="pill">
+             <span>ES</span><span>/</span><span>EN</span>
+           </div>
+           <h1>
+             Convierte fórmulas LaTeX (también desde IA) a ecuaciones de Word (.docx) online
+           </h1>
+           <p class="subtitle">
+             Convert LaTeX formulas (also from AI like ChatGPT, Gemini or Copilot) into native Word equations inside a .docx file.
+           </p>
+         </section>
+ 
+         <section class="converter-card" aria-label="Conversor LaTeX a Word">
+           <h2>Conversor LaTeX → ecuaciones de Word / LaTeX → Word equations</h2>
+           <p>
+             ES · Sube un documento .docx o .txt con fórmulas LaTeX y descarga un Word con ecuaciones nativas, listo para entregar.
+           </p>
+           <p>
+             EN · Upload a .docx or .txt file with LaTeX formulas and get back a .docx with native Word equations, ready to submit.
+           </p>
+ 
+-          <ul class="steps">
+-            <li>1. ES · Elige un archivo .docx o .txt · EN · Choose a .docx or .txt file.</li>
+-            <li>2. ES · Pulsa «Convertir documento» · EN · Click “Convert document”.</li>
+-            <li>3. ES · Descarga el .docx con ecuaciones de Word · EN · Download the .docx with Word equations.</li>
+-          </ul>
+-
+-          <form id="upload-form">
+-            <div class="upload-row">
+-              <input id="file-input" type="file" name="file" accept=".txt,.docx" required>
+-              <button class="primary" type="submit">Convertir documento · Convert document</button>
+-            </div>
+-            <p id="status" class="status">
+-              ES · Estado: listo para convertir. · EN · Status: ready to convert.
+-            </p>
+-          </form>
+-        </section>
++          <ul class="steps">
++            <li>1. ES · Elige un archivo .docx o .txt · EN · Choose a .docx or .txt file.</li>
++            <li>2. ES · Pulsa «Convertir documento» · EN · Click “Convert document”.</li>
++            <li>3. ES · Descarga el .docx con ecuaciones de Word · EN · Download the .docx with Word equations.</li>
++          </ul>
++
++          <form id="upload-form">
++            <div class="upload-row">
++              <label class="sr-only" for="file-input">Selecciona un archivo .docx o .txt</label>
++              <input
++                id="file-input"
++                type="file"
++                name="file"
++                accept=".txt,.docx"
++                aria-describedby="file-help"
++                required
++              >
++              <button id="submit-button" class="primary" type="submit">
++                Convertir documento · Convert document
++              </button>
++            </div>
++            <p id="file-help" class="status" style="margin-top: 0;">
++              ES · Solo se aceptan archivos .txt o .docx (máx. 5&nbsp;MB). · EN · Only .txt or .docx files are supported (max
++              5&nbsp;MB).
++            </p>
++            <p id="status" class="status" role="status" aria-live="polite" aria-busy="false">
++              ES · Estado: listo para convertir. · EN · Status: ready to convert.
++            </p>
++          </form>
++        </section>
+ 
+         <section>
+           <h2>Pensado para resultados de Inteligencia Artificial / Designed for AI-generated results</h2>
+           <p>
+             ES · Copia las soluciones que te da ChatGPT, Gemini, Copilot u otra IA (en LaTeX)
+             a un .docx o .txt y deja que la herramienta convierta las fórmulas en ecuaciones
+             de Word reales.
+           </p>
+           <p>
+             EN · Copy the solutions that ChatGPT, Gemini, Copilot or any other AI gives you
+             (in LaTeX) into a .docx or .txt file and let this tool turn them into real Word
+             equations.
+           </p>
+           <p>
+             ES · Ideal para TFG, TFM, prácticas, hojas de ejercicios o apuntes que debes
+             entregar en Word. EN · Perfect for theses, assignments, exercise sheets or notes
+             that must be delivered in Word.
+           </p>
+         </section>
+ 
+         <section>
+           <h2>Cómo funciona / How it works</h2>
+           <ol>
+             <li>
+               ES · Copia el texto con fórmulas LaTeX desde ChatGPT, otra IA o LaTeX y guárdalo
+@@ -331,106 +370,116 @@
+           <p>
+             ES · Si quieres aprender trucos para combinar LaTeX, IA y Word, puedes leer estas
+             entradas del blog. EN · If you want to learn tips to combine LaTeX, AI and Word,
+             read these blog posts:
+           </p>
+           <ul>
+             <li><a class="link" href="/blog">Cómo pasar ecuaciones de ChatGPT a Word sin copiarlas a mano</a></li>
+             <li><a class="link" href="/blog2">De LaTeX a Word para tu TFG/TFM sin perder las fórmulas</a></li>
+           </ul>
+         </section>
+       </main>
+ 
+       <footer>
+         <div>
+           © Ecuaciones a Word. Hecho por y para estudiantes que usan IA y Word. ·
+           Built for students who use AI and Word.
+         </div>
+         <nav>
+           <a href="/">Inicio</a> ·
+           <a href="/blog">Blog</a>
+         </nav>
+       </footer>
+     </div>
+ 
+     <script>
+-      (function () {
+-        const form = document.getElementById("upload-form");
+-        const fileInput = document.getElementById("file-input");
+-        const statusEl = document.getElementById("status");
+-
+-        if (!form || !fileInput || !statusEl) {
+-          return;
+-        }
+-
+-        form.addEventListener("submit", async function (event) {
+-          event.preventDefault();
++      (function () {
++        const form = document.getElementById("upload-form");
++        const fileInput = document.getElementById("file-input");
++        const statusEl = document.getElementById("status");
++        const submitButton = document.getElementById("submit-button");
++
++        if (!form || !fileInput || !statusEl || !submitButton) {
++          return;
++        }
++
++        form.addEventListener("submit", async function (event) {
++          event.preventDefault();
+ 
+           if (!fileInput.files || fileInput.files.length === 0) {
+             statusEl.textContent =
+               "ES · Por favor, selecciona un archivo .txt o .docx. · EN · Please select a .txt or .docx file.";
+             statusEl.className = "status status-error";
+             return;
+           }
+ 
+-          const file = fileInput.files[0];
+-          const formData = new FormData();
+-          formData.append("file", file);
+-
+-          statusEl.textContent =
+-            "ES · Convirtiendo documento... · EN · Converting document...";
+-          statusEl.className = "status status-working";
+-
+-          try {
+-            const response = await fetch("/convert", {
+-              method: "POST",
+-              body: formData,
++          const file = fileInput.files[0];
++          const formData = new FormData();
++          formData.append("file", file);
++
++          statusEl.textContent =
++            "ES · Convirtiendo documento... · EN · Converting document...";
++          statusEl.className = "status status-working";
++          statusEl.setAttribute("aria-busy", "true");
++          submitButton.disabled = true;
++          submitButton.setAttribute("aria-busy", "true");
++
++          try {
++            const response = await fetch("/convert", {
++              method: "POST",
++              body: formData,
+             });
+ 
+             if (!response.ok) {
+               let message =
+                 "ES · Ha ocurrido un error al convertir el documento. · EN · There was an error converting the document.";
+               try {
+                 const data = await response.json();
+                 if (data && data.detail) {
+                   message = data.detail;
+                 }
+               } catch (e) {
+                 // ignorar error al parsear JSON
+               }
+-              statusEl.textContent = message;
+-              statusEl.className = "status status-error";
+-              return;
+-            }
+-
+-            const blob = await response.blob();
+-            let filename = "documento_ecuaciones.docx";
++              statusEl.textContent = message;
++              statusEl.className = "status status-error";
++              statusEl.setAttribute("aria-busy", "false");
++              submitButton.disabled = false;
++              submitButton.setAttribute("aria-busy", "false");
++              return;
++            }
++
++            const blob = await response.blob();
++            let filename = "documento_ecuaciones.docx";
+             const disposition = response.headers.get("Content-Disposition");
+             if (disposition) {
+               const match = disposition.match(/filename="([^"]+)"/i);
+               if (match && match[1]) {
+                 filename = match[1];
+               }
+             }
+ 
+             const url = window.URL.createObjectURL(blob);
+             const a = document.createElement("a");
+             a.href = url;
+             a.download = filename;
+             document.body.appendChild(a);
+             a.click();
+             a.remove();
+             window.URL.revokeObjectURL(url);
+ 
+-            statusEl.textContent =
+-              "ES · Conversión completada, se ha descargado el archivo. · EN · Conversion completed, the file has been downloaded.";
+-            statusEl.className = "status status-success";
+-          } catch (error) {
+-            statusEl.textContent =
+-              "ES · Error de conexión con el servidor. · EN · Connection error with the server.";
+-            statusEl.className = "status status-error";
+-          }
+-        });
+-      })();
+-    </script>
+-  </body>
+-</html>
++            statusEl.textContent =
++              "ES · Conversión completada, se ha descargado el archivo. · EN · Conversion completed, the file has been downloaded.";
++            statusEl.className = "status status-success";
++          } catch (error) {
++            statusEl.textContent =
++              "ES · Error de conexión con el servidor. · EN · Connection error with the server.";
++            statusEl.className = "status status-error";
++          }
++          statusEl.setAttribute("aria-busy", "false");
++          submitButton.disabled = false;
++          submitButton.setAttribute("aria-busy", "false");
++        });
++      })();
++    </script>
++  </body>
++</html>
+ 
+EOF
+)
