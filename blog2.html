@@ -1,215 +1,142 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>De LaTeX a Word para tu TFG/TFM sin perder las fórmulas</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Guía para convertir fórmulas en LaTeX a ecuaciones nativas de Word en TFG, TFM, prácticas y apuntes usando Ecuaciones a Word.">
-  <meta name="keywords" content="latex a word tfg, latex a word tfm, convertir latex a ecuaciones de word, tfg matematicas word, tfg ingenieria word ecuaciones">
+  <head>
+    <meta charset="utf-8">
+    <title>De LaTeX a Word para tu TFG/TFM sin perder las fórmulas | Ecuaciones a Word</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Cómo pasar capítulos de un TFG o TFM escritos en LaTeX a Word sin reescribir todas las ecuaciones a mano."
+    >
+    <link rel="canonical" href="https://www.ecuacionesaword.com/blog2">
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #0f172a;
+        color: #e5e7eb;
+      }
+      .page {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem 3rem;
+      }
+      a {
+        color: #7dd3fc;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      header {
+        margin-bottom: 1.5rem;
+      }
+      h1 {
+        font-size: 1.7rem;
+        margin-bottom: 1rem;
+      }
+      h2 {
+        margin-top: 1.75rem;
+        font-size: 1.2rem;
+      }
+      p {
+        line-height: 1.6;
+        color: #cbd5e1;
+      }
+      pre {
+        background: #020617;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        overflow-x: auto;
+        font-size: 0.9rem;
+      }
+      ul {
+        padding-left: 1.2rem;
+      }
+      li {
+        margin-bottom: 0.3rem;
+      }
+      footer {
+        margin-top: 2rem;
+        font-size: 0.85rem;
+        color: #9ca3af;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header>
+        <a href="/">← Volver al conversor</a>
+        <h1>De LaTeX a Word para tu TFG/TFM sin perder las fórmulas</h1>
+      </header>
 
-  <link rel="canonical" href="https://www.ecuacionesaword.com/blog2">
+      <main>
+        <p>
+          Muchos trabajos finales (TFG, TFM) se entregan en Word, pero la parte matemática a menudo se prepara en LaTeX
+          o con ayuda de IA que genera fórmulas en LaTeX.
+        </p>
 
-  <meta property="og:type" content="article">
-  <meta property="og:title" content="De LaTeX a Word para tu TFG/TFM sin perder las fórmulas">
-  <meta property="og:description" content="Convierte tus fórmulas en LaTeX a ecuaciones nativas de Word para integrar fácilmente capítulos matemáticos en tu TFG o TFM.">
-  <meta property="og:url" content="https://www.ecuacionesaword.com/blog2">
-  <meta property="og:site_name" content="Ecuaciones a Word">
+        <p>
+          El problema: ¿cómo pasar de LaTeX a Word sin perder el formato de las ecuaciones ni tener que reescribirlas
+          todas a mano en el editor de ecuaciones de Word?
+        </p>
 
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="De LaTeX a Word para tu TFG/TFM sin perder las fórmulas">
-  <meta name="twitter:description" content="Aprende a pasar de LaTeX a Word con ecuaciones nativas en tus trabajos finales usando Ecuaciones a Word.">
+        <p>
+          En esta guía te enseño un flujo de trabajo práctico usando
+          <a href="/">Ecuaciones a Word</a>, para integrar tus ecuaciones en Word como ecuaciones nativas (OMML).
+        </p>
 
-  <style>
-    :root {
-      color-scheme: light dark;
-      --bg: #020617;
-      --card: #020617;
-      --border: rgba(148, 163, 184, 0.45);
-      --accent: #38bdf8;
-      --text-main: #e5e7eb;
-      --text-muted: #9ca3af;
-      --radius-lg: 18px;
-      --radius-xl: 24px;
-      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
+        <h2>1. ¿Por qué tantos TFG/TFM se escriben en Word?</h2>
+        <p>
+          Aunque LaTeX es fantástico para escribir documentos científicos, muchas universidades y tribunales piden
+          explícitamente que el documento final se entregue en .docx o en un formato que se pueda editar en Word.
+        </p>
 
-    * { box-sizing: border-box; }
+        <p>Esto significa que:</p>
+        <ul>
+          <li>Tienes que entregar el trabajo en Word sí o sí.</li>
+          <li>Pero quieres seguir aprovechando LaTeX o IA para las fórmulas.</li>
+        </ul>
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: var(--font-sans);
-      background: radial-gradient(circle at top left, #111827, #020617 55%);
-      color: var(--text-main);
-      display: flex;
-      justify-content: center;
-    }
+        <h2>2. Enfoque clásico (y doloroso): reescribir las fórmulas en Word</h2>
+        <p>El enfoque clásico para pasar de LaTeX a Word consiste en:</p>
+        <ul>
+          <li>Ver la fórmula en LaTeX o en un PDF.</li>
+          <li>Abrir el editor de ecuaciones de Word.</li>
+          <li>Ir escribiendo la ecuación a mano, con el riesgo de cometer errores.</li>
+        </ul>
 
-    .page {
-      width: 100%;
-      max-width: 800px;
-      padding: 1.5rem 1.5rem 3rem;
-    }
+        <p>
+          Esto puede ser aceptable para un par de fórmulas, pero no para un TFG/TFM entero con decenas de ecuaciones.
+        </p>
 
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
+        <h2>3. Flujo alternativo: preparar las secciones matemáticas en LaTeX o IA</h2>
+        <p>Una alternativa más eficiente es:</p>
+        <ul>
+          <li>Escribir los capítulos más matemáticos en LaTeX (o pedir a una IA que genere fórmulas en LaTeX).</li>
+          <li>Tener esos capítulos como texto con ecuaciones delimitadas por <code>$...$</code>, <code>$$...$$</code> o <code>\[...\]</code>.</li>
+          <li>Convertir ese contenido a Word con ecuaciones nativas cuando esté estable.</li>
+        </ul>
 
-    header {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
-    }
+        <h2>4. Cómo usar Ecuaciones a Word en tu TFG/TFM</h2>
+        <p>El flujo básico con Ecuaciones a Word es:</p>
+        <ol>
+          <li>Copia el contenido de tu capítulo en LaTeX (o de la IA) a un archivo .docx o .txt.</li>
+          <li>Asegúrate de que las ecuaciones están bien delimitadas con <code>$...$</code>, <code>$$...$$</code> o <code>\[...\]</code>.</li>
+          <li>Guarda el archivo y súbelo a <a href="/">Ecuaciones a Word</a>.</li>
+          <li>Descarga el .docx convertido, donde las fórmulas serán ya ecuaciones nativas de Word.</li>
+          <li>Copia y pega esas secciones en el documento principal de tu TFG/TFM en Word.</li>
+        </ol>
 
-    .back-link {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-    }
+        <p>
+          Así, trabajas tus fórmulas en el entorno que prefieras (LaTeX, IA…) y solo al final las integras en Word sin
+          perder el tiempo reescribiendo.
+        </p>
 
-    h1 {
-      margin: 0;
-      font-size: clamp(1.6rem, 3vw, 2rem);
-      letter-spacing: -0.03em;
-    }
+        <h2>5. Ejemplo de capítulo con fórmulas en LaTeX</h2>
+        <p>Imagina que tienes un capítulo con algo como esto:</p>
 
-    .intro {
-      margin: 0.5rem 0 0;
-      font-size: 0.95rem;
-      color: var(--text-muted);
-    }
-
-    main {
-      background: rgba(15, 23, 42, 0.96);
-      border-radius: var(--radius-xl);
-      border: 1px solid var(--border);
-      padding: 1.5rem 1.4rem 1.6rem;
-    }
-
-    h2 {
-      margin-top: 1.15rem;
-      margin-bottom: 0.4rem;
-      font-size: 1.1rem;
-    }
-
-    h3 { margin-top: 1rem; margin-bottom: 0.3rem; }
-
-    p { margin: 0.35rem 0; }
-
-    ul { margin: 0.3rem 0 0.6rem 1.2rem; padding: 0; }
-    li { margin-bottom: 0.2rem; }
-
-    code {
-      background: rgba(15, 23, 42, 0.9);
-      padding: 0.12rem 0.28rem;
-      border-radius: 4px;
-      font-size: 0.85rem;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-    }
-
-    pre {
-      background: rgba(15, 23, 42, 0.9);
-      padding: 0.7rem 0.75rem;
-      border-radius: 8px;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      overflow-x: auto;
-      font-size: 0.85rem;
-    }
-
-    hr {
-      border: none;
-      border-top: 1px solid rgba(30, 64, 175, 0.7);
-      margin: 1.4rem 0 0.9rem;
-    }
-
-    .cta {
-      font-size: 0.9rem;
-    }
-  </style>
-</head>
-<body>
-  <div class="page">
-    <header>
-      <a href="/" class="back-link">← Volver al conversor</a>
-      <h1>De LaTeX a Word para tu TFG/TFM sin perder las fórmulas</h1>
-      <p class="intro">
-        Muchos trabajos finales (<strong>TFG, TFM</strong>) se entregan en <strong>Word</strong>, pero la parte matemática
-        a menudo se prepara en <strong>LaTeX</strong> o con ayuda de <strong>IA</strong> que genera fórmulas en LaTeX.
-      </p>
-      <p class="intro">
-        El problema: ¿cómo <strong>pasar de LaTeX a Word</strong> sin perder el formato de las ecuaciones ni tener que
-        reescribirlas todas a mano en el editor de ecuaciones de Word?
-      </p>
-      <p class="intro">
-        En esta guía te enseño un flujo de trabajo práctico usando
-        <strong><a href="https://www.ecuacionesaword.com/">Ecuaciones a Word</a></strong>, para integrar tus ecuaciones
-        en Word como <strong>ecuaciones nativas (OMML)</strong>.
-      </p>
-    </header>
-
-    <main>
-      <h2>1. ¿Por qué tantos TFG/TFM se escriben en Word?</h2>
-      <p>
-        Aunque LaTeX es fantástico para escribir documentos científicos, muchas universidades y tribunales
-        piden explícitamente que el <strong>documento final</strong> se entregue en <strong>.docx</strong> o en un formato
-        que se pueda editar en Word.
-      </p>
-      <p>Esto significa que:</p>
-      <ul>
-        <li>Tienes que entregar el trabajo en Word sí o sí.</li>
-        <li>Pero quieres seguir aprovechando LaTeX o IA para las fórmulas.</li>
-      </ul>
-
-      <h2>2. Enfoque clásico (y doloroso): reescribir las fórmulas en Word</h2>
-      <p>El enfoque clásico para pasar de <strong>LaTeX a Word</strong> consiste en:</p>
-      <ul>
-        <li>Ver la fórmula en LaTeX o en un PDF.</li>
-        <li>Abrir el editor de ecuaciones de Word.</li>
-        <li>Ir escribiendo la ecuación a mano, con el riesgo de cometer errores.</li>
-      </ul>
-      <p>
-        Esto puede ser aceptable para un par de fórmulas, pero no para un TFG/TFM entero con
-        <strong>decenas de ecuaciones</strong>.
-      </p>
-
-      <h2>3. Flujo alternativo: preparar las secciones matemáticas en LaTeX o IA</h2>
-      <p>Una alternativa más eficiente es:</p>
-      <ul>
-        <li>Escribir los capítulos más matemáticos en <strong>LaTeX</strong> (o pedir a una <strong>IA</strong> que genere fórmulas en LaTeX).</li>
-        <li>Tener esos capítulos como texto con <strong>ecuaciones delimitadas por $...$, $$...$$ o \[...\]</strong>.</li>
-        <li>Convertir ese contenido a <strong>Word con ecuaciones nativas</strong> cuando esté estable.</li>
-      </ul>
-
-      <h2>4. Cómo usar Ecuaciones a Word en tu TFG/TFM</h2>
-      <p>El flujo básico con <strong>Ecuaciones a Word</strong> es:</p>
-      <ol>
-        <li>
-          Copia el contenido de tu capítulo en LaTeX (o de la IA si te devuelve fórmulas en LaTeX) y pégalo en un archivo
-          <strong>.docx</strong> o <strong>.txt</strong>.
-        </li>
-        <li>
-          Asegúrate de que las ecuaciones están bien delimitadas con <strong>$...$</strong>, <strong>$$...$$</strong> o <strong>\[...\]</strong>.
-        </li>
-        <li>
-          Guarda el archivo y súbelo a <strong><a href="https://www.ecuacionesaword.com/">Ecuaciones a Word</a></strong>.
-        </li>
-        <li>
-          Descarga el <strong>.docx</strong> convertido, donde las fórmulas serán ya <strong>ecuaciones nativas de Word</strong>.
-        </li>
-        <li>
-          Copia y pega esas secciones en el documento principal de tu <strong>TFG/TFM en Word</strong>.
-        </li>
-      </ol>
-      <p>
-        Así, trabajas tus fórmulas en el entorno que prefieras (LaTeX, IA…) y solo al final
-        las integras en Word sin perder el tiempo reescribiendo.
-      </p>
-
-      <h2>5. Ejemplo de capítulo con fórmulas en LaTeX</h2>
-      <p>Imagina que tienes un capítulo con algo como esto:</p>
-      <pre><code>En este capítulo estudiamos la función de transferencia del sistema:
+        <pre>En este capítulo estudiamos la función de transferencia del sistema:
 
 $$H(s) = \frac{\omega_n^2}{s^2 + 2 \zeta \omega_n s + \omega_n^2}$$
 
@@ -217,47 +144,41 @@ y analizamos la respuesta al escalón unitario:
 
 $$y(t) = 1 - \frac{1}{\sqrt{1-\zeta^2}} e^{-\zeta \omega_n t} \sin\left(\omega_n \sqrt{1-\zeta^2} t + \phi\right)$$
 
-donde $0 &lt; \zeta &lt; 1$ es el factor de amortiguamiento.</code></pre>
-      <p>
-        Ese texto, tal cual, se puede pegar en un <strong>.docx</strong> o <strong>.txt</strong> y subirlo a
-        <strong>Ecuaciones a Word</strong> para obtener las ecuaciones como objetos nativos de Word.
-      </p>
+donde $0 &lt; \zeta &lt; 1$ es el factor de amortiguamiento.</pre>
 
-      <h2>6. Buenas prácticas para un TFG/TFM con muchas ecuaciones</h2>
-      <ul>
-        <li>Trabaja cada capítulo matemático en un archivo separado para convertirlo de forma independiente.</li>
-        <li>Haz una prueba de conversión con un capítulo corto para ver cómo queda el resultado en Word.</li>
-        <li>Una vez validado el flujo, aplica el mismo proceso al resto de capítulos.</li>
-        <li>Evita mezclar demasiadas cosas (tablas muy complejas, imágenes, etc.) en la misma conversión si puedes separarlas.</li>
-      </ul>
+        <p>
+          Ese texto, tal cual, se puede pegar en un .docx o .txt y subirlo a Ecuaciones a Word para obtener las
+          ecuaciones como objetos nativos de Word.
+        </p>
 
-      <h2>7. Qué tipo de LaTeX soporta la herramienta</h2>
-      <p><strong>Ecuaciones a Word</strong> está optimizada para un <strong>subconjunto sencillo de LaTeX matemático</strong>:</p>
-      <ul>
-        <li>Potencias y subíndices (por ejemplo, <code>x^2</code>, <code>a_{ij}</code>).</li>
-        <li>Fracciones (por ejemplo, <code>\frac{a}{b}</code>).</li>
-        <li>Matrices y determinantes sencillos.</li>
-        <li>Fórmulas habituales de matemáticas, física e ingeniería.</li>
-      </ul>
-      <p>Para la mayoría de <strong>TFG/TFM de carreras técnicas</strong>, esto cubre ya una gran parte de las ecuaciones que necesitas.</p>
+        <h2>6. Buenas prácticas para un TFG/TFM con muchas ecuaciones</h2>
+        <ul>
+          <li>Trabaja cada capítulo matemático en un archivo separado para convertirlo de forma independiente.</li>
+          <li>Haz una prueba de conversión con un capítulo corto para ver cómo queda el resultado en Word.</li>
+          <li>Una vez validado el flujo, aplica el mismo proceso al resto de capítulos.</li>
+          <li>
+            Evita mezclar demasiadas cosas (tablas muy complejas, imágenes, etc.) en la misma conversión si puedes
+            separarlas.
+          </li>
+        </ul>
 
-      <h2>8. Resumen: integra LaTeX en tu TFG/TFM sin sufrir en Word</h2>
-      <ol>
-        <li>Escribe (o genera con IA) tus secciones matemáticas usando <strong>LaTeX</strong>.</li>
-        <li>Pega ese contenido en un archivo <strong>.docx</strong> o <strong>.txt</strong>.</li>
-        <li>Súbelo a <strong><a href="https://www.ecuacionesaword.com/">Ecuaciones a Word</a></strong>.</li>
-        <li>Obtén un documento <strong>Word con ecuaciones nativas</strong> y pásalo a tu TFG/TFM.</li>
-      </ol>
-      <p>
-        Con este flujo, puedes mantener la calidad de las ecuaciones de LaTeX y a la vez cumplir con el formato
-        que te exige tu universidad en <strong>Word</strong>.
-      </p>
+        <h2>7. Qué tipo de LaTeX soporta la herramienta</h2>
+        <p>Ecuaciones a Word está optimizada para un subconjunto sencillo de LaTeX matemático:</p>
+        <ul>
+          <li>Potencias y subíndices (por ejemplo, <code>x^2</code>, <code>a_{ij}</code>).</li>
+          <li>Fracciones (por ejemplo, <code>\frac{a}{b}</code>).</li>
+          <li>Matrices y determinantes sencillos.</li>
+        </ul>
 
-      <hr>
-      <p class="cta">
-        👉 Prueba el conversor aquí: <strong><a href="https://www.ecuacionesaword.com/">Ecuaciones a Word</a></strong>.
-      </p>
-    </main>
-  </div>
-</body>
+        <p>
+          Para capítulos largos, lo ideal es hacer una prueba pequeña primero y, cuando estés conforme con el resultado,
+          aplicar el mismo flujo al resto del TFG/TFM.
+        </p>
+      </main>
+
+      <footer>
+        © Ecuaciones a Word
+      </footer>
+    </div>
+  </body>
 </html>
