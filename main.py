@@ -1,45 +1,65 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, HTMLResponse
+from __future__ import annotations
+
+import io
+import logging
+import os
+import re
+from typing import Any, Dict, List, Optional, Tuple
+
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt
+from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, StreamingResponse
+
 import math2docx
 
-import io
-import os
-import re
-from typing import List, Tuple, Dict, Any, Optional
-
 # ================================================================
-#  Configuración básica de FastAPI
+# Configuración básica de FastAPI
 # ================================================================
 
 app = FastAPI(
     title="LaTeX → Word Equations Converter",
-    description="Convierte fórmulas LaTeX simples en ecuaciones nativas de Word (OMML) dentro de un .docx.",
+    description=(
+        "Convierte fórmulas LaTeX simples en ecuaciones nativas de Word (OMML) "
+        "dentro de un .docx."
+    ),
 )
 
-# CORS para poder llamar desde el frontend
+ALLOWED_ORIGINS = [
+    "https://www.ecuacionesaword.com",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
+logger = logging.getLogger("ecuacionesaword")
+if not logger.handlers:
+    logging.basicConfig(level=logging.INFO)
+
 Segment = Tuple[str, str]  # ("text" | "inline" | "display", contenido)
 
+MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
+USE_EXERCISE_TWEAKS = True  # activa/desactiva reglas específicas q1..q4, etc.
+
 
 # ================================================================
-#  1. Normalización y 'prettify'
-#    (incluye tus reglas específicas y comportamiento genérico)
+# 1. Normalización y "prettify"
 # ================================================================
+
 
 def normalize_math_text(text: str) -> str:
     """
     Pequeñas correcciones de notación:
+
     - q1(x,y,z) -> q_1(x,y,z)
     - D1 -> D_1, ..., D4 -> D_4
     - x2 -> x^2, y3 -> y^3, z4 -> z^4 (solo exponentes 2,3,4)
@@ -53,18 +73,17 @@ def normalize_math_text(text: str) -> str:
     t = re.sub(r"\bD([1-4])\b", r"D_\1", t)
 
     # x2 -> x^2, etc.
-    for var in ["x", "y", "z"]:
-        for exp in ["2", "3", "4"]:
+    for var in ("x", "y", "z"):
+        for exp in ("2", "3", "4"):
             t = re.sub(rf"{var}{exp}\b", rf"{var}^{exp}", t)
 
     return t
 
 
-def prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
+def _prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
     """
-    Recibe la lista de párrafos extraídos del documento original y devuelve
-    una lista nueva, más limpia. Incluye algunas reglas específicas que usabas
-    para tu ejercicio de q1..q4, D1..D4, criterio de Sylvester, etc.
+    Versión con reglas específicas que usabas para tu ejercicio de q1..q4,
+    D1..D4, criterio de Sylvester, etc.
 
     Si el texto no coincide con ningún patrón especial, se deja tal cual
     (salvo la normalización de notación).
@@ -75,7 +94,7 @@ def prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
         s = normalize_math_text(text)
         stripped = s.strip()
 
-        # 0) Eliminamos párrafos completamente vacíos para evitar huecos grandes
+        # 0) Eliminamos párrafos completamente vacíos
         if stripped == "":
             continue
 
@@ -86,7 +105,6 @@ def prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
 
         # 1) Párrafo largo con q1, q2, q3, q4 todos seguidos
         if all(sym in stripped for sym in ["q_1(x,y,z)", "q_2(x,y,z)", "q_3(x,y,z)", "q_4(x,y,z)"]):
-            # Reescribimos en cuatro ecuaciones limpias
             out.append("$$ q_1(x,y,z) = 2x^2 + 2y^2 + 2z^2 + 2xy + 2xz $$")
             out.append("$$ q_2(x,y,z) = x^2 - y^2 + z^2 + 2xy $$")
             out.append("$$ q_3(x,y,z) = 2x^2 - y^2 + 2z^2 + 4xy - 4yz $$")
@@ -149,7 +167,7 @@ def prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
             )
             continue
 
-        # 7) Línea compacta D1>0, D2>0, D3>0  -> bloque aligned
+        # 7) Línea compacta D1>0, D2>0, D3>0 -> bloque aligned
         if "D_1>0" in stripped and "D_2>0" in stripped and "D_3>0" in stripped:
             out.append(
                 "\\begin{aligned}\n"
@@ -160,7 +178,7 @@ def prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
             )
             continue
 
-        # 7-bis) Párrafos con varios D_i encadenados (tipo "D_1 = ... D_2 = ... D_3 = ...")
+        # 7-bis) Párrafos con varios D_i encadenados
         d_terms = list(re.finditer(r"D_[1-4][^D]*", stripped))
         if len(d_terms) >= 2:
             for m in d_terms:
@@ -169,18 +187,20 @@ def prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
                     out.append(f"$$ {term} $$")
             continue
 
-        # 8) Conclusiones A1, A4 definidas positivas con texto feo
+        # 8) Conclusiones A1, A4 definidas positivas
         if "A1A_1A1" in stripped or "A1A1" in stripped:
             out.append("⇒ $A_1$ es definida positiva ⇒ $q_1$ definida positiva.")
             continue
+
         if "A4A_4A4" in stripped or "A4A4" in stripped:
             out.append("⇒ $A_4$ es definida positiva ⇒ $q_4$ definida positiva.")
             continue
 
-        # 9) Determinantes de A2 y A3 escritos de forma caótica
+        # 9) Determinantes de A2 y A3
         if "detA2" in stripped or "det A_2" in stripped:
             out.append("$$ \\det A_2 = -2 < 0 $$")
             continue
+
         if "detA3" in stripped or "det A_3" in stripped:
             out.append("$$ \\det A_3 = -20 < 0 $$")
             continue
@@ -196,13 +216,37 @@ def prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
     return out
 
 
+def prettify_paragraphs(paragraph_texts: List[str]) -> List[str]:
+    """
+    Punto de entrada único para limpiar / normalizar texto antes de construir
+    el documento final.
+
+    - Siempre hace normalización genérica (notación, espacios, vacíos).
+    - Opcionalmente aplica las reglas específicas del ejercicio.
+    """
+    # Limpieza genérica
+    generic: List[str] = []
+    for text in paragraph_texts:
+        s = normalize_math_text(text)
+        if s.strip():
+            generic.append(s.strip())
+
+    if not USE_EXERCISE_TWEAKS:
+        return generic
+
+    # Comportamiento antiguo conservado
+    return _prettify_paragraphs_for_exercise(generic)
+
+
 # ================================================================
-#  2. Utilidades de párrafo y parsing LaTeX
+# 2. Utilidades de párrafo y parsing LaTeX
 # ================================================================
+
 
 def new_paragraph(doc: Document, align: Optional[Any] = None):
     """
     Crea un párrafo con formato compacto:
+
     - espacio antes = 0
     - espacio después = 0
     - interlineado sencillo
@@ -217,23 +261,25 @@ def new_paragraph(doc: Document, align: Optional[Any] = None):
     return p
 
 
-def add_math_safe(paragraph, latex: str):
+def add_math_safe(paragraph, latex: str) -> None:
     """Llama a math2docx.add_math; si falla, deja el texto LaTeX tal cual."""
     try:
         math2docx.add_math(paragraph, latex)
-    except Exception:
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Fallo convirtiendo LaTeX a ecuación Word: %s", exc)
         paragraph.add_run(latex)
 
 
 def parse_math_segments(text: str) -> List[Segment]:
     """
-    Detecta $...$, $$...$$ y \[...\] en UNA línea y devuelve segmentos.
+    Detecta $...$, $$...$$ y \\[...\\] en UNA línea y devuelve segmentos.
+
     tipo ∈ {"text", "inline", "display"}.
     """
     segments: List[Segment] = []
     buf: List[str] = []
 
-    def flush_text():
+    def flush_text() -> None:
         if buf:
             segments.append(("text", "".join(buf)))
             buf.clear()
@@ -249,7 +295,7 @@ def parse_math_segments(text: str) -> List[Segment]:
             if end == -1:
                 buf.append(text[i:])
                 break
-            latex = text[i + 2: end]
+            latex = text[i + 2 : end]
             segments.append(("display", latex.strip()))
             i = end + 2
             continue
@@ -261,7 +307,7 @@ def parse_math_segments(text: str) -> List[Segment]:
             if end == -1:
                 buf.append(text[i:])
                 break
-            latex = text[i + 2: end]
+            latex = text[i + 2 : end]
             segments.append(("display", latex.strip()))
             i = end + 2
             continue
@@ -273,7 +319,7 @@ def parse_math_segments(text: str) -> List[Segment]:
             if end == -1:
                 buf.append(text[i:])
                 break
-            latex = text[i + 1: end]
+            latex = text[i + 1 : end]
             segments.append(("inline", latex.strip()))
             i = end + 1
             continue
@@ -288,8 +334,9 @@ def parse_math_segments(text: str) -> List[Segment]:
 def split_into_paragraph_descriptors(text: str) -> List[Dict[str, Any]]:
     """
     Divide una línea en descriptores:
-      - {"type": "inline", "chunks": [("text", ...), ("inline", ...), ...]}
-      - {"type": "display", "latex": "..."}
+
+    - {"type": "inline", "chunks": [("text", ...), ("inline", ...), ...]}
+    - {"type": "display", "latex": "..."}
     """
     segments = parse_math_segments(text)
     paragraphs: List[Dict[str, Any]] = []
@@ -312,29 +359,25 @@ def split_into_paragraph_descriptors(text: str) -> List[Dict[str, Any]]:
 
 
 # ================================================================
-#  3. Troceo genérico de ecuaciones largas
+# 3. Troceo genérico de ecuaciones largas
 # ================================================================
+
 
 def split_long_latex_equation(latex: str, max_len: int = 120) -> List[str]:
     """
     Heurística para partir ecuaciones largas en varias más cortas, para que
     Word tenga más margen de colocarlas en distintas líneas/páginas.
-
-    Estrategia:
-    - Si hay '\\\\' (saltos de línea LaTeX), separamos por ahí.
-    - Si hay '=', intentamos agrupar términos hasta llegar a max_len.
-    - Si hay ',', hacemos algo similar.
-    - Si no, partimos en trozos de max_len caracteres.
     """
     latex = latex.strip()
     if not latex:
         return []
+
     if len(latex) <= max_len:
         return [latex]
 
     # 1) Si ya hay saltos de línea LaTeX, lo más natural es respetarlos
-    if r"\\" in latex:
-        parts = [p.strip() for p in latex.split(r"\\") if p.strip()]
+    if "\\\\" in latex:
+        parts = [p.strip() for p in latex.split("\\\\") if p.strip()]
         return parts
 
     # 2) Intentar partir por '='
@@ -356,7 +399,7 @@ def split_long_latex_equation(latex: str, max_len: int = 120) -> List[str]:
     # 3) Intentar partir por comas
     if "," in latex:
         tokens = [t.strip() for t in latex.split(",")]
-        eqs: List[str] = []
+        eqs = []
         current = ""
         for tok in tokens:
             candidate = (current + ", " if current else "") + tok
@@ -370,14 +413,15 @@ def split_long_latex_equation(latex: str, max_len: int = 120) -> List[str]:
         return eqs
 
     # 4) Último recurso: trocear por longitud fija
-    return [latex[i:i + max_len].strip() for i in range(0, len(latex), max_len)]
+    return [latex[i : i + max_len].strip() for i in range(0, len(latex), max_len)]
 
 
 # ================================================================
-#  4. Bloques aligned (criterio de Sylvester, etc.)
+# 4. Bloques aligned (criterio de Sylvester, etc.)
 # ================================================================
 
-def add_aligned_block(doc: Document, aligned_block: str):
+
+def add_aligned_block(doc: Document, aligned_block: str) -> None:
     """
     Convierte un entorno \\begin{aligned}...\\end{aligned} en varias ecuaciones,
     centradas, una debajo de otra.
@@ -385,16 +429,16 @@ def add_aligned_block(doc: Document, aligned_block: str):
     content = aligned_block.strip()
 
     if content.startswith(r"\begin{aligned}"):
-        content = content[len(r"\begin{aligned}"):]
+        content = content[len(r"\begin{aligned}") :]
+
     if content.endswith(r"\end{aligned}"):
-        content = content[:-len(r"\end{aligned}")]
+        content = content[: -len(r"\end{aligned}")]
 
     content = content.strip()
     if not content:
         return
 
     rows = [row.strip() for row in content.split(r"\\") if row.strip()]
-
     for row in rows:
         row_no_amp = row.replace("&", "")
         p = new_paragraph(doc, WD_ALIGN_PARAGRAPH.CENTER)
@@ -402,13 +446,14 @@ def add_aligned_block(doc: Document, aligned_block: str):
 
 
 # ================================================================
-#  5. Construcción del documento
+# 5. Construcción del documento
 # ================================================================
+
 
 def build_document_from_paragraphs(paragraph_texts: List[str]) -> Document:
     """
-    Recorre todos los párrafos de texto (ya limpios) y construye
-    el nuevo Document con ecuaciones de Word.
+    Recorre todos los párrafos de texto (ya limpios) y construye el nuevo
+    Document con ecuaciones de Word.
     """
     out_doc = Document()
 
@@ -492,7 +537,6 @@ def build_document_from_paragraphs(paragraph_texts: List[str]) -> Document:
 
         # ---------------------- Procesado normal -------------------------
         descriptors = split_into_paragraph_descriptors(text)
-
         if not descriptors:
             new_paragraph(out_doc)
             continue
@@ -526,29 +570,40 @@ def build_document_from_paragraphs(paragraph_texts: List[str]) -> Document:
 
 
 # ================================================================
-#  6. Endpoints FastAPI: /convert y /health
+# 6. Endpoints FastAPI: /convert, /api/v1/convert y /health
 # ================================================================
 
-@app.post("/convert")
-async def convert_document(file: UploadFile = File(...)):
+
+async def _convert_document_impl(uploaded_file: UploadFile) -> StreamingResponse:
     """
-    Recibe un .txt o .docx con LaTeX sencillo y devuelve un .docx convertido
-    con ecuaciones nativas de Word.
+    Lógica principal de conversión: compartida por /convert y /api/v1/convert.
     """
-    if not file.filename:
+    if not uploaded_file.filename:
         raise HTTPException(status_code=400, detail="El archivo debe tener nombre.")
 
-    filename = file.filename
+    filename = uploaded_file.filename
     base_name, ext = os.path.splitext(filename)
     ext = ext.lower()
 
     if ext not in (".txt", ".docx"):
         raise HTTPException(
             status_code=400,
-            detail="Tipo de archivo no soportado. Usa .txt o .docx.",
+            detail="Tipo de archivo no soportado. Usa un .txt o .docx.",
         )
 
-    file_bytes = await file.read()
+    file_bytes = await uploaded_file.read()
+
+    if not file_bytes:
+        raise HTTPException(status_code=400, detail="El archivo está vacío.")
+
+    if len(file_bytes) > MAX_FILE_SIZE_BYTES:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "El archivo es demasiado grande. "
+                "Prueba a dividir el documento en partes más pequeñas."
+            ),
+        )
 
     try:
         # 1) Extraemos párrafos del archivo original
@@ -561,7 +616,7 @@ async def convert_document(file: UploadFile = File(...)):
             paragraph_texts = [p.text for p in source_doc.paragraphs]
 
         # 2) Los limpiamos / normalizamos
-        pretty_paragraphs = prettify_paragraphs_for_exercise(paragraph_texts)
+        pretty_paragraphs = prettify_paragraphs(paragraph_texts)
 
         # 3) Construimos el nuevo documento con ecuaciones de Word
         out_doc = build_document_from_paragraphs(pretty_paragraphs)
@@ -570,33 +625,57 @@ async def convert_document(file: UploadFile = File(...)):
         output_stream = io.BytesIO()
         out_doc.save(output_stream)
         output_stream.seek(0)
-
-    except Exception as e:
+    except HTTPException:
+        # Re-lanzamos tal cual (errores de usuario controlados)
+        raise
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Error procesando el documento: %s", exc)
         raise HTTPException(
             status_code=500,
-            detail=f"Error procesando el documento: {str(e)}",
-        )
+            detail=(
+                "Ha ocurrido un error procesando el documento. "
+                "Prueba con un archivo más sencillo o contacta conmigo."
+            ),
+        ) from exc
 
-    # Nombre del archivo devuelto
     out_filename = f"{base_name}_ecuaciones.docx"
     headers = {
-        "Content-Disposition": f'attachment; filename="{out_filename}"'
+        "Content-Disposition": f'attachment; filename="{out_filename}"',
     }
 
     return StreamingResponse(
         output_stream,
-        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        media_type=(
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        ),
         headers=headers,
     )
 
 
+@app.post("/convert")
+async def convert_document(file: UploadFile = File(...)) -> StreamingResponse:
+    """
+    Endpoint principal usado por la web. Mantiene la ruta /convert existente.
+    """
+    return await _convert_document_impl(file)
+
+
+@app.post("/api/v1/convert")
+async def convert_document_v1(file: UploadFile = File(...)) -> StreamingResponse:
+    """
+    Versión versionada del endpoint de conversión, para uso futuro o integraciones.
+    """
+    return await _convert_document_impl(file)
+
+
 @app.get("/health")
-def health_check():
+@app.get("/healthz")
+def health_check() -> Dict[str, str]:
     return {"status": "ok"}
 
 
 # ================================================================
-#  7. Servir HTML estático: "/", "/blog" y "/blog2"
+# 7. Servir HTML estático: "/", "/blog" y "/blog2"
 # ================================================================
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -604,38 +683,36 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def read_html_file(filename: str) -> str:
     path = os.path.join(BASE_DIR, filename)
-    with open(path, "r", encoding="utf-8") as f:
-        return f.read()
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        logger.error("No se encuentra el archivo HTML: %s", filename)
+        raise
 
 
 @app.get("/", response_class=HTMLResponse)
-async def home():
-    """
-    Devuelve la página principal (index.html).
-    """
+async def home() -> HTMLResponse:
+    """Devuelve la página principal (index.html)."""
     try:
-        return read_html_file("index.html")
+        return HTMLResponse(read_html_file("index.html"))
     except FileNotFoundError:
         return HTMLResponse("<h1>No se encuentra index.html</h1>", status_code=404)
 
 
 @app.get("/blog", response_class=HTMLResponse)
-async def blog():
-    """
-    Devuelve la página de blog principal (blog.html).
-    """
+async def blog() -> HTMLResponse:
+    """Devuelve la página de blog principal (blog.html)."""
     try:
-        return read_html_file("blog.html")
+        return HTMLResponse(read_html_file("blog.html"))
     except FileNotFoundError:
         return HTMLResponse("<h1>No se encuentra blog.html</h1>", status_code=404)
 
 
 @app.get("/blog2", response_class=HTMLResponse)
-async def blog2():
-    """
-    Devuelve la segunda página de blog (blog2.html).
-    """
+async def blog2() -> HTMLResponse:
+    """Devuelve la segunda página de blog (blog2.html)."""
     try:
-        return read_html_file("blog2.html")
+        return HTMLResponse(read_html_file("blog2.html"))
     except FileNotFoundError:
         return HTMLResponse("<h1>No se encuentra blog2.html</h1>", status_code=404)
