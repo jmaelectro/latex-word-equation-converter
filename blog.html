@@ -1,12 +1,12 @@
  (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
 diff --git a/blog.html b/blog.html
-index 343b5fb587626a89b8ee5f5a6201da4be12a45ac..22a9b49a9bc8c12ea679bd782158546879d309eb 100644
+index 343b5fb587626a89b8ee5f5a6201da4be12a45ac..1794129a7ef5654a701056929667f0d76b53570d 100644
 --- a/blog.html
 +++ b/blog.html
-@@ -1,38 +1,55 @@
- <!doctype html>
- <html lang="es">
-   <head>
+@@ -1,180 +1,238 @@
+-<!doctype html>
+-<html lang="es">
+-  <head>
 -    <meta charset="utf-8">
 -    <title>Pasar ecuaciones de ChatGPT (LaTeX) a Word con ecuaciones nativas | Ecuaciones a Word</title>
 -    <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -17,6 +17,176 @@ index 343b5fb587626a89b8ee5f5a6201da4be12a45ac..22a9b49a9bc8c12ea679bd7821585468
 -    <link rel="canonical" href="https://www.ecuacionesaword.com/blog">
 -    <style>
 -      body {
+-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+-        margin: 0;
+-        padding: 0;
+-        background: #0f172a;
+-        color: #e5e7eb;
+-      }
+-      .page {
+-        max-width: 760px;
+-        margin: 0 auto;
+-        padding: 2rem 1.5rem 3rem;
+-      }
+-      a {
+-        color: #7dd3fc;
+-      }
+-      a:hover {
+-        text-decoration: underline;
+-      }
+-      header {
+-        margin-bottom: 1.5rem;
+-      }
+-      h1 {
+-        font-size: 1.7rem;
+-        margin-bottom: 1rem;
+-      }
+-      h2 {
+-        margin-top: 1.75rem;
+-        font-size: 1.2rem;
+-      }
+-      p {
+-        line-height: 1.6;
+-        color: #cbd5e1;
+-      }
+-      pre {
+-        background: #020617;
+-        padding: 1rem;
+-        border-radius: 0.5rem;
+-        overflow-x: auto;
+-        font-size: 0.9rem;
+-      }
+-      blockquote {
+-        border-left: 3px solid #38bdf8;
+-        padding-left: 0.75rem;
+-        margin-left: 0;
+-        color: #e5e7eb;
+-        font-style: italic;
+-      }
+-      ul {
+-        padding-left: 1.2rem;
+-      }
+-      li {
+-        margin-bottom: 0.3rem;
+-      }
+-      footer {
+-        margin-top: 2rem;
+-        font-size: 0.85rem;
+-        color: #9ca3af;
+-      }
+-    </style>
+-  </head>
+-  <body>
+-    <div class="page">
+-      <header>
+-        <a href="/">← Volver al conversor</a>
+-        <h1>Cómo pasar ecuaciones de ChatGPT (LaTeX) a Word con ecuaciones nativas</h1>
+-      </header>
+-
+-      <main>
+-        <p>
+-          Si usas ChatGPT para hacer ejercicios de matemáticas, física o ingeniería, probablemente te haya pasado esto:
+-          la IA te devuelve las fórmulas en LaTeX, pero tú necesitas un documento Word con ecuaciones editables, no
+-          imágenes ni texto raro.
+-        </p>
+-
+-        <p>
+-          En esta guía te enseño a usar <a href="/">Ecuaciones a Word</a> para convertir rápidamente tus ecuaciones de
+-          ChatGPT a Word, manteniendo las ecuaciones como ecuaciones nativas de Word (OMML).
+-        </p>
+-
+-        <h2>1. Pídele a ChatGPT que te dé las fórmulas en LaTeX</h2>
+-        <p>Lo primero es asegurarte de que ChatGPT genera las fórmulas en LaTeX. Puedes añadir al final de tu prompt algo como:</p>
+-
+-        <blockquote>
+-          “Escribe la solución con las fórmulas en LaTeX, usando $ para fórmulas en línea y $$ para fórmulas en bloque.”
+-        </blockquote>
+-
+-        <p>Por ejemplo, ChatGPT puede devolverte algo así:</p>
+-
+-        <pre>La función es:
+-$$f(t) = e^{-8t+1} + \sin(8t+1)$$
+-
+-Y otra ecuación en línea sería $E = mc^2$ dentro del texto.</pre>
+-
+-        <h2>2. Copia el resultado a un documento .docx o .txt</h2>
+-        <p>Cuando tengas la respuesta de ChatGPT con las fórmulas en LaTeX:</p>
+-        <ul>
+-          <li>Selecciona todo el texto de la respuesta.</li>
+-          <li>Cópialo y pégalo en un documento de Word (.docx) o en un archivo de texto .txt.</li>
+-          <li>Guarda el archivo en tu ordenador (por ejemplo, <code>ejercicios-chatgpt-latex.docx</code>).</li>
+-        </ul>
+-
+-        <p>No hace falta que des formato bonito todavía: lo importante es que las fórmulas en LaTeX estén tal cual en el archivo.</p>
+-
+-        <h2>3. Sube el archivo a Ecuaciones a Word</h2>
+-        <p>Ahora ve a <a href="https://www.ecuacionesaword.com/">https://www.ecuacionesaword.com/</a>.</p>
+-        <ul>
+-          <li>Haz clic en el botón para subir tu archivo .docx o .txt.</li>
+-          <li>Selecciona el archivo donde pegaste el contenido de ChatGPT.</li>
+-          <li>Pulsa el botón de convertir.</li>
+-        </ul>
+-
+-        <p>
+-          La herramienta leerá las expresiones en LaTeX (tanto en <code>$...$</code> como en <code>$$...$$</code> o
+-          <code>\[...\]</code>) y creará un nuevo documento .docx donde esas fórmulas ya son ecuaciones nativas de Word.
+-        </p>
+-
+-        <h2>4. Descarga el .docx con ecuaciones nativas de Word</h2>
+-        <p>Una vez terminada la conversión, podrás descargar el nuevo archivo .docx.</p>
+-        <p>Al abrirlo en Word verás que:</p>
+-        <ul>
+-          <li>Las fórmulas aparecen como ecuaciones editables (no imágenes).</li>
+-          <li>Puedes hacer doble clic en una ecuación y modificarla con el editor de ecuaciones de Word.</li>
+-          <li>Puedes copiar y pegar ecuaciones entre documentos sin perder el formato.</li>
+-        </ul>
+-
+-        <h2>5. Ventajas frente a copiar todo a mano en Word</h2>
+-        <p>Sin una herramienta como Ecuaciones a Word, tendrías que:</p>
+-        <ul>
+-          <li>Volver a escribir cada fórmula usando el editor de ecuaciones de Word.</li>
+-          <li>Ir copiando y pegando trozos, con riesgo de errores.</li>
+-          <li>Perder mucho tiempo en algo que la IA ya había calculado por ti.</li>
+-        </ul>
+-
+-        <p>
+-          Aquí simplemente aprovechas que ChatGPT te dé las fórmulas en LaTeX, y de ahí pasas directamente a Word con
+-          ecuaciones nativas en unos pocos clics.
+-        </p>
+-
+-        <h2>6. Consejos para que la conversión de LaTeX a Word sea más limpia</h2>
+-        <ul>
+-          <li>
+-            Pide a la IA que use siempre el mismo formato de delimitadores: por ejemplo, <code>$...$</code> para inline
+-            y <code>$$...$$</code> para bloque.
+-          </li>
+-          <li>Evita anidar código extraño alrededor de las fórmulas (tablas muy complejas, etc.) en el mismo paso.</li>
+-          <li>Si algo no se convierte bien, prueba con una fórmula más simple y ve complicando poco a poco.</li>
+-        </ul>
+-
+-        <h2>7. Resumen: flujo recomendado ChatGPT → LaTeX → Word</h2>
+-        <ol>
+-          <li>Pide a ChatGPT que te dé la solución con las fórmulas en LaTeX.</li>
+-          <li>Copia la respuesta a un .docx o .txt.</li>
+-          <li>Súbelo a <a href="/">Ecuaciones a Word</a>.</li>
+-          <li>Descarga el .docx con las ecuaciones nativas de Word listas para entregar.</li>
+-        </ol>
+-
+-        <p>
+-          Prueba ahora el conversor en:
+-          <a href="https://www.ecuacionesaword.com/">Ecuaciones a Word</a>.
+-        </p>
+-      </main>
+-
+-      <footer>
+-        © Ecuaciones a Word
+-      </footer>
+-    </div>
+-  </body>
+-</html>
++<!doctype html>
++<html lang="es">
++  <head>
 +    <meta charset="utf-8">
 +    <title>Pasar ecuaciones de ChatGPT (LaTeX) a Word con ecuaciones nativas | Ecuaciones a Word</title>
 +    <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -24,10 +194,7 @@ index 343b5fb587626a89b8ee5f5a6201da4be12a45ac..22a9b49a9bc8c12ea679bd7821585468
 +      name="description"
 +      content="Guía paso a paso para pasar ecuaciones de ChatGPT en LaTeX a Word con ecuaciones nativas, sin reescribirlas a mano."
 +    >
-+    <meta
-+      property="og:title"
-+      content="Pasar ecuaciones de ChatGPT (LaTeX) a Word con ecuaciones nativas | Ecuaciones a Word"
-+    >
++    <meta property="og:title" content="Pasar ecuaciones de ChatGPT (LaTeX) a Word con ecuaciones nativas | Ecuaciones a Word">
 +    <meta
 +      property="og:description"
 +      content="Guía paso a paso para pasar ecuaciones de ChatGPT en LaTeX a Word con ecuaciones nativas, sin reescribirlas a mano."
@@ -36,39 +203,225 @@ index 343b5fb587626a89b8ee5f5a6201da4be12a45ac..22a9b49a9bc8c12ea679bd7821585468
 +    <meta property="og:url" content="https://www.ecuacionesaword.com/blog">
 +    <meta name="twitter:card" content="summary">
 +    <meta name="twitter:title" content="Pasar ecuaciones de ChatGPT (LaTeX) a Word con ecuaciones nativas">
-+    <meta
-+      name="twitter:description"
-+      content="Convierte el LaTeX que te da ChatGPT en ecuaciones nativas de Word con esta guía."
-+    >
-+    <meta name="theme-color" content="#0f172a">
++    <meta name="twitter:description" content="Convierte el LaTeX que te da ChatGPT en ecuaciones nativas de Word con esta guía.">
++    <meta name="theme-color" content="#0b1226">
 +    <link rel="canonical" href="https://www.ecuacionesaword.com/blog">
 +    <style>
++      :root {
++        color-scheme: light dark;
++        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
++        --bg: #0b1226;
++        --card: #111827;
++        --muted: #cbd5e1;
++        --border: rgba(148, 163, 184, 0.35);
++        --accent: #38bdf8;
++        --text: #e2e8f0;
++      }
++      * {
++        box-sizing: border-box;
++      }
 +      body {
-         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-         margin: 0;
-         padding: 0;
-         background: #0f172a;
-         color: #e5e7eb;
-       }
-       .page {
-         max-width: 760px;
-         margin: 0 auto;
-         padding: 2rem 1.5rem 3rem;
-       }
-       a {
-         color: #7dd3fc;
-       }
-       a:hover {
-         text-decoration: underline;
-       }
-       header {
-         margin-bottom: 1.5rem;
-       }
-       h1 {
-         font-size: 1.7rem;
-         margin-bottom: 1rem;
-       }
-       h2 {
++        margin: 0;
++        padding: 0;
++        background: radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.2), transparent 30%),
++          radial-gradient(circle at 85% 10%, rgba(99, 102, 241, 0.2), transparent 30%),
++          var(--bg);
++        color: var(--text);
++      }
++      .page {
++        max-width: 880px;
++        margin: 0 auto;
++        padding: 2rem 1.5rem 3rem;
++      }
++      header {
++        display: flex;
++        flex-direction: column;
++        gap: 0.35rem;
++        margin-bottom: 1.5rem;
++      }
++      a {
++        color: var(--accent);
++      }
++      a:hover {
++        text-decoration: underline;
++      }
++      h1 {
++        font-size: clamp(1.9rem, 3vw, 2.2rem);
++        margin: 0;
++      }
++      h2 {
++        margin-top: 1.75rem;
++        font-size: 1.25rem;
++      }
++      p {
++        line-height: 1.7;
++        color: var(--muted);
++      }
++      pre {
++        background: var(--card);
++        padding: 1rem;
++        border-radius: 0.75rem;
++        overflow-x: auto;
++        font-size: 0.95rem;
++        border: 1px solid var(--border);
++      }
++      blockquote {
++        border-left: 4px solid var(--accent);
++        padding-left: 0.85rem;
++        margin-left: 0;
++        color: #e2e8f0;
++        font-style: italic;
++      }
++      ul,
++      ol {
++        padding-left: 1.15rem;
++      }
++      li {
++        margin-bottom: 0.35rem;
++        color: var(--muted);
++      }
++      footer {
++        margin-top: 2rem;
++        font-size: 0.95rem;
++        color: #94a3b8;
++      }
++      .chip {
++        display: inline-flex;
++        align-items: center;
++        padding: 0.2rem 0.6rem;
++        border-radius: 999px;
++        background: rgba(56, 189, 248, 0.15);
++        border: 1px solid rgba(56, 189, 248, 0.35);
++        color: #7dd3fc;
++        font-weight: 600;
++        margin-bottom: 0.5rem;
++      }
++    </style>
++  </head>
++  <body>
++    <div class="page">
++      <header>
++        <a href="/">← Volver al conversor</a>
++        <div class="chip">Guía práctica</div>
++        <h1>Cómo pasar ecuaciones de ChatGPT (LaTeX) a Word con ecuaciones nativas</h1>
++        <p>Aprende a convertir el LaTeX que generan las IAs en ecuaciones de Word editables, sin perder tiempo copiando a mano.</p>
++      </header>
++
++      <main>
++        <p>
++          Si usas ChatGPT para hacer ejercicios de matemáticas, física o ingeniería, probablemente te haya pasado esto: la IA te devuelve las fórmulas en LaTeX, pero tú necesitas un documento Word con ecuaciones editables, no imágenes ni texto raro.
++        </p>
++
++        <p>
++          En esta guía te enseño a usar <a href="/">Ecuaciones a Word</a> para convertir rápidamente tus ecuaciones de ChatGPT a Word, manteniendo las ecuaciones como ecuaciones nativas de Word (OMML).
++        </p>
++
++        <h2>1. Pídele a ChatGPT que te dé las fórmulas en LaTeX</h2>
++        <p>Lo primero es asegurarte de que ChatGPT genera las fórmulas en LaTeX. Puedes añadir al final de tu prompt algo como:</p>
++
++        <blockquote>
++          “Escribe la solución con las fórmulas en LaTeX, usando $ para fórmulas en línea y $$ para fórmulas en bloque.”
++        </blockquote>
++
++        <p>Por ejemplo, ChatGPT puede devolverte algo así:</p>
++
++        <pre>La función es:
++$$f(t) = e^{-8t+1} + \sin(8t+1)$$
++
++Y otra ecuación en línea sería $E = mc^2$ dentro del texto.</pre>
++
++        <h2>2. Copia el resultado a un documento .docx o .txt</h2>
++        <p>Cuando tengas la respuesta de ChatGPT con las fórmulas en LaTeX:</p>
++        <ul>
++          <li>Selecciona todo el texto de la respuesta.</li>
++          <li>Cópialo y pégalo en un documento de Word (.docx) o en un archivo de texto .txt.</li>
++          <li>Guarda el archivo en tu ordenador (por ejemplo, <code>ejercicios-chatgpt-latex.docx</code>).</li>
++        </ul>
++
++        <p>No hace falta que des formato bonito todavía: lo importante es que las fórmulas en LaTeX estén tal cual en el archivo.</p>
++
++        <h2>3. Sube el archivo a Ecuaciones a Word</h2>
++        <p>Ahora ve a <a href="https://www.ecuacionesaword.com/">https://www.ecuacionesaword.com/</a>.</p>
++        <ul>
++          <li>Haz clic en el botón para subir tu archivo .docx o .txt.</li>
++          <li>Selecciona el archivo donde pegaste el contenido de ChatGPT.</li>
++          <li>Pulsa el botón de convertir.</li>
++        </ul>
++
++        <p>
++          La herramienta leerá las expresiones en LaTeX (tanto en <code>$...$</code> como en <code>$$...$$</code> o <code>\[...\]</code>) y creará un nuevo documento .docx donde esas fórmulas ya son ecuaciones nativas de Word.
++        </p>
++
++        <h2>4. Descarga el .docx con ecuaciones nativas de Word</h2>
++        <p>Una vez terminada la conversión, podrás descargar el nuevo archivo .docx.</p>
++        <p>Al abrirlo en Word verás que:</p>
++        <ul>
++          <li>Las fórmulas aparecen como ecuaciones editables (no imágenes).</li>
++          <li>Puedes hacer doble clic en una ecuación y modificarla con el editor de ecuaciones de Word.</li>
++          <li>Puedes copiar y pegar ecuaciones entre documentos sin perder el formato.</li>
++        </ul>
++
++        <h2>5. Ventajas frente a copiar todo a mano en Word</h2>
++        <p>Sin una herramienta como Ecuaciones a Word, tendrías que:</p>
++        <ul>
++          <li>Volver a escribir cada fórmula usando el editor de ecuaciones de Word.</li>
++          <li>Ir copiando y pegando trozos, con riesgo de errores.</li>
++          <li>Perder mucho tiempo en algo que la IA ya había calculado por ti.</li>
++        </ul>
++
++        <p>
++          Aquí simplemente aprovechas que ChatGPT te dé las fórmulas en LaTeX, y de ahí pasas directamente a Word con ecuaciones nativas en unos pocos clics.
++        </p>
++
++        <h2>6. Consejos para que la conversión de LaTeX a Word sea más limpia</h2>
++        <ul>
++          <li>Pide a la IA que use siempre el mismo formato de delimitadores: por ejemplo, <code>$...$</code> para inline y <code>$$...$$</code> para bloque.</li>
++          <li>Evita anidar código extraño alrededor de las fórmulas (tablas muy complejas, etc.) en el mismo paso.</li>
++          <li>Si algo no se convierte bien, prueba con una fórmula más simple y ve complicando poco a poco.</li>
++        </ul>
++
++        <h2>7. Resumen: flujo recomendado ChatGPT → LaTeX → Word</h2>
++        <ol>
++          <li>Pide a ChatGPT que te dé la solución con las fórmulas en LaTeX.</li>
++          <li>Copia la respuesta a un .docx o .txt.</li>
++          <li>Súbelo a <a href="/">Ecuaciones a Word</a>.</li>
++          <li>Descarga el .docx con las ecuaciones nativas de Word listas para entregar.</li>
++        </ol>
++
++        <p>
++          Prueba ahora el conversor en: <a href="https://www.ecuacionesaword.com/">Ecuaciones a Word</a>.
++        </p>
++      </main>
++
++      <footer>
++        © Ecuaciones a Word
++      </footer>
++    </div>
++
++    <script type="application/ld+json">
++      {
++        "@context": "https://schema.org",
++        "@type": "Article",
++        "headline": "Pasar ecuaciones de ChatGPT (LaTeX) a Word con ecuaciones nativas",
++        "description": "Guía paso a paso para pasar ecuaciones de ChatGPT en LaTeX a Word con ecuaciones nativas, sin reescribirlas a mano.",
++        "inLanguage": "es",
++        "author": {
++          "@type": "Organization",
++          "name": "Ecuaciones a Word",
++          "url": "https://www.ecuacionesaword.com/"
++        },
++        "publisher": {
++          "@type": "Organization",
++          "name": "Ecuaciones a Word"
++        },
++        "mainEntityOfPage": {
++          "@type": "WebPage",
++          "@id": "https://www.ecuacionesaword.com/blog"
++        }
++      }
++    </script>
++  </body>
++</html>
  
 EOF
 )
