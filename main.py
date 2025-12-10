@@ -11,7 +11,12 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import (
+    HTMLResponse,
+    PlainTextResponse,
+    Response,
+    StreamingResponse,
+)
 
 import math2docx
 
@@ -82,8 +87,7 @@ def normalize_math_text(text: str) -> str:
 
 def _prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
     """
-    Versión con reglas específicas que usabas para tu ejercicio de q1..q4,
-    D1..D4, criterio de Sylvester, etc.
+    Versión con reglas específicas de tu ejercicio q1..q4, D1..D4, Sylvester, etc.
 
     Si el texto no coincide con ningún patrón especial, se deja tal cual
     (salvo la normalización de notación).
@@ -104,7 +108,10 @@ def _prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
             continue
 
         # 1) Párrafo largo con q1, q2, q3, q4 todos seguidos
-        if all(sym in stripped for sym in ["q_1(x,y,z)", "q_2(x,y,z)", "q_3(x,y,z)", "q_4(x,y,z)"]):
+        if all(
+            sym in stripped
+            for sym in ["q_1(x,y,z)", "q_2(x,y,z)", "q_3(x,y,z)", "q_4(x,y,z)"]
+        ):
             out.append("$$ q_1(x,y,z) = 2x^2 + 2y^2 + 2z^2 + 2xy + 2xz $$")
             out.append("$$ q_2(x,y,z) = x^2 - y^2 + z^2 + 2xy $$")
             out.append("$$ q_3(x,y,z) = 2x^2 - y^2 + 2z^2 + 4xy - 4yz $$")
@@ -125,7 +132,10 @@ def _prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
             "Escribimos cada forma como q(x)=xT" in stripped
             or "Escribimos cada forma como q(x)=xTA" in stripped
             or "Escribimos cada forma como q(x)=xTA x(\\mathbf x)" in stripped
-            or "Escribimos cada forma como q(x)=xTAx(\\mathbf x)=\\mathbf x^T A\\mathbf x" in stripped
+            or (
+                "Escribimos cada forma como q(x)=xTAx(\\mathbf x)=\\mathbf x^T A\\mathbf x"
+                in stripped
+            )
         ):
             out.append(
                 "Escribimos cada forma como $q(\\mathbf x) = \\mathbf x^T A\\, \\mathbf x$, "
@@ -234,7 +244,7 @@ def prettify_paragraphs(paragraph_texts: List[str]) -> List[str]:
     if not USE_EXERCISE_TWEAKS:
         return generic
 
-    # Comportamiento antiguo conservado
+    # Comportamiento específico de tu ejercicio q1..q4
     return _prettify_paragraphs_for_exercise(generic)
 
 
@@ -399,7 +409,7 @@ def split_long_latex_equation(latex: str, max_len: int = 120) -> List[str]:
     # 3) Intentar partir por comas
     if "," in latex:
         tokens = [t.strip() for t in latex.split(",")]
-        eqs = []
+        eqs: List[str] = []
         current = ""
         for tok in tokens:
             candidate = (current + ", " if current else "") + tok
@@ -570,7 +580,7 @@ def build_document_from_paragraphs(paragraph_texts: List[str]) -> Document:
 
 
 # ================================================================
-# 6. Endpoints FastAPI: /convert, /api/v1/convert y /health
+# 6. Lógica de conversión compartida (/convert y /api/v1/convert)
 # ================================================================
 
 
@@ -626,7 +636,6 @@ async def _convert_document_impl(uploaded_file: UploadFile) -> StreamingResponse
         out_doc.save(output_stream)
         output_stream.seek(0)
     except HTTPException:
-        # Re-lanzamos tal cual (errores de usuario controlados)
         raise
     except Exception as exc:  # noqa: BLE001
         logger.exception("Error procesando el documento: %s", exc)
@@ -676,19 +685,25 @@ def health_check() -> Dict[str, str]:
 
 # ================================================================
 # 7. Servir HTML estático: "/", "/blog" y "/blog2"
+#    + robots.txt y sitemap.xml
 # ================================================================
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def read_html_file(filename: str) -> str:
-    path = os.path.join(BASE_DIR, filename)
+def _read_text_file(path: str, default: Optional[str] = None) -> str:
     try:
         with open(path, "r", encoding="utf-8") as f:
             return f.read()
     except FileNotFoundError:
-        logger.error("No se encuentra el archivo HTML: %s", filename)
+        if default is not None:
+            return default
         raise
+
+
+def read_html_file(filename: str) -> str:
+    path = os.path.join(BASE_DIR, filename)
+    return _read_text_file(path)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -716,3 +731,56 @@ async def blog2() -> HTMLResponse:
         return HTMLResponse(read_html_file("blog2.html"))
     except FileNotFoundError:
         return HTMLResponse("<h1>No se encuentra blog2.html</h1>", status_code=404)
+
+
+ROBOTS_FALLBACK = """User-agent: *
+Allow: /
+
+# No tiene sentido que los bots prueben estos endpoints de API
+Disallow: /convert
+Disallow: /api/v1/convert
+Disallow: /health
+Disallow: /healthz
+
+Sitemap: https://www.ecuacionesaword.com/sitemap.xml
+"""
+
+SITEMAP_FALLBACK = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://www.ecuacionesaword.com/</loc>
+    <lastmod>2025-12-10</lastmod>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://www.ecuacionesaword.com/blog</loc>
+    <lastmod>2025-12-10</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.ecuacionesaword.com/blog2</loc>
+    <lastmod>2025-12-10</lastmod>
+    <priority>0.6</priority>
+  </url>
+</urlset>
+"""
+
+
+@app.get("/robots.txt", response_class=PlainTextResponse)
+async def robots_txt() -> PlainTextResponse:
+    """
+    Sirve robots.txt desde archivo si existe; si no, usa un contenido por defecto.
+    """
+    path = os.path.join(BASE_DIR, "robots.txt")
+    content = _read_text_file(path, default=ROBOTS_FALLBACK)
+    return PlainTextResponse(content, media_type="text/plain")
+
+
+@app.get("/sitemap.xml")
+async def sitemap_xml() -> Response:
+    """
+    Sirve sitemap.xml desde archivo si existe; si no, usa un contenido por defecto.
+    """
+    path = os.path.join(BASE_DIR, "sitemap.xml")
+    content = _read_text_file(path, default=SITEMAP_FALLBACK)
+    return Response(content=content, media_type="application/xml")
