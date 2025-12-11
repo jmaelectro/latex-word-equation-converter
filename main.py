@@ -17,8 +17,11 @@ from fastapi.responses import (
     Response,
     StreamingResponse,
 )
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.requests import Request
 
 import math2docx
+
 
 # ================================================================
 # Configuración básica de FastAPI
@@ -51,10 +54,8 @@ if not logger.handlers:
     logging.basicConfig(level=logging.INFO)
 
 Segment = Tuple[str, str]  # ("text" | "inline" | "display", contenido)
-
 MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
 USE_EXERCISE_TWEAKS = True  # activa/desactiva reglas específicas q1..q4, etc.
-
 
 # ================================================================
 # 1. Normalización y "prettify"
@@ -64,7 +65,6 @@ USE_EXERCISE_TWEAKS = True  # activa/desactiva reglas específicas q1..q4, etc.
 def normalize_math_text(text: str) -> str:
     """
     Pequeñas correcciones de notación:
-
     - q1(x,y,z) -> q_1(x,y,z)
     - D1 -> D_1, ..., D4 -> D_4
     - x2 -> x^2, y3 -> y^3, z4 -> z^4 (solo exponentes 2,3,4)
@@ -88,7 +88,6 @@ def normalize_math_text(text: str) -> str:
 def _prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
     """
     Versión con reglas específicas de tu ejercicio q1..q4, D1..D4, Sylvester, etc.
-
     Si el texto no coincide con ningún patrón especial, se deja tal cual
     (salvo la normalización de notación).
     """
@@ -169,7 +168,6 @@ def _prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
         if "Criterio de Sylvester" in stripped:
             out.append("2. Criterio de Sylvester")
             continue
-
         if "Una matriz simétrica" in stripped and "definida positiva" in stripped:
             out.append(
                 "Una matriz simétrica $A$ es definida positiva si todos sus "
@@ -201,7 +199,6 @@ def _prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
         if "A1A_1A1" in stripped or "A1A1" in stripped:
             out.append("⇒ $A_1$ es definida positiva ⇒ $q_1$ definida positiva.")
             continue
-
         if "A4A_4A4" in stripped or "A4A4" in stripped:
             out.append("⇒ $A_4$ es definida positiva ⇒ $q_4$ definida positiva.")
             continue
@@ -210,7 +207,6 @@ def _prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
         if "detA2" in stripped or "det A_2" in stripped:
             out.append("$$ \\det A_2 = -2 < 0 $$")
             continue
-
         if "detA3" in stripped or "det A_3" in stripped:
             out.append("$$ \\det A_3 = -20 < 0 $$")
             continue
@@ -256,7 +252,6 @@ def prettify_paragraphs(paragraph_texts: List[str]) -> List[str]:
 def new_paragraph(doc: Document, align: Optional[Any] = None):
     """
     Crea un párrafo con formato compacto:
-
     - espacio antes = 0
     - espacio después = 0
     - interlineado sencillo
@@ -283,7 +278,6 @@ def add_math_safe(paragraph, latex: str) -> None:
 def parse_math_segments(text: str) -> List[Segment]:
     """
     Detecta $...$, $$...$$ y \\[...\\] en UNA línea y devuelve segmentos.
-
     tipo ∈ {"text", "inline", "display"}.
     """
     segments: List[Segment] = []
@@ -344,7 +338,6 @@ def parse_math_segments(text: str) -> List[Segment]:
 def split_into_paragraph_descriptors(text: str) -> List[Dict[str, Any]]:
     """
     Divide una línea en descriptores:
-
     - {"type": "inline", "chunks": [("text", ...), ("inline", ...), ...]}
     - {"type": "display", "latex": "..."}
     """
@@ -375,8 +368,8 @@ def split_into_paragraph_descriptors(text: str) -> List[Dict[str, Any]]:
 
 def split_long_latex_equation(latex: str, max_len: int = 120) -> List[str]:
     """
-    Heurística para partir ecuaciones largas en varias más cortas, para que
-    Word tenga más margen de colocarlas en distintas líneas/páginas.
+    Heurística para partir ecuaciones largas en varias más cortas,
+    para que Word tenga más margen de colocarlas en distintas líneas/páginas.
     """
     latex = latex.strip()
     if not latex:
@@ -437,10 +430,8 @@ def add_aligned_block(doc: Document, aligned_block: str) -> None:
     centradas, una debajo de otra.
     """
     content = aligned_block.strip()
-
     if content.startswith(r"\begin{aligned}"):
         content = content[len(r"\begin{aligned}") :]
-
     if content.endswith(r"\end{aligned}"):
         content = content[: -len(r"\end{aligned}")]
 
@@ -466,7 +457,6 @@ def build_document_from_paragraphs(paragraph_texts: List[str]) -> Document:
     Document con ecuaciones de Word.
     """
     out_doc = Document()
-
     if not paragraph_texts:
         new_paragraph(out_doc)
         return out_doc
@@ -513,6 +503,7 @@ def build_document_from_paragraphs(paragraph_texts: List[str]) -> Document:
                 for part in split_long_latex_equation(latex):
                     p = new_paragraph(out_doc, WD_ALIGN_PARAGRAPH.CENTER)
                     add_math_safe(p, part)
+
                 in_display_block = False
                 display_block_delim = None
                 display_lines = []
@@ -559,6 +550,7 @@ def build_document_from_paragraphs(paragraph_texts: List[str]) -> Document:
                         p.add_run(value)
                     elif kind == "inline":
                         add_math_safe(p, value)
+
             elif desc["type"] == "display":
                 for part in split_long_latex_equation(desc["latex"].strip()):
                     p = new_paragraph(out_doc, WD_ALIGN_PARAGRAPH.CENTER)
@@ -602,7 +594,6 @@ async def _convert_document_impl(uploaded_file: UploadFile) -> StreamingResponse
         )
 
     file_bytes = await uploaded_file.read()
-
     if not file_bytes:
         raise HTTPException(status_code=400, detail="El archivo está vacío.")
 
@@ -635,6 +626,7 @@ async def _convert_document_impl(uploaded_file: UploadFile) -> StreamingResponse
         output_stream = io.BytesIO()
         out_doc.save(output_stream)
         output_stream.seek(0)
+
     except HTTPException:
         raise
     except Exception as exc:  # noqa: BLE001
@@ -684,11 +676,18 @@ def health_check() -> Dict[str, str]:
 
 
 # ================================================================
-# 7. Servir HTML estático: "/", "/blog" y "/blog2"
-#    + robots.txt y sitemap.xml
+# 7. Servir HTML estático y ficheros auxiliares
+#    "/", "/blog", "/blog2", "/blog/{slug}", robots.txt, sitemap.xml
 # ================================================================
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+BLOG_SLUGS: Dict[str, str] = {
+    # URL "bonitas" para las entradas del blog
+    "pasar-ecuaciones-chatgpt-word": "blog.html",
+    "convertir-documento-latex-word": "blog2.html",
+    "ia-chatgpt-a-word-ejercicios": "blog3.html",
+}
 
 
 def _read_text_file(path: str, default: Optional[str] = None) -> str:
@@ -733,9 +732,32 @@ async def blog2() -> HTMLResponse:
         return HTMLResponse("<h1>No se encuentra blog2.html</h1>", status_code=404)
 
 
+@app.get("/blog/{slug}", response_class=HTMLResponse)
+async def blog_with_slug(slug: str) -> HTMLResponse:
+    """
+    Rutas tipo /blog/<slug> para las entradas del blog.
+
+    Ejemplos:
+      - /blog/pasar-ecuaciones-chatgpt-word
+      - /blog/convertir-documento-latex-word
+      - /blog/ia-chatgpt-a-word-ejercicios
+    """
+    filename = BLOG_SLUGS.get(slug)
+    if not filename:
+        # Devolvemos 404 "normal", que será gestionado por el handler custom.
+        raise HTTPException(status_code=404, detail="Entrada de blog no encontrada.")
+
+    try:
+        return HTMLResponse(read_html_file(filename))
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=404,
+            detail="Plantilla de blog no encontrada.",
+        )
+
+
 ROBOTS_FALLBACK = """User-agent: *
 Allow: /
-
 # No tiene sentido que los bots prueben estos endpoints de API
 Disallow: /convert
 Disallow: /api/v1/convert
@@ -749,17 +771,18 @@ SITEMAP_FALLBACK = """<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.ecuacionesaword.com/</loc>
-    <lastmod>2025-12-10</lastmod>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://www.ecuacionesaword.com/blog</loc>
-    <lastmod>2025-12-10</lastmod>
+    <loc>https://www.ecuacionesaword.com/blog/pasar-ecuaciones-chatgpt-word</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.ecuacionesaword.com/blog2</loc>
-    <lastmod>2025-12-10</lastmod>
+    <loc>https://www.ecuacionesaword.com/blog/convertir-documento-latex-word</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ecuacionesaword.com/blog/ia-chatgpt-a-word-ejercicios</loc>
     <priority>0.6</priority>
   </url>
 </urlset>
@@ -784,3 +807,39 @@ async def sitemap_xml() -> Response:
     path = os.path.join(BASE_DIR, "sitemap.xml")
     content = _read_text_file(path, default=SITEMAP_FALLBACK)
     return Response(content=content, media_type="application/xml")
+
+
+# ================================================================
+# 8. Manejador de errores 404 con HTML (en vez de JSON)
+# ================================================================
+
+
+@app.exception_handler(StarletteHTTPException)
+async def custom_http_exception_handler(
+    request: Request, exc: StarletteHTTPException
+):
+    """
+    Devuelve una página HTML amigable para los 404 en lugar de JSON.
+    Para otros códigos, devuelve un texto plano sencillo.
+    """
+    if exc.status_code == 404:
+        html = f"""
+        <html>
+          <head>
+            <title>Página no encontrada</title>
+            <meta charset="utf-8" />
+          </head>
+          <body style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 3rem;">
+            <h1>404 · Página no encontrada</h1>
+            <p>No existe la URL <code>{request.url.path}</code>.</p>
+            <p>
+              Puedes volver al <a href="/">conversor de ecuaciones</a>
+              o leer las <a href="/blog">guías del blog</a>.
+            </p>
+          </body>
+        </html>
+        """
+        return HTMLResponse(html, status_code=404)
+
+    # Para otros códigos mantenemos una respuesta sencilla
+    return PlainTextResponse(str(exc.detail), status_code=exc.status_code)
