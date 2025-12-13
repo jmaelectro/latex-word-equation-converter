@@ -1040,6 +1040,27 @@
 (() => {
   const endpoint = "/convert";
   const isEnglish = window.location.pathname.startsWith("/en");
+  // Language switcher (home)
+  const langSelect = document.getElementById("lang-select");
+  if (langSelect) {
+    // Set initial state based on current URL
+    langSelect.value = isEnglish ? "en" : "es";
+
+    langSelect.addEventListener("change", () => {
+      const target = langSelect.value === "en" ? "en" : "es";
+
+      // Persist preference (best-effort)
+      try { localStorage.setItem("preferredLang", target); } catch {}
+
+      // Home routes: "/" <-> "/en"
+      if (target === "en" && !isEnglish) {
+        window.location.href = "/en";
+      } else if (target === "es" && isEnglish) {
+        window.location.href = "/";
+      }
+    });
+  }
+
 
   const uploadForm =
     document.getElementById("upload-form") ||
