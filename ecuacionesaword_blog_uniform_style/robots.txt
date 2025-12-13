@@ -1,9 +1,0 @@
-User-agent: *
-Allow: /
-# No tiene sentido que los bots prueben estos endpoints de API
-Disallow: /convert
-Disallow: /api/v1/convert
-Disallow: /health
-Disallow: /healthz
-
-Sitemap: https://www.ecuacionesaword.com/sitemap.xml
