@@ -11,13 +11,16 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import (
     HTMLResponse,
     PlainTextResponse,
     Response,
     StreamingResponse,
+    RedirectResponse,
 )
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.middleware.gzip import GZipMiddleware
 from starlette.requests import Request
 
 import math2docx
@@ -35,11 +38,31 @@ app = FastAPI(
     ),
 )
 
-ALLOWED_ORIGINS = [
-    "https://www.ecuacionesaword.com",
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
-]
+
+# Orígenes CORS
+# - En producción, puedes sobreescribirlos con la variable de entorno ALLOWED_ORIGINS
+#   (lista separada por comas). Ejemplo:
+#     ALLOWED_ORIGINS="https://www.ecuacionesaword.com,https://tu-staging.onrender.com"
+
+def _parse_allowed_origins(value: str):
+    return [o.strip() for o in value.split(',') if o.strip()]
+
+
+def get_allowed_origins():
+    env_val = os.getenv('ALLOWED_ORIGINS', '').strip()
+    if env_val:
+        return _parse_allowed_origins(env_val)
+
+    # Valores por defecto (dev + dominio principal)
+    return [
+        'https://www.ecuacionesaword.com',
+        'http://localhost:8000',
+        'http://127.0.0.1:8000',
+    ]
+
+
+ALLOWED_ORIGINS = get_allowed_origins()
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -48,6 +71,8 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
+
+app.add_middleware(GZipMiddleware, minimum_size=800)
 
 logger = logging.getLogger("ecuacionesaword")
 if not logger.handlers:
@@ -682,11 +707,30 @@ def health_check() -> Dict[str, str]:
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-BLOG_SLUGS: Dict[str, str] = {
-    # URL "bonitas" para las entradas del blog
+# Servir ficheros estáticos (favicon, OpenGraph, manifest, etc.)
+_static_dir = os.path.join(BASE_DIR, "static")
+if os.path.isdir(_static_dir):
+    app.mount("/static", StaticFiles(directory=_static_dir), name="static")
+
+
+BLOG_SLUGS_ES: Dict[str, str] = {
+    # URL "bonitas" para las entradas del blog (ES)
     "pasar-ecuaciones-chatgpt-word": "blog.html",
     "convertir-documento-latex-word": "blog2.html",
     "ia-chatgpt-a-word-ejercicios": "blog3.html",
+    "pegar-latex-editor-ecuaciones-word": "blog4.html",
+    "que-es-omml-ecuaciones-word": "blog5.html",
+    "markdown-con-latex-a-word-docx": "blog6.html",
+}
+
+BLOG_SLUGS_EN: Dict[str, str] = {
+    # Pretty URLs for the blog (EN)
+    "copy-chatgpt-equations-to-word": "blog-en-1.html",
+    "convert-latex-document-to-word": "blog-en-2.html",
+    "use-ai-to-solve-exercises-and-export-to-word": "blog-en-3.html",
+    "paste-latex-into-word-equation-editor": "blog-en-4.html",
+    "what-is-omml-word-equations": "blog-en-5.html",
+    "markdown-latex-to-word-docx": "blog-en-6.html",
 }
 
 
@@ -714,22 +758,56 @@ async def home() -> HTMLResponse:
         return HTMLResponse("<h1>No se encuentra index.html</h1>", status_code=404)
 
 
+
+@app.get("/en", response_class=HTMLResponse)
+async def home_en() -> HTMLResponse:
+    """Serve the English homepage (index-en.html)."""
+    try:
+        return HTMLResponse(read_html_file("index-en.html"))
+    except FileNotFoundError:
+        return HTMLResponse("<h1>index-en.html not found</h1>", status_code=404)
+
+
+@app.get("/en/blog", response_class=HTMLResponse)
+async def blog_en() -> HTMLResponse:
+    """Serve the English blog index (blog-index-en.html)."""
+    try:
+        return HTMLResponse(read_html_file("blog-index-en.html"))
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="English blog index not found.")
+
+
+@app.get("/en/blog/{slug}", response_class=HTMLResponse)
+async def blog_entry_en(slug: str) -> HTMLResponse:
+    """Serve an English blog post by slug."""
+    filename = BLOG_SLUGS_EN.get(slug)
+    if not filename:
+        raise HTTPException(status_code=404, detail="Blog post not found.")
+    try:
+        return HTMLResponse(read_html_file(filename))
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Blog post file not found.")
+
 @app.get("/blog", response_class=HTMLResponse)
 async def blog() -> HTMLResponse:
-    """Devuelve la página de blog principal (blog.html)."""
+    """Devuelve el índice del blog (blog-index.html)."""
     try:
-        return HTMLResponse(read_html_file("blog.html"))
+        return HTMLResponse(read_html_file("blog-index.html"))
     except FileNotFoundError:
         return HTMLResponse("<h1>No se encuentra blog.html</h1>", status_code=404)
 
 
-@app.get("/blog2", response_class=HTMLResponse)
-async def blog2() -> HTMLResponse:
-    """Devuelve la segunda página de blog (blog2.html)."""
-    try:
-        return HTMLResponse(read_html_file("blog2.html"))
-    except FileNotFoundError:
-        return HTMLResponse("<h1>No se encuentra blog2.html</h1>", status_code=404)
+@app.get("/blog2")
+async def blog2_redirect() -> RedirectResponse:
+    """Redirige a la URL canónica del artículo (SEO: evitar contenido duplicado)."""
+    return RedirectResponse(url="/blog/convertir-documento-latex-word", status_code=301)
+
+
+@app.get("/blog3")
+async def blog3_redirect() -> RedirectResponse:
+    """Redirige a la URL canónica del artículo (SEO: evitar enlaces rotos/antiguos)."""
+    return RedirectResponse(url="/blog/ia-chatgpt-a-word-ejercicios", status_code=301)
+
 
 
 @app.get("/blog/{slug}", response_class=HTMLResponse)
@@ -742,7 +820,7 @@ async def blog_with_slug(slug: str) -> HTMLResponse:
       - /blog/convertir-documento-latex-word
       - /blog/ia-chatgpt-a-word-ejercicios
     """
-    filename = BLOG_SLUGS.get(slug)
+    filename = BLOG_SLUGS_ES.get(slug)
     if not filename:
         # Devolvemos 404 "normal", que será gestionado por el handler custom.
         raise HTTPException(status_code=404, detail="Entrada de blog no encontrada.")
@@ -771,18 +849,99 @@ SITEMAP_FALLBACK = """<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.ecuacionesaword.com/</loc>
+    <lastmod>2025-12-13</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://www.ecuacionesaword.com/blog</loc>
+    <lastmod>2025-12-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.ecuacionesaword.com/en</loc>
+    <lastmod>2025-12-13</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.ecuacionesaword.com/en/blog</loc>
+    <lastmod>2025-12-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://www.ecuacionesaword.com/en/blog/copy-chatgpt-equations-to-word</loc>
+    <lastmod>2025-12-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.65</priority>
+  </url>
+  <url>
+    <loc>https://www.ecuacionesaword.com/en/blog/convert-latex-document-to-word</loc>
+    <lastmod>2025-12-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.65</priority>
+  </url>
+  <url>
+    <loc>https://www.ecuacionesaword.com/en/blog/use-ai-to-solve-exercises-and-export-to-word</loc>
+    <lastmod>2025-12-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.ecuacionesaword.com/en/blog/paste-latex-into-word-equation-editor</loc>
+    <lastmod>2025-12-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.ecuacionesaword.com/en/blog/what-is-omml-word-equations</loc>
+    <lastmod>2025-12-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.55</priority>
+  </url>
+  <url>
+    <loc>https://www.ecuacionesaword.com/en/blog/markdown-latex-to-word-docx</loc>
+    <lastmod>2025-12-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.55</priority>
+  </url>
+
+  <url>
     <loc>https://www.ecuacionesaword.com/blog/pasar-ecuaciones-chatgpt-word</loc>
+    <lastmod>2025-12-13</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.ecuacionesaword.com/blog/convertir-documento-latex-word</loc>
-    <priority>0.7</priority>
+    <lastmod>2025-12-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
   </url>
   <url>
     <loc>https://www.ecuacionesaword.com/blog/ia-chatgpt-a-word-ejercicios</loc>
+    <lastmod>2025-12-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.ecuacionesaword.com/blog/pegar-latex-editor-ecuaciones-word</loc>
+    <lastmod>2025-12-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.65</priority>
+  </url>
+  <url>
+    <loc>https://www.ecuacionesaword.com/blog/que-es-omml-ecuaciones-word</loc>
+    <lastmod>2025-12-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.ecuacionesaword.com/blog/markdown-con-latex-a-word-docx</loc>
+    <lastmod>2025-12-13</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
 </urlset>
@@ -823,22 +982,41 @@ async def custom_http_exception_handler(
     Para otros códigos, devuelve un texto plano sencillo.
     """
     if exc.status_code == 404:
-        html = f"""
-        <html>
-          <head>
-            <title>Página no encontrada</title>
-            <meta charset="utf-8" />
-          </head>
-          <body style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 3rem;">
-            <h1>404 · Página no encontrada</h1>
-            <p>No existe la URL <code>{request.url.path}</code>.</p>
-            <p>
-              Puedes volver al <a href="/">conversor de ecuaciones</a>
-              o leer las <a href="/blog">guías del blog</a>.
-            </p>
-          </body>
-        </html>
-        """
+        is_en = str(request.url.path).startswith("/en")
+        if is_en:
+            html = f"""
+            <html>
+              <head>
+                <title>Page not found</title>
+                <meta charset="utf-8" />
+              </head>
+              <body style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 3rem;">
+                <h1>404 · Page not found</h1>
+                <p>The URL <code>{request.url.path}</code> does not exist.</p>
+                <p>
+                  Go back to the <a href="/en">equation converter</a>
+                  or read the <a href="/en/blog">blog guides</a>.
+                </p>
+              </body>
+            </html>
+            """
+        else:
+            html = f"""
+            <html>
+              <head>
+                <title>Página no encontrada</title>
+                <meta charset="utf-8" />
+              </head>
+              <body style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 3rem;">
+                <h1>404 · Página no encontrada</h1>
+                <p>No existe la URL <code>{request.url.path}</code>.</p>
+                <p>
+                  Puedes volver al <a href="/">conversor de ecuaciones</a>
+                  o leer las <a href="/blog">guías del blog</a>.
+                </p>
+              </body>
+            </html>
+            """
         return HTMLResponse(html, status_code=404)
 
     # Para otros códigos mantenemos una respuesta sencilla
