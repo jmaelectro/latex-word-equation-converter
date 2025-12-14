@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<header>
+  <div class="topbar">
+    <a class="brand" href="{{ converter_href }}" aria-label="{{ site_name }}">
+      <span class="logo">∑</span>
+      <span class="brand-text">{{ site_name }}</span>
+    </a>
+    <nav class="nav">
+      <a href="{{ converter_href }}">{{ nav_converter }}</a>
+      <a href="{{ blog_index_href }}" aria-current="page">{{ nav_blog }}</a>
+      <a href="{{ lang_switch_href }}">{{ lang_switch_label }}</a>
+    </nav>
+  </div>
+
+  {% if kicker %}<p class="kicker">{{ kicker }}</p>{% endif %}
+  <h1>{{ title }}</h1>
+
+  <p class="meta">
+    {{ meta_line }}
+  </p>
+
+  {% if tags %}
+  <p class="tags">
+    {% for t in tags %}<span class="pill">{{ t }}</span>{% endfor %}
+  </p>
+  {% endif %}
+
+  {% for p in intro_html %}
+    {{ p|safe }}
+  {% endfor %}
+</header>
+
+<main>
+  {{ body_html|safe }}
+
+  <div class="bottom-cta">
+    <span><strong>{{ cta_strong }}</strong> {{ cta_text }}</span>
+    <span>
+      <a class="button" href="{{ converter_href }}">{{ cta_primary }}</a>
+      <a class="button" href="{{ blog_index_href }}">{{ cta_secondary }}</a>
+    </span>
+  </div>
+</main>
+
+<div class="footer">
+  © {{ year }} {{ site_name }}
+</div>
+{% endblock %}

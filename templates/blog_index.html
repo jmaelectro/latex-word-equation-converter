@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block content %}
+<header>
+  <div class="topbar">
+    <a class="brand" href="{{ converter_href }}" aria-label="{{ site_name }}">
+      <span class="logo">∑</span>
+      <span class="brand-text">{{ site_name }}</span>
+    </a>
+    <nav class="nav">
+      <a href="{{ converter_href }}">{{ nav_converter }}</a>
+      <a href="{{ blog_index_href }}" aria-current="page">{{ nav_blog }}</a>
+      <a href="{{ lang_switch_href }}">{{ lang_switch_label }}</a>
+    </nav>
+  </div>
+
+  <h1>{{ h1 }}</h1>
+  <p class="intro">{{ intro }}</p>
+
+  <div class="index-hero-actions">
+    <a class="button" href="{{ converter_href }}">{{ index_cta_primary }}</a>
+  </div>
+
+  <div class="index-controls" role="search">
+    <label class="sr-only" for="postSearch">{{ search_label }}</label>
+    <input id="postSearch" class="search" type="search" inputmode="search" autocomplete="off"
+           placeholder="{{ search_placeholder }}" aria-label="{{ search_label }}">
+
+    <div class="chip-row" aria-label="{{ filter_label }}">
+      <button type="button" class="chip is-active" data-tag="">{{ filter_all }}</button>
+      {% for t in top_tags %}
+        <button type="button" class="chip" data-tag="{{ t|lower }}">{{ t }}</button>
+      {% endfor %}
+    </div>
+  </div>
+</header>
+
+<main>
+  <h2>{{ featured_title }}</h2>
+
+  <div class="grid" id="postGrid">
+    {% for p in posts %}
+      <a class="card half" href="{{ p.url }}"
+         data-title="{{ p.title|lower }}"
+         data-desc="{{ p.description|lower }}"
+         data-tags="{{ (p.tags|join(' ') )|lower }}">
+        {% if p.kicker %}<div class="kicker">{{ p.kicker }}</div>{% endif %}
+        <div class="title">{{ p.title }}</div>
+        <div class="desc">{{ p.description }}</div>
+        <div class="meta" style="margin-top:.75rem;">{{ p.meta }}</div>
+        <div class="tags" style="margin-top:.6rem;">
+          {% for t in p.tags[:3] %}<span class="pill">{{ t }}</span>{% endfor %}
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+</main>
+
+<div class="footer">
+  © {{ year }} {{ site_name }}
+</div>
+
+<script>
+(() => {
+  const q = document.getElementById('postSearch');
+  const grid = document.getElementById('postGrid');
+  const chips = Array.from(document.querySelectorAll('.chip'));
+
+  let activeTag = '';
+
+  function normalize(s){ return (s || '').toString().trim().toLowerCase(); }
+
+  function applyFilter(){
+    const needle = normalize(q && q.value);
+    const cards = Array.from(grid.querySelectorAll('.card'));
+
+    for (const c of cards){
+      const title = c.getAttribute('data-title') || '';
+      const desc  = c.getAttribute('data-desc') || '';
+      const tags  = c.getAttribute('data-tags') || '';
+
+      const matchText = !needle || title.includes(needle) || desc.includes(needle) || tags.includes(needle);
+      const matchTag  = !activeTag || tags.split(/\s+/).includes(activeTag);
+
+      c.style.display = (matchText && matchTag) ? '' : 'none';
+    }
+  }
+
+  chips.forEach(btn => {
+    btn.addEventListener('click', () => {
+      chips.forEach(b => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      activeTag = normalize(btn.getAttribute('data-tag'));
+      applyFilter();
+    });
+  });
+
+  if (q){
+    q.addEventListener('input', applyFilter);
+  }
+})();
+</script>
+{% endblock %}
