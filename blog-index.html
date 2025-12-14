@@ -1,152 +1,115 @@
-<!DOCTYPE html>
-
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Blog: LaTeX, Word y ecuaciones (OMML) | Ecuaciones a Word</title>
-<meta content="Guías prácticas para convertir fórmulas LaTeX a Word con ecuaciones nativas (OMML): ChatGPT→Word, TFG/TFM, copiar/pegar fórmulas, y trucos del editor de ecuaciones de Word." name="description"/>
-<meta content="index,follow,max-image-preview:large" name="robots"/>
-<link href="https://www.ecuacionesaword.com/blog" rel="canonical"/>
-<link href="/static/favicon.svg" rel="icon" type="image/svg+xml"/>
-<link href="/static/site.webmanifest" rel="manifest"/>
-<meta content="website" property="og:type"/>
-<meta content="Ecuaciones a Word" property="og:site_name"/>
-<meta content="es_ES" property="og:locale"/>
-<meta content="Blog: LaTeX, Word y ecuaciones (OMML) | Ecuaciones a Word" property="og:title"/>
-<meta content="Tutoriales para pasar fórmulas de IA (ChatGPT, Gemini, Copilot) a Word sin perder el formato: ecuaciones nativas (OMML) y documentos .docx listos para entregar." property="og:description"/>
-<meta content="https://www.ecuacionesaword.com/blog" property="og:url"/>
-<meta content="https://www.ecuacionesaword.com/static/og-image.svg" property="og:image"/>
-<meta content="summary_large_image" name="twitter:card"/>
-<meta content="Blog: LaTeX, Word y ecuaciones (OMML) | Ecuaciones a Word" name="twitter:title"/>
-<meta content="Guías para convertir LaTeX a Word con ecuaciones nativas (OMML) y resolver problemas típicos al copiar/pegar fórmulas desde IA." name="twitter:description"/>
-<meta content="https://www.ecuacionesaword.com/static/og-image.svg" name="twitter:image"/>
-
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    "name": "Blog: LaTeX, Word y ecuaciones (OMML)",
-    "url": "https://www.ecuacionesaword.com/blog",
-    "isPartOf": {
-      "@type": "WebSite",
-      "name": "Ecuaciones a Word",
-      "url": "https://www.ecuacionesaword.com/"
-    },
-    "about": ["LaTeX", "Microsoft Word", "OMML", "ecuaciones", "ChatGPT"],
-    "mainEntity": {
-      "@type": "ItemList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "url": "https://www.ecuacionesaword.com/blog/pasar-ecuaciones-chatgpt-word"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "url": "https://www.ecuacionesaword.com/blog/convertir-documento-latex-word"
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
-          "url": "https://www.ecuacionesaword.com/blog/ia-chatgpt-a-word-ejercicios"
-        },
-        {
-          "@type": "ListItem",
-          "position": 4,
-          "url": "https://www.ecuacionesaword.com/blog/pegar-latex-editor-ecuaciones-word"
-        },
-        {
-          "@type": "ListItem",
-          "position": 5,
-          "url": "https://www.ecuacionesaword.com/blog/que-es-omml-ecuaciones-word"
-        },
-        {
-          "@type": "ListItem",
-          "position": 6,
-          "url": "https://www.ecuacionesaword.com/blog/markdown-con-latex-a-word-docx"
-        }
-      ]
-    }
-  }
-  </script>
-<link href="https://www.ecuacionesaword.com/blog" hreflang="es" rel="alternate"/><link href="https://www.ecuacionesaword.com/en/blog" hreflang="en" rel="alternate"/><link href="/static/blog.css?v=1" rel="stylesheet"/></head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Blog: LaTeX, Word y ecuaciones nativas (OMML)</title>
+  <meta name="description" content="Guías para estudiantes y profesionales que necesitan convertir fórmulas LaTeX a Word sin perder formato. Si copias ecuaciones desde ChatGPT u otras IA y al pegarlas en Word se rompen, aquí tienes soluciones."/>
+  <link rel="canonical" href="https://www.ecuacionesaword.com/blog"/>
+  <link rel="alternate" hreflang="es" href="https://www.ecuacionesaword.com/blog"/>
+  <link rel="alternate" hreflang="en" href="https://www.ecuacionesaword.com/en/blog"/>
+  <link rel="stylesheet" href="/static/blog.css"/>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml"/>
+</head>
 <body>
-<div class="page">
-<header>
-<div class="topbar">
-<div class="brand">
-<div class="logo">∑</div>
-<div>Ecuaciones a Word</div>
-</div>
-<nav class="nav">
-<a href="/">Conversor</a>
-<a href="/blog">Blog</a>
-</nav>
-</div>
-<h1>Blog: LaTeX, Word y ecuaciones nativas (OMML)</h1>
-<p class="intro">
-        Este blog está orientado a estudiantes, profesores y profesionales que necesitan <strong>convertir fórmulas LaTeX a Word</strong>
-        sin perder formato. Si copias ecuaciones desde <strong>ChatGPT</strong> u otras IA y al pegarlas en Word se rompen, aquí tienes
-        guías y soluciones. Para la conversión automática de documentos, vuelve al <a href="/">conversor LaTeX → Word</a>.
-      </p>
-<p style="margin: 0.25rem 0 0; opacity: 0.85;"><a href="/en/blog">Read this blog in English →</a></p></header>
-<section class="grid">
-<article class="card half">
-<div class="kicker">IA → Word · Problema típico</div>
-<h2 class="title"><a href="/blog/pasar-ecuaciones-chatgpt-word">Cómo pasar ecuaciones de ChatGPT a Word sin copiarlas a mano</a></h2>
-<p class="desc">Flujo recomendado ChatGPT → LaTeX → .docx/.txt → conversión a ecuaciones nativas (OMML) editables.</p>
-<div class="meta">
-<span class="pill">ecuaciones ChatGPT a Word</span><span class="pill">LaTeX</span><span class="pill">OMML</span>
-</div>
-</article>
-<article class="card half">
-<div class="kicker">TFG/TFM · Entregas en Word</div>
-<h2 class="title"><a href="/blog/convertir-documento-latex-word">Convertir LaTeX a Word para TFG/TFM sin perder las fórmulas</a></h2>
-<p class="desc">Cómo preparar documentos con matemáticas para entregar en Word: ecuaciones editables, consistentes y sin capturas.</p>
-<div class="meta">
-<span class="pill">LaTeX a Word TFG</span><span class="pill">ecuaciones Word</span><span class="pill">docx</span>
-</div>
-</article>
-<article class="card half">
-<div class="kicker">IA + productividad · Estudio</div>
-<h2 class="title"><a href="/blog/ia-chatgpt-a-word-ejercicios">Usar IA + Ecuaciones a Word para hacer tus ejercicios en Word</a></h2>
-<p class="desc">Método práctico para resolver ejercicios con IA, pasar las fórmulas a Word y entregar con ecuaciones nativas.</p>
-<div class="meta">
-<span class="pill">ejercicios en Word</span><span class="pill">IA</span><span class="pill">fórmulas</span>
-</div>
-</article>
-<article class="card half">
-<div class="kicker">Word · Editor de ecuaciones</div>
-<h2 class="title"><a href="/blog/pegar-latex-editor-ecuaciones-word">Pegar LaTeX en Word (Alt+=): trucos para ecuaciones limpias</a></h2>
-<p class="desc">Cómo usar el editor de ecuaciones de Word con LaTeX y cuándo conviene convertir documentos automáticamente.</p>
-<div class="meta">
-<span class="pill">pegar LaTeX en Word</span><span class="pill">Alt+=</span><span class="pill">UnicodeMath</span>
-</div>
-</article>
-<article class="card half">
-<div class="kicker">Formato · Conceptos</div>
-<h2 class="title"><a href="/blog/que-es-omml-ecuaciones-word">Qué es OMML y por qué tus ecuaciones no se copian bien en Word</a></h2>
-<p class="desc">Explicación clara de OMML (Office Math Markup Language) y por qué Word “no entiende” LaTeX pegado como texto.</p>
-<div class="meta">
-<span class="pill">OMML</span><span class="pill">Office Math</span><span class="pill">ecuaciones nativas</span>
-</div>
-</article>
-<article class="card half">
-<div class="kicker">Pandoc · Markdown</div>
-<h2 class="title"><a href="/blog/markdown-con-latex-a-word-docx">Markdown con LaTeX a Word (.docx): opciones y errores típicos</a></h2>
-<p class="desc">Cómo evitar que las ecuaciones desaparezcan o queden como texto al convertir Markdown/MathJax a Word.</p>
-<div class="meta">
-<span class="pill">pandoc</span><span class="pill">markdown</span><span class="pill">LaTeX a docx</span>
-</div>
-</article>
-</section>
-<div class="cta">
-<strong>Consejo práctico:</strong> si solo necesitas insertar 1–3 fórmulas, el editor de ecuaciones de Word puede servir.
-      Si estás pegando <strong>muchas ecuaciones</strong> (por ejemplo, una respuesta larga de IA) o quieres convertir un documento completo,
-      usa el <a href="/">conversor LaTeX → Word (OMML)</a>.
+  <header class="topbar">
+    <a class="brand" href="/">
+      <span class="brand-icon">∑</span>
+      <span class="brand-text">
+        <span class="brand-title">Ecuaciones a Word</span>
+        <span class="brand-sub">Convierte fórmulas LaTeX (también desde IA) a ecuaciones de Word</span>
+      </span>
+    </a>
+    <nav class="nav">
+      <a class="nav-link" href="/">Conversor</a>
+      <a class="nav-link" href="/blog">Blog</a>
+      <a class="nav-link nav-cta" href="/en/blog">Read this blog in English →</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="kicker">Guías y recursos</div>
+      <h1>Blog: LaTeX, Word y ecuaciones nativas (OMML)</h1>
+      <p class="lead">Guías para estudiantes y profesionales que necesitan convertir fórmulas LaTeX a Word sin perder formato. Si copias ecuaciones desde ChatGPT u otras IA y al pegarlas en Word se rompen, aquí tienes soluciones.</p>
+      <div class="hero-cta">
+        <a class="button primary" href="/">Ir al conversor</a>
+      </div>
+    </section>
+
+    <section class="grid">
+
+      <a class="card" href="/blog/pasar-ecuaciones-chatgpt-word">
+        <div class="kicker">IA → Word · Problema típico</div>
+        <h2>Cómo pasar ecuaciones de ChatGPT a Word sin copiarlas a mano</h2>
+        <p>Flujo recomendado ChatGPT → LaTeX → .docx/.txt → conversión a ecuaciones nativas (OMML) editables.</p>
+        <div class="tags"><span class="tag">ChatGPT</span><span class="tag">LaTeX</span><span class="tag">OMML</span></div>
+      </a>
+      <a class="card" href="/blog/convertir-documento-latex-word">
+        <div class="kicker">TFG/TFM · Entregas en Word</div>
+        <h2>Convertir LaTeX a Word para TFG/TFM sin perder las fórmulas</h2>
+        <p>Cómo preparar documentos con matemáticas para entregar en Word: ecuaciones editables, consistentes y sin capturas.</p>
+        <div class="tags"><span class="tag">TFG</span><span class="tag">LaTeX a Word</span><span class="tag">docx</span></div>
+      </a>
+      <a class="card" href="/blog/ia-chatgpt-a-word-ejercicios">
+        <div class="kicker">IA + productividad · Estudio</div>
+        <h2>Usar IA + Ecuaciones a Word para hacer tus ejercicios en Word</h2>
+        <p>Método práctico para resolver ejercicios con IA, pasar las fórmulas a Word y entregar con ecuaciones nativas.</p>
+        <div class="tags"><span class="tag">IA</span><span class="tag">Word</span><span class="tag">fórmulas</span></div>
+      </a>
+      <a class="card" href="/blog/pegar-latex-en-word-alt-eq">
+        <div class="kicker">Word · Editor de ecuaciones</div>
+        <h2>Pegar LaTeX en Word (Alt+=): trucos para ecuaciones limpias</h2>
+        <p>Cómo usar el editor de ecuaciones de Word con LaTeX y cuándo conviene convertir documentos automáticamente.</p>
+        <div class="tags"><span class="tag">Alt+=</span><span class="tag">Word</span><span class="tag">LaTeX</span></div>
+      </a>
+      <a class="card" href="/blog/que-es-omml-ecuaciones-word">
+        <div class="kicker">Formato · Conceptos</div>
+        <h2>Qué es OMML y por qué tus ecuaciones no se copian bien en Word</h2>
+        <p>Qué es OMML (Office Math Markup Language) y por qué Word “no entiende” LaTeX pegado como texto.</p>
+        <div class="tags"><span class="tag">OMML</span><span class="tag">Word</span><span class="tag">ecuaciones</span></div>
+      </a>
+      <a class="card" href="/blog/markdown-con-latex-a-word-docx">
+        <div class="kicker">Pandoc · Markdown</div>
+        <h2>Markdown con LaTeX a Word (.docx): opciones y errores típicos</h2>
+        <p>Cómo evitar que las ecuaciones desaparezcan o queden como texto al convertir Markdown/MathJax a Word.</p>
+        <div class="tags"><span class="tag">Pandoc</span><span class="tag">Markdown</span><span class="tag">docx</span></div>
+      </a>
+      <a class="card" href="/blog/signos-interrogacion-ecuaciones-chatgpt-word">
+        <div class="kicker">IA → Word · Copy/paste</div>
+        <h2>Signos de interrogación al pegar ecuaciones de ChatGPT a Word: por qué pasa y cómo solucionarlo</h2>
+        <p>Cuando copias fórmulas en LaTeX desde ChatGPT y las pegas en Word, pueden aparecer “??”, rombos o símbolos raros. Te explico la causa y las soluciones más fiables.</p>
+        <div class="tags"><span class="tag">ChatGPT</span><span class="tag">LaTeX</span><span class="tag">Word</span><span class="tag">OMML</span></div>
+      </a>
+      <a class="card" href="/blog/overleaf-latex-a-word-ecuaciones-editables">
+        <div class="kicker">LaTeX → Word · Overleaf</div>
+        <h2>De Overleaf/LaTeX a Word con ecuaciones editables: el flujo más limpio</h2>
+        <p>Si tienes un documento en LaTeX (Overleaf) y te piden entregarlo en Word, aquí tienes un flujo práctico para mantener ecuaciones editables (no imágenes).</p>
+        <div class="tags"><span class="tag">Overleaf</span><span class="tag">LaTeX a Word</span><span class="tag">OMML</span></div>
+      </a>
+      <a class="card" href="/blog/omml-vs-mathtype-vs-latex-word-tfg">
+        <div class="kicker">Formato · Comparativa</div>
+        <h2>OMML vs MathType vs LaTeX en Word: qué elegir para TFG/TFM y por qué</h2>
+        <p>Comparativa clara de los tres formatos de ecuaciones más comunes en Word: OMML (nativo), MathType y LaTeX. Pros, contras y recomendación según tu caso.</p>
+        <div class="tags"><span class="tag">OMML</span><span class="tag">MathType</span><span class="tag">TFG/TFM</span></div>
+      </a>
+      <a class="card" href="/blog/pandoc-ecuaciones-word-no-editables-soluciones">
+        <div class="kicker">Pandoc · Troubleshooting</div>
+        <h2>Pandoc a Word: por qué tus ecuaciones no son editables (y 7 soluciones)</h2>
+        <p>Si conviertes Markdown/LaTeX a DOCX con Pandoc y las ecuaciones desaparecen, quedan como texto o no son editables, aquí tienes un checklist de soluciones.</p>
+        <div class="tags"><span class="tag">Pandoc</span><span class="tag">DOCX</span><span class="tag">OMML</span></div>
+      </a>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div>© 2025 Ecuaciones a Word</div>
+      <div class="footer-links">
+        <a href="/robots.txt">robots.txt</a>
+        <a href="/sitemap.xml">sitemap.xml</a>
+      </div>
     </div>
-</div>
+  </footer>
 </body>
 </html>
