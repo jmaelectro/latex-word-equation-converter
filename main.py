@@ -112,7 +112,12 @@ BLOG_SLUGS_EN: Dict[str, str] = {
 BLOG_ALIASES_ES: Dict[str, str] = {
     # Antes usabas este slug para el post de Alt+=
     "pegar-latex-editor-ecuaciones-word": "pegar-latex-en-word-alt-eq",
+
+    # FIX: tu índice enlaza a este slug corto, pero el canonical en main.py es el largo.
+    # Con esto, /blog/signos-interrogacion-chatgpt-word redirige (301) al slug canonical que ya tienes.
+    "signos-interrogacion-chatgpt-word": "signos-interrogacion-ecuaciones-chatgpt-word",
 }
+
 
 # Aliases EN (slugs viejos) -> canonical
 BLOG_ALIASES_EN: Dict[str, str] = {
@@ -765,3 +770,4 @@ async def custom_http_exception_handler(request: Request, exc: StarletteHTTPExce
         return HTMLResponse(html, status_code=404)
 
     return PlainTextResponse(str(exc.detail), status_code=exc.status_code)
+
