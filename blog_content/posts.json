@@ -528,6 +528,288 @@
         "<p class=\"intro\">If you convert Markdown/LaTeX to DOCX with Pandoc and equations disappear or become plain text, here’s a practical troubleshooting checklist.</p>\n      "
       ],
       "translation_slug": "pandoc-ecuaciones-word-no-editables-soluciones"
+    },
+    {
+      "lang": "es",
+      "slug": "convertidor-formulas-chatgpt-a-word",
+      "title": "Convertidor de fórmulas de ChatGPT a Word (ecuaciones editables en 1 clic)",
+      "seo_title": "Convertidor de fórmulas de ChatGPT a Word (ecuaciones editables en 1 clic) | Ecuaciones a Word",
+      "description": "Convierte fórmulas de ChatGPT en LaTeX a ecuaciones nativas de Word (OMML) editables. Flujo en 3 pasos y ejemplo práctico.",
+      "keywords": [
+        "convertidor de formulas de chatgpt a word",
+        "chatgpt a word ecuaciones",
+        "latex a word omml",
+        "ecuaciones editables word",
+        "convertir formulas latex a word"
+      ],
+      "canonical_path": "/blog/convertidor-formulas-chatgpt-a-word",
+      "date_published": "2025-12-15",
+      "date_modified": "2025-12-15",
+      "reading_time": "4–6 min",
+      "kicker": "ChatGPT → Word · Conversión rápida",
+      "tags": [
+        "ChatGPT",
+        "Word",
+        "OMML"
+      ],
+      "intro_html": [
+        "<p class=\"intro\">Si ChatGPT te devuelve las ecuaciones en <strong>LaTeX</strong>, pegarlas directamente en Word suele acabar en texto plano o símbolos raros. Un <strong>convertidor</strong> que genere <strong>ecuaciones nativas (OMML)</strong> te evita reescribirlas a mano.</p>",
+        "<p class=\"intro\">Aquí tienes el flujo más rápido para convertir una respuesta (o un documento completo) y descargar un <strong>.docx con ecuaciones editables</strong>.</p>"
+      ],
+      "translation_slug": ""
+    },
+    {
+      "lang": "es",
+      "slug": "conversor-formulas-chatgpt-a-word-errores",
+      "title": "Conversor de fórmulas de ChatGPT a Word: 7 errores típicos (y cómo evitarlos)",
+      "seo_title": "Conversor de fórmulas de ChatGPT a Word: 7 errores típicos (y cómo evitarlos) | Ecuaciones a Word",
+      "description": "Checklist rápida: delimitadores, bloques de código, llaves desbalanceadas y símbolos raros. Evita los fallos más comunes al pasar LaTeX de ChatGPT a Word.",
+      "keywords": [
+        "conversor de formulas de chatgpt a word",
+        "errores chatgpt word ecuaciones",
+        "latex a word falla",
+        "simbolos raros word ecuaciones",
+        "delimitadores latex"
+      ],
+      "canonical_path": "/blog/conversor-formulas-chatgpt-a-word-errores",
+      "date_published": "2025-12-15",
+      "date_modified": "2025-12-15",
+      "reading_time": "5–7 min",
+      "kicker": "Troubleshooting · Copy/paste",
+      "tags": [
+        "ChatGPT",
+        "LaTeX",
+        "Word"
+      ],
+      "intro_html": [
+        "<p class=\"intro\">Si al convertir ecuaciones de ChatGPT a Word ves <strong>texto con $...$</strong>, ecuaciones rotas o símbolos raros, suele ser un problema de <strong>entrada (LaTeX)</strong>, no del Word final.</p>",
+        "<p class=\"intro\">Este checklist te ayuda a detectar el fallo en minutos y dejar el documento listo para convertirlo a <strong>OMML</strong>.</p>"
+      ],
+      "translation_slug": ""
+    },
+    {
+      "lang": "es",
+      "slug": "codigo-latex-a-word",
+      "title": "Código LaTeX a Word: 3 formas de pegarlo y cuándo usar cada una",
+      "seo_title": "Código LaTeX a Word: 3 formas de pegarlo y cuándo usar cada una | Ecuaciones a Word",
+      "description": "Tres opciones: Alt+= para pocas ecuaciones, conversión masiva a OMML para documentos largos, y alternativas si tu universidad exige Word.",
+      "keywords": [
+        "codigo latex a word",
+        "latex a word",
+        "pegar latex en word",
+        "alt+=",
+        "latex a omml"
+      ],
+      "canonical_path": "/blog/codigo-latex-a-word",
+      "date_published": "2025-12-15",
+      "date_modified": "2025-12-15",
+      "reading_time": "4–6 min",
+      "kicker": "LaTeX → Word · Opciones",
+      "tags": [
+        "LaTeX",
+        "Alt+=",
+        "OMML"
+      ],
+      "intro_html": [
+        "<p class=\"intro\">Si tienes <strong>código LaTeX</strong> (de apuntes, Overleaf o IA) y necesitas llevarlo a Word, hay varias rutas. La clave es elegir la que mejor encaja con <strong>cuántas ecuaciones</strong> tienes y si deben quedar <strong>editables</strong>.</p>"
+      ],
+      "translation_slug": ""
+    },
+    {
+      "lang": "es",
+      "slug": "de-latex-a-word-guia-rapida",
+      "title": "De LaTeX a Word: guía rápida para convertir un documento sin perder ecuaciones",
+      "seo_title": "De LaTeX a Word: guía rápida para convertir un documento sin perder ecuaciones | Ecuaciones a Word",
+      "description": "Guía corta para pasar de LaTeX a Word manteniendo ecuaciones editables (OMML): preparación, delimitadores y revisión final.",
+      "keywords": [
+        "de latex a word",
+        "convertir latex a word",
+        "latex a word ecuaciones editables",
+        "omml word",
+        "documento latex a word"
+      ],
+      "canonical_path": "/blog/de-latex-a-word-guia-rapida",
+      "date_published": "2025-12-15",
+      "date_modified": "2025-12-15",
+      "reading_time": "5–7 min",
+      "kicker": "Documento completo · Checklist",
+      "tags": [
+        "LaTeX → Word",
+        "DOCX",
+        "OMML"
+      ],
+      "intro_html": [
+        "<p class=\"intro\">Cuando el documento tiene muchas fórmulas, el enfoque “copiar/pegar ecuación por ecuación” se vuelve inviable. Este flujo te permite pasar de <strong>LaTeX a Word</strong> conservando ecuaciones <strong>editables</strong> (OMML).</p>"
+      ],
+      "translation_slug": ""
+    },
+    {
+      "lang": "es",
+      "slug": "latex-en-word-como-escribir",
+      "title": "LaTeX en Word: cómo escribir ecuaciones (Alt+=) y limitaciones reales",
+      "seo_title": "LaTeX en Word: cómo escribir ecuaciones (Alt+=) y limitaciones reales | Ecuaciones a Word",
+      "description": "Cómo usar el editor de ecuaciones de Word con entrada LaTeX/lineal (Alt+=). Qué funciona, qué suele fallar y cuándo convertir a OMML.",
+      "keywords": [
+        "latex en word",
+        "como escribir latex en word",
+        "editor de ecuaciones word latex",
+        "alt+=",
+        "unicodeMath"
+      ],
+      "canonical_path": "/blog/latex-en-word-como-escribir",
+      "date_published": "2025-12-15",
+      "date_modified": "2025-12-15",
+      "reading_time": "4–6 min",
+      "kicker": "Word · Editor de ecuaciones",
+      "tags": [
+        "Word",
+        "LaTeX",
+        "Alt+="
+      ],
+      "intro_html": [
+        "<p class=\"intro\">Word permite introducir ecuaciones de forma rápida con <strong>Alt+=</strong> y una sintaxis similar a LaTeX. Para 1–10 ecuaciones suele bastar; para documentos largos, lo eficiente es convertirlo todo a <strong>ecuaciones nativas (OMML)</strong>.</p>"
+      ],
+      "translation_slug": ""
+    },
+    {
+      "lang": "es",
+      "slug": "delimitadores-latex-para-word",
+      "title": "Delimitadores LaTeX para Word: $...$, $$...$$ y \\[...\\] (lo que sí funciona)",
+      "seo_title": "Delimitadores LaTeX para Word: $...$, $$...$$ y \\[...\\] (lo que sí funciona) | Ecuaciones a Word",
+      "description": "Qué delimitadores usar para que tus fórmulas se conviertan correctamente a ecuaciones nativas de Word (OMML). Con ejemplos y recomendaciones.",
+      "keywords": [
+        "delimitadores latex",
+        "latex delimiters",
+        "latex a word omml",
+        "ecuaciones latex en word",
+        "$$ ... $$"
+      ],
+      "canonical_path": "/blog/delimitadores-latex-para-word",
+      "date_published": "2025-12-15",
+      "date_modified": "2025-12-15",
+      "reading_time": "3–5 min",
+      "kicker": "LaTeX · Formato de entrada",
+      "tags": [
+        "LaTeX",
+        "delimitadores",
+        "OMML"
+      ],
+      "intro_html": [
+        "<p class=\"intro\">La conversión a ecuaciones de Word depende mucho de que las fórmulas estén <strong>bien delimitadas</strong>. Si no hay delimitadores, Word (y cualquier conversor) no puede separar texto normal de matemáticas.</p>"
+      ],
+      "translation_slug": ""
+    },
+    {
+      "lang": "es",
+      "slug": "matrices-sistemas-latex-a-word",
+      "title": "Matrices y sistemas: de LaTeX (pmatrix/cases) a Word sin perder alineación",
+      "seo_title": "Matrices y sistemas: de LaTeX (pmatrix/cases) a Word sin perder alineación | Ecuaciones a Word",
+      "description": "Convierte matrices y sistemas desde LaTeX a Word como ecuaciones editables (OMML). Ejemplos con pmatrix, bmatrix y cases y tips de formato.",
+      "keywords": [
+        "matrices latex a word",
+        "cases latex a word",
+        "pmatrix word",
+        "sistemas de ecuaciones word latex",
+        "latex a omml matrices"
+      ],
+      "canonical_path": "/blog/matrices-sistemas-latex-a-word",
+      "date_published": "2025-12-15",
+      "date_modified": "2025-12-15",
+      "reading_time": "5–7 min",
+      "kicker": "Álgebra lineal · Casos difíciles",
+      "tags": [
+        "matrices",
+        "LaTeX",
+        "Word"
+      ],
+      "intro_html": [
+        "<p class=\"intro\">Matrices, sistemas y funciones por tramos suelen ser lo primero que se rompe al copiar/pegar. La estrategia más estable es convertirlos en bloque y obtener un Word con <strong>ecuaciones OMML</strong> editables.</p>"
+      ],
+      "translation_slug": ""
+    },
+    {
+      "lang": "es",
+      "slug": "notion-a-word-con-ecuaciones",
+      "title": "Notion a Word con ecuaciones: exporta y consigue fórmulas editables en Word",
+      "seo_title": "Notion a Word con ecuaciones: exporta y consigue fórmulas editables en Word | Ecuaciones a Word",
+      "description": "Flujo práctico para llevar páginas de Notion con ecuaciones a Word sin perder matemáticas: exportación, delimitadores y conversión a OMML.",
+      "keywords": [
+        "notion a word ecuaciones",
+        "notion latex word",
+        "exportar notion a docx ecuaciones",
+        "katex a word",
+        "ecuaciones editables word"
+      ],
+      "canonical_path": "/blog/notion-a-word-con-ecuaciones",
+      "date_published": "2025-12-15",
+      "date_modified": "2025-12-15",
+      "reading_time": "4–6 min",
+      "kicker": "Notion · Exportación",
+      "tags": [
+        "Notion",
+        "Word",
+        "LaTeX"
+      ],
+      "intro_html": [
+        "<p class=\"intro\">Notion renderiza ecuaciones muy bien, pero al exportar a Word es frecuente que la matemática se degrade. Este flujo mantiene las fórmulas en LaTeX con delimitadores y luego las convierte a <strong>ecuaciones nativas de Word</strong>.</p>"
+      ],
+      "translation_slug": ""
+    },
+    {
+      "lang": "es",
+      "slug": "obsidian-a-word-ecuaciones",
+      "title": "Obsidian a Word con ecuaciones: de Markdown+LaTeX a .docx con OMML",
+      "seo_title": "Obsidian a Word con ecuaciones: de Markdown+LaTeX a .docx con OMML | Ecuaciones a Word",
+      "description": "Guía rápida: pasa notas de Obsidian (Markdown con LaTeX) a Word con ecuaciones editables. Ruta recomendada y troubleshooting típico.",
+      "keywords": [
+        "obsidian a word ecuaciones",
+        "markdown latex a word",
+        "pandoc obsidian word",
+        "latex a omml",
+        "ecuaciones editables word"
+      ],
+      "canonical_path": "/blog/obsidian-a-word-ecuaciones",
+      "date_published": "2025-12-15",
+      "date_modified": "2025-12-15",
+      "reading_time": "4–6 min",
+      "kicker": "Obsidian · Markdown",
+      "tags": [
+        "Obsidian",
+        "Pandoc",
+        "OMML"
+      ],
+      "intro_html": [
+        "<p class=\"intro\">Si tus apuntes están en Obsidian con LaTeX, lo normal es exportar a Word vía Markdown. El riesgo: que las ecuaciones queden como texto. Aquí tienes una ruta simple para acabar con un <strong>.docx</strong> con ecuaciones <strong>editables</strong> (OMML).</p>"
+      ],
+      "translation_slug": ""
+    },
+    {
+      "lang": "es",
+      "slug": "simbolos-raros-ecuaciones-word-cambria-math",
+      "title": "Símbolos raros en ecuaciones de Word: Cambria Math, cuadrados y cómo arreglarlo",
+      "seo_title": "Símbolos raros en ecuaciones de Word: Cambria Math, cuadrados y cómo arreglarlo | Ecuaciones a Word",
+      "description": "Si ves rombos, cuadrados o caracteres cambiados en ecuaciones de Word, suele ser fuente/compatibilidad. Soluciones rápidas y checklist.",
+      "keywords": [
+        "simbolos raros word ecuaciones",
+        "cambria math word",
+        "cuadrados en ecuaciones word",
+        "rombos word ecuaciones",
+        "problemas fuente ecuaciones word"
+      ],
+      "canonical_path": "/blog/simbolos-raros-ecuaciones-word-cambria-math",
+      "date_published": "2025-12-15",
+      "date_modified": "2025-12-15",
+      "reading_time": "4–6 min",
+      "kicker": "Word · Fuentes y compatibilidad",
+      "tags": [
+        "Word",
+        "Cambria Math",
+        "Unicode"
+      ],
+      "intro_html": [
+        "<p class=\"intro\">Cuando una ecuación se ve bien en tu equipo pero aparece con <strong>cuadrados</strong>, <strong>rombos</strong> o símbolos cambiados en otro Word, casi siempre es un problema de <strong>fuente matemática</strong> o compatibilidad.</p>"
+      ],
+      "translation_slug": ""
     }
   ],
   "aliases": {
