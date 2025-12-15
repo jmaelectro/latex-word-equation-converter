@@ -7,6 +7,7 @@ import json
 import re
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from xml.sax.saxutils import escape
 
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -14,7 +15,13 @@ from docx.shared import Pt
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, PlainTextResponse, Response, StreamingResponse, RedirectResponse
+from fastapi.responses import (
+    HTMLResponse,
+    PlainTextResponse,
+    Response,
+    StreamingResponse,
+    RedirectResponse,
+)
 from fastapi.staticfiles import StaticFiles
 
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -117,7 +124,7 @@ def _load_blog_data() -> Dict[str, Any]:
         data.setdefault("posts", [])
         data.setdefault("aliases", {})
         return data
-    except Exception as exc:
+    except Exception:
         logger.exception("Failed to load blog data from %s", BLOG_DATA_PATH)
         # Keep the app running (converter is critical). Blog will 404 gracefully.
         return {"posts": [], "aliases": {}}
@@ -154,7 +161,10 @@ def _init_blog_cache() -> None:
     # Lists (sorted)
     for lang in ("es", "en"):
         lst = list(BLOG_POSTS[lang].values())
-        lst.sort(key=lambda d: (d.get("date_published") or "", d.get("slug") or ""), reverse=True)
+        lst.sort(
+            key=lambda d: (d.get("date_published") or "", d.get("slug") or ""),
+            reverse=True,
+        )
         BLOG_LIST[lang] = lst
 
 
@@ -177,8 +187,19 @@ def _read_blog_body(lang: str, slug: str) -> str:
 
 def _month_name_es(month: int) -> str:
     names = [
-        "", "enero", "febrero", "marzo", "abril", "mayo", "junio",
-        "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+        "",
+        "enero",
+        "febrero",
+        "marzo",
+        "abril",
+        "mayo",
+        "junio",
+        "julio",
+        "agosto",
+        "septiembre",
+        "octubre",
+        "noviembre",
+        "diciembre",
     ]
     return names[month] if 1 <= month <= 12 else ""
 
@@ -220,22 +241,21 @@ def _build_schema_article(post: Dict[str, Any], canonical_url: str) -> str:
 def _build_schema_index(lang: str, canonical_url: str) -> str:
     items = []
     for idx, p in enumerate(BLOG_LIST.get(lang, []), start=1):
-        items.append({
-            "@type": "ListItem",
-            "position": idx,
-            "url": f"{CANONICAL_HOST}{p.get('canonical_path')}",
-            "name": p.get("title") or "",
-        })
+        items.append(
+            {
+                "@type": "ListItem",
+                "position": idx,
+                "url": f"{CANONICAL_HOST}{p.get('canonical_path')}",
+                "name": p.get("title") or "",
+            }
+        )
     schema = {
         "@context": "https://schema.org",
         "@type": "WebPage",
         "name": "Blog",
         "url": canonical_url,
         "inLanguage": lang,
-        "mainEntity": {
-            "@type": "ItemList",
-            "itemListElement": items[:50],  # keep size bounded
-        },
+        "mainEntity": {"@type": "ItemList", "itemListElement": items[:50]},
     }
     return json.dumps(schema, ensure_ascii=False)
 
@@ -280,26 +300,54 @@ def _sitemap_url_entry(loc: str, lastmod: str, changefreq: str, priority: str) -
 
 def generate_sitemap_xml() -> str:
     """
-    Sitemap XML (válido) generado desde las rutas reales.
+    Sitemap XML generado desde las rutas reales del sitio y desde posts.json (cache BLOG_LIST/BLOG_POSTS).
+    No depende de BLOG_SLUGS_ES/EN (ya no existen).
     """
-    lastmod = _now_lastmod_iso()
     urls: List[str] = []
 
+    def post_lastmod(p: Dict[str, Any]) -> str:
+        d = (p.get("date_modified") or p.get("date_published") or "").strip()
+        if d:
+            return d
+        return _now_lastmod_iso()
+
     # Home
-    urls.append(_sitemap_url_entry(_abs_url("/"), lastmod, "weekly", "1.0"))
-    urls.append(_sitemap_url_entry(_abs_url("/en"), lastmod, "weekly", "0.8"))
+    urls.append(_sitemap_url_entry(escape(_abs_url("/")), _now_lastmod_iso(), "weekly", "1.0"))
+    urls.append(_sitemap_url_entry(escape(_abs_url("/en")), _now_lastmod_iso(), "weekly", "0.8"))
 
     # Blog index
-    urls.append(_sitemap_url_entry(_abs_url("/blog"), lastmod, "weekly", "0.8"))
-    urls.append(_sitemap_url_entry(_abs_url("/en/blog"), lastmod, "weekly", "0.7"))
+    urls.append(_sitemap_url_entry(escape(_abs_url("/blog")), _now_lastmod_iso(), "weekly", "0.8"))
+    urls.append(_sitemap_url_entry(escape(_abs_url("/en/blog")), _now_lastmod_iso(), "weekly", "0.7"))
 
-    # Blog posts ES
-    for slug in BLOG_SLUGS_ES.keys():
-        urls.append(_sitemap_url_entry(_abs_url(f"/blog/{slug}"), lastmod, "monthly", "0.6"))
+    # Blog posts ES (desde cache BLOG_LIST['es'])
+    for p in BLOG_LIST.get("es", []):
+        slug = (p.get("slug") or "").strip()
+        canonical_path = (p.get("canonical_path") or f"/blog/{slug}").strip()
+        if not slug:
+            continue
+        urls.append(
+            _sitemap_url_entry(
+                escape(_abs_url(canonical_path)),
+                post_lastmod(p),
+                "monthly",
+                "0.6",
+            )
+        )
 
-    # Blog posts EN
-    for slug in BLOG_SLUGS_EN.keys():
-        urls.append(_sitemap_url_entry(_abs_url(f"/en/blog/{slug}"), lastmod, "monthly", "0.5"))
+    # Blog posts EN (desde cache BLOG_LIST['en'])
+    for p in BLOG_LIST.get("en", []):
+        slug = (p.get("slug") or "").strip()
+        canonical_path = (p.get("canonical_path") or f"/en/blog/{slug}").strip()
+        if not slug:
+            continue
+        urls.append(
+            _sitemap_url_entry(
+                escape(_abs_url(canonical_path)),
+                post_lastmod(p),
+                "monthly",
+                "0.5",
+            )
+        )
 
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -314,8 +362,8 @@ def generate_sitemap_xml() -> str:
 # ================================================================
 def normalize_math_text(text: str) -> str:
     t = text
-    t = re.sub(r"q([1-4])\s*\(", r"q_\1(", t)          # q1( -> q_1(
-    t = re.sub(r"\bD([1-4])\b", r"D_\1", t)            # D1 -> D_1
+    t = re.sub(r"q([1-4])\s*\(", r"q_\1(", t)  # q1( -> q_1(
+    t = re.sub(r"\bD([1-4])\b", r"D_\1", t)  # D1 -> D_1
     for var in ("x", "y", "z"):
         for exp in ("2", "3", "4"):
             t = re.sub(rf"{var}{exp}\b", rf"{var}^{exp}", t)  # x2 -> x^2
@@ -334,7 +382,10 @@ def _prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
             out.append("Actividad 2 (trabajo grupal)")
             continue
 
-        if all(sym in stripped for sym in ["q_1(x,y,z)", "q_2(x,y,z)", "q_3(x,y,z)", "q_4(x,y,z)"]):
+        if all(
+            sym in stripped
+            for sym in ["q_1(x,y,z)", "q_2(x,y,z)", "q_3(x,y,z)", "q_4(x,y,z)"]
+        ):
             out.append("$$ q_1(x,y,z) = 2x^2 + 2y^2 + 2z^2 + 2xy + 2xz $$")
             out.append("$$ q_2(x,y,z) = x^2 - y^2 + z^2 + 2xy $$")
             out.append("$$ q_3(x,y,z) = 2x^2 - y^2 + 2z^2 + 4xy - 4yz $$")
@@ -353,13 +404,20 @@ def _prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
             "Escribimos cada forma como q(x)=xT" in stripped
             or "Escribimos cada forma como q(x)=xTA" in stripped
             or "Escribimos cada forma como q(x)=xTA x(\\mathbf x)" in stripped
-            or ("Escribimos cada forma como q(x)=xTAx(\\mathbf x)=\\mathbf x^T A\\mathbf x" in stripped)
+            or (
+                "Escribimos cada forma como q(x)=xTAx(\\mathbf x)=\\mathbf x^T A\\mathbf x"
+                in stripped
+            )
         ):
-            out.append("Escribimos cada forma como $q(\\mathbf x) = \\mathbf x^T A\\, \\mathbf x$, con $\\mathbf x = (x,y,z)^T$.")
+            out.append(
+                "Escribimos cada forma como $q(\\mathbf x) = \\mathbf x^T A\\, \\mathbf x$, con $\\mathbf x = (x,y,z)^T$."
+            )
             continue
 
         if "coeficiente del término cruzado" in stripped:
-            out.append("Recordando que el coeficiente del término cruzado $2x_i y_j$ se reparte como $a_{ij}=a_{ji}=1$:")
+            out.append(
+                "Recordando que el coeficiente del término cruzado $2x_i y_j$ se reparte como $a_{ij}=a_{ji}=1$:"
+            )
             continue
 
         if "Forma q1" in stripped or "q1q_1q1" in stripped:
@@ -379,11 +437,15 @@ def _prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
             out.append("2. Criterio de Sylvester")
             continue
         if "Una matriz simétrica" in stripped and "definida positiva" in stripped:
-            out.append("Una matriz simétrica $A$ es definida positiva si todos sus menores principales líderes son positivos:")
+            out.append(
+                "Una matriz simétrica $A$ es definida positiva si todos sus menores principales líderes son positivos:"
+            )
             continue
 
         if "D_1>0" in stripped and "D_2>0" in stripped and "D_3>0" in stripped:
-            out.append("\\begin{aligned}\nD_1 &> 0,\\\\\nD_2 &> 0,\\\\\nD_3 &> 0.\n\\end{aligned}")
+            out.append(
+                "\\begin{aligned}\nD_1 &> 0,\\\\\nD_2 &> 0,\\\\\nD_3 &> 0.\n\\end{aligned}"
+            )
             continue
 
         d_terms = list(re.finditer(r"D_[1-4][^D]*", stripped))
@@ -724,16 +786,23 @@ async def blog_index_es() -> HTMLResponse:
             if not isinstance(t, str) or not t.strip():
                 continue
             tag_counts[t] = tag_counts.get(t, 0) + 1
-        posts_view.append({
-            "url": p.get("canonical_path") or f"/blog/{p.get('slug')}",
-            "title": p.get("title") or "",
-            "description": p.get("description") or "",
-            "kicker": p.get("kicker") or "",
-            "tags": p.get("tags") or [],
-            "meta": f"{_format_date(lang, p.get('date_published') or '')} · {p.get('reading_time') or ''}".strip(" ·"),
-        })
+        posts_view.append(
+            {
+                "url": p.get("canonical_path") or f"/blog/{p.get('slug')}",
+                "title": p.get("title") or "",
+                "description": p.get("description") or "",
+                "kicker": p.get("kicker") or "",
+                "tags": p.get("tags") or [],
+                "meta": f"{_format_date(lang, p.get('date_published') or '')} · {p.get('reading_time') or ''}".strip(
+                    " ·"
+                ),
+            }
+        )
 
-    top_tags = [k for k, _ in sorted(tag_counts.items(), key=lambda kv: (-kv[1], kv[0].lower()))][:8]
+    top_tags = [
+        k
+        for k, _ in sorted(tag_counts.items(), key=lambda kv: (-kv[1], kv[0].lower()))
+    ][:8]
 
     ctx = {
         "lang": lang,
@@ -786,16 +855,23 @@ async def blog_index_en() -> HTMLResponse:
             if not isinstance(t, str) or not t.strip():
                 continue
             tag_counts[t] = tag_counts.get(t, 0) + 1
-        posts_view.append({
-            "url": p.get("canonical_path") or f"/en/blog/{p.get('slug')}",
-            "title": p.get("title") or "",
-            "description": p.get("description") or "",
-            "kicker": p.get("kicker") or "",
-            "tags": p.get("tags") or [],
-            "meta": f"{_format_date(lang, p.get('date_published') or '')} · {p.get('reading_time') or ''}".strip(" ·"),
-        })
+        posts_view.append(
+            {
+                "url": p.get("canonical_path") or f"/en/blog/{p.get('slug')}",
+                "title": p.get("title") or "",
+                "description": p.get("description") or "",
+                "kicker": p.get("kicker") or "",
+                "tags": p.get("tags") or [],
+                "meta": f"{_format_date(lang, p.get('date_published') or '')} · {p.get('reading_time') or ''}".strip(
+                    " ·"
+                ),
+            }
+        )
 
-    top_tags = [k for k, _ in sorted(tag_counts.items(), key=lambda kv: (-kv[1], kv[0].lower()))][:8]
+    top_tags = [
+        k
+        for k, _ in sorted(tag_counts.items(), key=lambda kv: (-kv[1], kv[0].lower()))
+    ][:8]
 
     ctx = {
         "lang": lang,
@@ -869,7 +945,6 @@ def _resolve_blog_slug(lang: str, slug: str) -> Tuple[Optional[str], Optional[Di
         post = BLOG_POSTS.get(lang, {}).get(canonical_slug)
         if post and post.get("canonical_path"):
             return post["canonical_path"], None
-        # fallback
         prefix = "/blog/" if lang == "es" else "/en/blog/"
         return f"{prefix}{canonical_slug}", None
 
@@ -892,7 +967,9 @@ async def blog_post_es(slug: str) -> HTMLResponse:
 
     canonical_url = _abs_url(post.get("canonical_path") or f"/blog/{post['slug']}")
     translation_slug = (post.get("translation_slug") or "").strip()
-    has_translation = bool(translation_slug and translation_slug in BLOG_POSTS.get("en", {}))
+    has_translation = bool(
+        translation_slug and translation_slug in BLOG_POSTS.get("en", {})
+    )
 
     alternates = [{"hreflang": "es", "href": canonical_url}]
     lang_switch_href = "/en/blog"
@@ -963,7 +1040,9 @@ async def blog_post_en(slug: str) -> HTMLResponse:
 
     canonical_url = _abs_url(post.get("canonical_path") or f"/en/blog/{post['slug']}")
     translation_slug = (post.get("translation_slug") or "").strip()
-    has_translation = bool(translation_slug and translation_slug in BLOG_POSTS.get("es", {}))
+    has_translation = bool(
+        translation_slug and translation_slug in BLOG_POSTS.get("es", {})
+    )
 
     alternates = [{"hreflang": "en", "href": canonical_url}]
     lang_switch_href = "/blog"
@@ -1021,7 +1100,9 @@ async def blog_post_en(slug: str) -> HTMLResponse:
 
 @app.get("/robots.txt")
 async def robots_txt() -> Response:
-    default = "User-agent: *\nAllow: /\nSitemap: https://www.ecuacionesaword.com/sitemap.xml\n"
+    default = (
+        "User-agent: *\nAllow: /\nSitemap: https://www.ecuacionesaword.com/sitemap.xml\n"
+    )
     path = os.path.join(BASE_DIR, "robots.txt")
     content = _read_text_file(path, default=default)
     return Response(content=content, media_type="text/plain")
@@ -1029,7 +1110,6 @@ async def robots_txt() -> Response:
 
 @app.get("/sitemap.xml")
 async def sitemap_xml() -> Response:
-    # Generado siempre en XML válido (no dependes del fichero)
     content = generate_sitemap_xml()
     return Response(content=content, media_type="application/xml")
 
@@ -1046,7 +1126,6 @@ def _extract_text_lines_from_docx(file_bytes: bytes) -> List[str]:
     doc = Document(io.BytesIO(file_bytes))
     lines: List[str] = []
     for p in doc.paragraphs:
-        # Mantener líneas aunque sean vacías para separar bloques
         lines.append(p.text if p.text is not None else "")
     return lines
 
@@ -1071,7 +1150,9 @@ async def convert(file: UploadFile = File(...)) -> StreamingResponse:
     elif filename.endswith(".txt"):
         paragraph_texts = _extract_text_lines_from_txt(content)
     else:
-        raise HTTPException(status_code=400, detail="Unsupported file type. Use .docx or .txt")
+        raise HTTPException(
+            status_code=400, detail="Unsupported file type. Use .docx or .txt"
+        )
 
     cleaned = prettify_paragraphs(paragraph_texts)
     out_doc = build_document_from_paragraphs(cleaned)
@@ -1115,4 +1196,3 @@ async def custom_http_exception_handler(request: Request, exc: StarletteHTTPExce
         return HTMLResponse(html, status_code=404)
 
     return PlainTextResponse(str(exc.detail), status_code=exc.status_code)
-
