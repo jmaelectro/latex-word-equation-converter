@@ -1,0 +1,50 @@
+<h2>1) Falta de delimitadores ($...$, $$...$$ o \[...\])</h2>
+<p>
+  Si el LaTeX viene “suelto” dentro del texto, es muy fácil que la conversión falle.
+  Normaliza siempre con delimitadores. Si dudas, revisa esta guía:
+  <a href="/blog/delimitadores-latex-para-word">delimitadores LaTeX para Word</a>.
+</p>
+
+<h2>2) Copiar desde un bloque de código</h2>
+<p>
+  A veces los bloques de código cambian caracteres (por ejemplo, barras invertidas). Si puedes,
+  copia la respuesta “normal” y luego revisa el LaTeX en un archivo <code>.txt</code> antes de convertir.
+</p>
+
+<h2>3) Llaves desbalanceadas</h2>
+<p>
+  Un solo <code>{</code> sin su <code>}</code> puede romper una ecuación completa. Si una ecuación no convierte,
+  prueba a localizar la parte donde empieza el error y simplifica.
+</p>
+
+<h2>4) Comandos/macro no estándar</h2>
+<p>
+  Evita <code>\newcommand</code>, paquetes raros o macros muy personalizadas. En general, cuanto más “simple” sea el LaTeX,
+  más consistente será el Word final.
+</p>
+
+<h2>5) Ecuaciones demasiado largas</h2>
+<p>
+  Para respuestas enormes, parte ecuaciones complejas en 2–3 líneas (o usa bloques <code>aligned</code>).
+  Es más fácil de revisar y menos propenso a fallos.
+</p>
+
+<h2>6) Símbolos raros (??, cuadrados, rombos)</h2>
+<p>
+  Suele ser un tema de codificación o fuentes matemáticas (Cambria Math). Soluciones en:
+  <a href="/blog/signos-interrogacion-ecuaciones-chatgpt-word">signos de interrogación y símbolos raros</a>
+  y en <a href="/blog/simbolos-raros-ecuaciones-word-cambria-math">esta guía de fuentes</a>.
+</p>
+
+<h2>7) Mezcla de delimitadores o estilos</h2>
+<p>
+  No mezcles “a lo loco” <code>$</code>, <code>$$</code> y <code>\( \)</code> en el mismo documento. Elige un estilo y sé consistente.
+</p>
+
+<hr class="sep">
+
+<p class="cta">
+  Una vez limpio el LaTeX, el flujo más eficiente es:
+  pegar todo en un <strong>.docx</strong> o <strong>.txt</strong> y convertirlo con <a href="/">Ecuaciones a Word</a>
+  para obtener ecuaciones nativas (OMML).
+</p>

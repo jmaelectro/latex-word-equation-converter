@@ -1,0 +1,27 @@
+<h2>El escenario típico (Obsidian)</h2>
+<p>
+  Tienes notas en <strong>Markdown</strong> con LaTeX (inline y bloque). Al pasar a Word, el problema común es que las ecuaciones
+  queden como texto (se ven los <code>$</code>) o no sean editables.
+</p>
+
+<h2>Ruta recomendada</h2>
+<ol>
+  <li><strong>Exporta tu nota</strong> como <code>.md</code> (Markdown).</li>
+  <li><strong>Convierte a .docx</strong> (por ejemplo, con Pandoc) para mantener estructura básica.</li>
+  <li><strong>Asegura delimitadores</strong> y convierte el documento a OMML con <a href="/">Ecuaciones a Word</a>.</li>
+</ol>
+
+<h2>Checklist rápido si algo sale mal</h2>
+<ul>
+  <li>Comprueba que no hay bloques de código envolviendo ecuaciones.</li>
+  <li>Evita macros LaTeX personalizadas.</li>
+  <li>Si Pandoc deja <code>$...$</code> visible, aplica este troubleshooting:
+    <a href="/blog/pandoc-ecuaciones-word-no-editables-soluciones">Pandoc: ecuaciones no editables</a>.
+  </li>
+</ul>
+
+<hr class="sep">
+<p class="cta">
+  Si además quieres entender por qué Word necesita OMML para ecuaciones editables, lee:
+  <a href="/blog/que-es-omml-ecuaciones-word">Qué es OMML</a>.
+</p>

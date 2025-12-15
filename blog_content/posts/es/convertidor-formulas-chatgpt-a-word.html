@@ -1,0 +1,37 @@
+<h2>El caso típico</h2>
+<p>
+  ChatGPT suele escribir matemáticas en <strong>LaTeX</strong>. Si lo pegas directamente en Word, a menudo queda como
+  texto plano o con símbolos raros. La alternativa fiable es convertir el LaTeX a <strong>ecuaciones nativas de Word (OMML)</strong>,
+  que son editables con el editor de ecuaciones.
+</p>
+
+<h2>Flujo en 3 pasos (el más rápido)</h2>
+<ol>
+  <li>
+    <strong>Pide a ChatGPT delimitadores claros</strong>.
+    Añade al prompt: <em>“Usa <code>$...$</code> para inline y <code>$$...$$</code> o <code>\[...\]</code> para ecuaciones en bloque”</em>.
+  </li>
+  <li>
+    <strong>Pega la respuesta en un archivo</strong> <code>.docx</code> o <code>.txt</code> y guárdalo.
+  </li>
+  <li>
+    <strong>Sube el archivo al conversor</strong> y descarga el Word final con ecuaciones OMML editables:
+    <a href="/">Ecuaciones a Word</a>.
+  </li>
+</ol>
+
+<h2>Ejemplo mínimo</h2>
+<p>Entrada (LaTeX):</p>
+<pre><code>En línea: $E=mc^2$
+En bloque:
+$$x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$$</code></pre>
+<p>
+  Salida: ecuaciones de Word editables (no imágenes), listas para ajustar tamaño, numeración o estilo.
+</p>
+
+<hr class="sep">
+
+<p class="cta">
+  Si además de convertir, quieres entender <strong>por qué Word “no pega bien”</strong> estas fórmulas,
+  lee primero <a href="/blog/que-es-omml-ecuaciones-word">qué es OMML</a> y luego usa el conversor.
+</p>
