@@ -725,7 +725,8 @@
     ]
   }
   </script>
-<link href="https://www.ecuacionesaword.com/" hreflang="es" rel="alternate"/><link href="https://www.ecuacionesaword.com/en" hreflang="en" rel="alternate"/></head>
+<link href="https://www.ecuacionesaword.com/" hreflang="es" rel="alternate"/><link href="https://www.ecuacionesaword.com/en" hreflang="en" rel="alternate"/>
+<link href="https://www.ecuacionesaword.com/" hreflang="x-default" rel="alternate"/></head>
 <body>
 <div class="page">
 <header>
@@ -1033,6 +1034,14 @@
 <a href="https://www.ecuacionesaword.com/" rel="noopener">Inicio</a>
         ·
         <a href="/blog" rel="noopener">Blog</a>
+        ·
+        <a href="/privacy" rel="noopener">Privacidad</a>
+        ·
+        <a href="/terms" rel="noopener">Términos</a>
+        ·
+        <a href="/contact" rel="noopener">Contacto</a>
+        ·
+        <a href="https://github.com/jmaelectro/latex-word-equation-converter" rel="noopener">GitHub</a>
 </div>
 </footer>
 </div>
@@ -1040,6 +1049,11 @@
 (() => {
   const endpoint = "/convert";
   const isEnglish = window.location.pathname.startsWith("/en");
+  function track(name, params = {}) {
+    if (typeof gtag === "function") {
+      gtag("event", name, params);
+    }
+  }
   // Language switcher (home)
   const langSelect = document.getElementById("lang-select");
   if (langSelect) {
@@ -1121,6 +1135,9 @@
       return;
     }
 
+
+    track("convert_clicked");
+
     const file = fileInput.files[0];
 
     if (convertBtn) convertBtn.disabled = true;
@@ -1136,6 +1153,7 @@
       res = await fetch(endpoint, { method: "POST", body: fd, cache: "no-store" });
     } catch (err) {
       if (convertBtn) convertBtn.disabled = false;
+      track("convert_error", { error_type: "network" });
       setStatus(
         "error",
         "Error de conexión al convertir. Revisa que el servidor está activo.",
@@ -1145,8 +1163,9 @@
     }
 
     if (!res.ok) {
+      track("convert_error", { http_status: res.status });
       let detail = "";
-      try {
+try {
         const txt = await res.text();
         detail = txt ? ` (${txt.slice(0, 200)})` : "";
       } catch {}
@@ -1168,6 +1187,7 @@
     a.href = url;
     a.download = filename;
     document.body.appendChild(a);
+    track("convert_success");
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
@@ -1178,9 +1198,11 @@
 
   if (fileInput && fileNameDisplay) {
     fileInput.addEventListener("change", () => {
-      fileNameDisplay.textContent = (fileInput.files && fileInput.files[0]) ? fileInput.files[0].name : "";
+      const f = (fileInput.files && fileInput.files[0]) ? fileInput.files[0] : null;
+      fileNameDisplay.textContent = f ? f.name : "";
+      if (f) track("file_selected", { file_size: f.size });
     });
-  }
+}
 
   // Fallback sin JS: si el usuario envía el form, que haga POST /convert (no GET /?file=...)
   if (uploadForm) {

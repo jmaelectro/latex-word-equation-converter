@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<header>
+  <div class="topbar">
+    <a class="brand" href="{{ converter_href }}" aria-label="{{ site_name }}">
+      <span class="logo">∑</span>
+      <span class="brand-text">{{ site_name }}</span>
+    </a>
+    <nav class="nav">
+      <a href="{{ converter_href }}">{{ nav_converter }}</a>
+      <a href="{{ blog_index_href }}">{{ nav_blog }}</a>
+      <a href="{{ lang_switch_href }}">{{ lang_switch_label }}</a>
+    </nav>
+  </div>
+
+  <h1 class="post-title">{{ title }}</h1>
+  {% if description %}<p class="lede">{{ description }}</p>{% endif %}
+</header>
+
+<main class="legal">
+  {{ body_html|safe }}
+</main>
+
+<div class="footer">
+  © {{ year }} {{ site_name }} ·
+  <a href="{{ legal_links.privacy }}">{{ "Privacy" if lang=="en" else "Privacidad" }}</a> ·
+  <a href="{{ legal_links.terms }}">{{ "Terms" if lang=="en" else "Términos" }}</a> ·
+  <a href="{{ legal_links.contact }}">{{ "Contact" if lang=="en" else "Contacto" }}</a> ·
+  <a href="https://github.com/jmaelectro/latex-word-equation-converter" rel="noopener">GitHub</a>
+</div>
+{% endblock %}

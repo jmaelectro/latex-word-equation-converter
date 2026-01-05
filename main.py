@@ -28,6 +28,58 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.requests import Request
 
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response as StarletteResponse
+
+
+class CanonicalHostRedirectMiddleware(BaseHTTPMiddleware):
+    """Redirect non-canonical host/scheme to canonical values.
+
+    - Skips localhost/127.0.0.1
+    - Uses X-Forwarded-Proto / X-Forwarded-Host when present (common behind Render/CDNs)
+    - Controlled via env vars:
+        CANONICAL_HOST (e.g. www.ecuacionesaword.com)
+        CANONICAL_SCHEME (e.g. https)
+    """
+
+    def __init__(self, app, canonical_host: str, canonical_scheme: str = "https"):
+        super().__init__(app)
+        self.canonical_host = (canonical_host or "").strip().lower()
+        self.canonical_scheme = (canonical_scheme or "https").strip().lower()
+
+    async def dispatch(self, request: Request, call_next):
+        # Determine effective host/scheme considering reverse proxy headers
+        host = (request.headers.get("x-forwarded-host") or request.headers.get("host") or "").split(",")[0].strip().lower()
+        scheme = (request.headers.get("x-forwarded-proto") or request.url.scheme or "").split(",")[0].strip().lower()
+
+        # Skip local/dev
+        if host.startswith("127.0.0.1") or host.startswith("localhost"):
+            return await call_next(request)
+
+        # If not configured, do nothing
+        if not self.canonical_host:
+            return await call_next(request)
+
+        if host != self.canonical_host or (self.canonical_scheme and scheme != self.canonical_scheme):
+            # Preserve path + query
+            url = str(request.url)
+            # Rebuild
+            path_q = request.url.path
+            if request.url.query:
+                path_q += "?" + request.url.query
+            target = f"{self.canonical_scheme}://{self.canonical_host}{path_q}"
+            return RedirectResponse(url=target, status_code=301)
+
+        return await call_next(request)
+
+
+def _add_common_headers(resp: StarletteResponse) -> StarletteResponse:
+    # SEO/UX-safe defaults
+    resp.headers.setdefault("X-Content-Type-Options", "nosniff")
+    resp.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    resp.headers.setdefault("Permissions-Policy", "interest-cohort=()")
+    return resp
+
 import math2docx
 
 
@@ -73,6 +125,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(GZipMiddleware, minimum_size=800)
+
+# Canonical redirects (host + scheme). Configure in production via env vars.
+CANONICAL_HOST = os.getenv("CANONICAL_HOST", "").strip()
+CANONICAL_SCHEME = os.getenv("CANONICAL_SCHEME", "https").strip()
+if CANONICAL_HOST:
+    app.add_middleware(CanonicalHostRedirectMiddleware, canonical_host=CANONICAL_HOST, canonical_scheme=CANONICAL_SCHEME)
+
+
+@app.middleware("http")
+async def add_common_headers_mw(request: Request, call_next):
+    resp = await call_next(request)
+    return _add_common_headers(resp)
+
 
 # Static
 _static_dir = os.path.join(BASE_DIR, "static")
@@ -218,22 +283,55 @@ def _format_date(lang: str, iso_date: str) -> str:
 
 
 def _build_schema_article(post: Dict[str, Any], canonical_url: str) -> str:
-    slug = post.get("slug") or ""
-    schema = {
-        "@context": "https://schema.org",
+    lang = post.get("lang") or "es"
+    title = post.get("title") or ""
+    desc = post.get("description") or ""
+    date_pub = post.get("date_published") or ""
+    date_mod = post.get("date_modified") or date_pub
+
+    blog_path = "/en/blog" if lang == "en" else "/blog"
+    blog_url = f"{CANONICAL_HOST}{blog_path}"
+    home_url = f"{CANONICAL_HOST}/"
+
+    article = {
         "@type": "Article",
         "mainEntityOfPage": {"@type": "WebPage", "@id": canonical_url},
-        "headline": post.get("title") or "",
-        "description": post.get("description") or "",
-        "datePublished": post.get("date_published") or "",
-        "dateModified": post.get("date_modified") or post.get("date_published") or "",
+        "headline": title,
+        "description": desc,
+        "datePublished": date_pub,
+        "dateModified": date_mod,
         "author": {"@type": "Organization", "name": SITE_NAME},
         "publisher": {"@type": "Organization", "name": SITE_NAME},
-        "inLanguage": post.get("lang") or "",
+        "inLanguage": lang,
         "url": canonical_url,
         "keywords": post.get("keywords") or [],
-        "about": post.get("tags") or [],
-        "identifier": slug,
+    }
+
+    breadcrumbs = {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": home_url},
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Blog",
+                "item": blog_url,
+            },
+            {"@type": "ListItem", "position": 3, "name": title, "item": canonical_url},
+        ],
+    }
+
+    schema = {"@context": "https://schema.org", "@graph": [article, breadcrumbs]}
+    return json.dumps(schema, ensure_ascii=False)
+
+
+def _build_schema_simple_page(name: str, canonical_url: str, lang: str) -> str:
+    schema = {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": name,
+        "url": canonical_url,
+        "inLanguage": lang,
     }
     return json.dumps(schema, ensure_ascii=False)
 
@@ -260,6 +358,11 @@ def _build_schema_index(lang: str, canonical_url: str) -> str:
     return json.dumps(schema, ensure_ascii=False)
 
 
+
+
+def _noindex_headers() -> Dict[str, str]:
+    """Headers to discourage indexing for technical/non-content endpoints."""
+    return {"X-Robots-Tag": "noindex, nofollow"}
 # ================================================================
 # Helpers
 # ================================================================
@@ -287,13 +390,36 @@ def _abs_url(path: str) -> str:
     return f"https://www.ecuacionesaword.com{path}"
 
 
-def _sitemap_url_entry(loc: str, lastmod: str, changefreq: str, priority: str) -> str:
+def _sitemap_url_entry(
+    loc: str,
+    lastmod: str,
+    changefreq: str,
+    priority: str,
+    alternates: Optional[List[Dict[str, str]]] = None,
+) -> str:
+    """
+    Build a sitemap <url> entry. If alternates are provided, include xhtml:link elements.
+    Note: loc and alternate hrefs are XML-escaped here.
+    """
+    alt_xml = ""
+    if alternates:
+        for alt in alternates:
+            hreflang = (alt.get("hreflang") or "").strip()
+            href = (alt.get("href") or "").strip()
+            if not hreflang or not href:
+                continue
+            alt_xml += (
+                f'    <xhtml:link rel="alternate" hreflang="{escape(hreflang)}" '
+                f'href="{escape(href)}"/>\n'
+            )
+
     return (
         "  <url>\n"
-        f"    <loc>{loc}</loc>\n"
-        f"    <lastmod>{lastmod}</lastmod>\n"
-        f"    <changefreq>{changefreq}</changefreq>\n"
-        f"    <priority>{priority}</priority>\n"
+        f"    <loc>{escape(loc)}</loc>\n"
+        f"{alt_xml}"
+        f"    <lastmod>{escape(lastmod)}</lastmod>\n"
+        f"    <changefreq>{escape(changefreq)}</changefreq>\n"
+        f"    <priority>{escape(priority)}</priority>\n"
         "  </url>\n"
     )
 
@@ -301,7 +427,8 @@ def _sitemap_url_entry(loc: str, lastmod: str, changefreq: str, priority: str) -
 def generate_sitemap_xml() -> str:
     """
     Sitemap XML generado desde las rutas reales del sitio y desde posts.json (cache BLOG_LIST/BLOG_POSTS).
-    No depende de BLOG_SLUGS_ES/EN (ya no existen).
+
+    Incluye alternates hreflang (xhtml:link) cuando existe traducción ES/EN.
     """
     urls: List[str] = []
 
@@ -311,13 +438,44 @@ def generate_sitemap_xml() -> str:
             return d
         return _now_lastmod_iso()
 
-    # Home
-    urls.append(_sitemap_url_entry(escape(_abs_url("/")), _now_lastmod_iso(), "weekly", "1.0"))
-    urls.append(_sitemap_url_entry(escape(_abs_url("/en")), _now_lastmod_iso(), "weekly", "0.8"))
+    def alts_home() -> List[Dict[str, str]]:
+        return [
+            {"hreflang": "es", "href": _abs_url("/")},
+            {"hreflang": "en", "href": _abs_url("/en")},
+            {"hreflang": "x-default", "href": _abs_url("/")},
+        ]
+
+    def alts_blog_index() -> List[Dict[str, str]]:
+        return [
+            {"hreflang": "es", "href": _abs_url("/blog")},
+            {"hreflang": "en", "href": _abs_url("/en/blog")},
+            {"hreflang": "x-default", "href": _abs_url("/blog")},
+        ]
+
+    def alts_pair(es_path: str, en_path: str, x_default_path: str) -> List[Dict[str, str]]:
+        return [
+            {"hreflang": "es", "href": _abs_url(es_path)},
+            {"hreflang": "en", "href": _abs_url(en_path)},
+            {"hreflang": "x-default", "href": _abs_url(x_default_path)},
+        ]
+
+    # Home (ES y EN)
+    urls.append(_sitemap_url_entry(_abs_url("/"), _now_lastmod_iso(), "weekly", "1.0", alternates=alts_home()))
+    urls.append(_sitemap_url_entry(_abs_url("/en"), _now_lastmod_iso(), "weekly", "0.8", alternates=alts_home()))
 
     # Blog index
-    urls.append(_sitemap_url_entry(escape(_abs_url("/blog")), _now_lastmod_iso(), "weekly", "0.8"))
-    urls.append(_sitemap_url_entry(escape(_abs_url("/en/blog")), _now_lastmod_iso(), "weekly", "0.7"))
+    urls.append(_sitemap_url_entry(_abs_url("/blog"), _now_lastmod_iso(), "weekly", "0.8", alternates=alts_blog_index()))
+    urls.append(_sitemap_url_entry(_abs_url("/en/blog"), _now_lastmod_iso(), "weekly", "0.7", alternates=alts_blog_index()))
+
+    # Legal pages (ES/EN)
+    legal_pairs = [
+        ("/privacy", "/en/privacy", "/privacy"),
+        ("/terms", "/en/terms", "/terms"),
+        ("/contact", "/en/contact", "/contact"),
+    ]
+    for es_path, en_path, xd in legal_pairs:
+        urls.append(_sitemap_url_entry(_abs_url(es_path), _now_lastmod_iso(), "monthly", "0.3", alternates=alts_pair(es_path, en_path, xd)))
+        urls.append(_sitemap_url_entry(_abs_url(en_path), _now_lastmod_iso(), "monthly", "0.3", alternates=alts_pair(es_path, en_path, xd)))
 
     # Blog posts ES (desde cache BLOG_LIST['es'])
     for p in BLOG_LIST.get("es", []):
@@ -325,14 +483,19 @@ def generate_sitemap_xml() -> str:
         canonical_path = (p.get("canonical_path") or f"/blog/{slug}").strip()
         if not slug:
             continue
-        urls.append(
-            _sitemap_url_entry(
-                escape(_abs_url(canonical_path)),
-                post_lastmod(p),
-                "monthly",
-                "0.6",
-            )
-        )
+
+        alternates: Optional[List[Dict[str, str]]] = None
+        translation_slug = (p.get("translation_slug") or "").strip()
+        if translation_slug and translation_slug in BLOG_POSTS.get("en", {}):
+            other = BLOG_POSTS["en"][translation_slug]
+            other_path = (other.get("canonical_path") or f"/en/blog/{translation_slug}").strip()
+            alternates = [
+                {"hreflang": "es", "href": _abs_url(canonical_path)},
+                {"hreflang": "en", "href": _abs_url(other_path)},
+                {"hreflang": "x-default", "href": _abs_url(canonical_path)},
+            ]
+
+        urls.append(_sitemap_url_entry(_abs_url(canonical_path), post_lastmod(p), "monthly", "0.6", alternates=alternates))
 
     # Blog posts EN (desde cache BLOG_LIST['en'])
     for p in BLOG_LIST.get("en", []):
@@ -340,18 +503,24 @@ def generate_sitemap_xml() -> str:
         canonical_path = (p.get("canonical_path") or f"/en/blog/{slug}").strip()
         if not slug:
             continue
-        urls.append(
-            _sitemap_url_entry(
-                escape(_abs_url(canonical_path)),
-                post_lastmod(p),
-                "monthly",
-                "0.5",
-            )
-        )
+
+        alternates: Optional[List[Dict[str, str]]] = None
+        translation_slug = (p.get("translation_slug") or "").strip()
+        if translation_slug and translation_slug in BLOG_POSTS.get("es", {}):
+            other = BLOG_POSTS["es"][translation_slug]
+            other_path = (other.get("canonical_path") or f"/blog/{translation_slug}").strip()
+            alternates = [
+                {"hreflang": "es", "href": _abs_url(other_path)},
+                {"hreflang": "en", "href": _abs_url(canonical_path)},
+                {"hreflang": "x-default", "href": _abs_url(other_path)},
+            ]
+
+        urls.append(_sitemap_url_entry(_abs_url(canonical_path), post_lastmod(p), "monthly", "0.5", alternates=alternates))
 
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
-        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
+        'xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
         + "".join(urls)
         + "</urlset>\n"
     )
@@ -773,6 +942,190 @@ async def home_en() -> HTMLResponse:
         return HTMLResponse("<h1>index-en.html not found</h1>", status_code=404)
 
 
+
+# ================================================================
+# Legal / Trust pages
+# ================================================================
+def _legal_page_context(lang: str, page: str) -> Dict[str, Any]:
+    """
+    Build context for simple legal/trust pages.
+    page: 'privacy' | 'terms' | 'contact'
+    """
+    is_en = lang == "en"
+    site = SITE_NAME
+
+    if page == "privacy":
+        title = "Privacy Policy" if is_en else "Política de privacidad"
+        description = (
+            "How we handle your uploaded files and data when converting LaTeX to Word."
+            if is_en
+            else "Cómo tratamos tus archivos y datos al convertir LaTeX a Word."
+        )
+        body_html = (
+            "<h2>File handling</h2>"
+            "<p>We process your uploaded file only to perform the conversion. We do not sell your data.</p>"
+            "<h2>Storage</h2>"
+            "<p>We do not permanently store your uploaded documents. Temporary processing may occur in memory during conversion.</p>"
+            "<h2>Analytics</h2>"
+            "<p>We use Google Analytics to understand aggregated usage and improve the product. No document contents are sent to Analytics.</p>"
+            "<h2>Contact</h2>"
+            '<p>If you have questions, contact us at <a href="mailto:ecuacionesaword@gmail.com">ecuacionesaword@gmail.com</a>.</p>'
+            if is_en
+            else
+            "<h2>Tratamiento de archivos</h2>"
+            "<p>Procesamos tu archivo únicamente para realizar la conversión. No vendemos tus datos.</p>"
+            "<h2>Almacenamiento</h2>"
+            "<p>No almacenamos permanentemente tus documentos. Puede existir un procesamiento temporal en memoria durante la conversión.</p>"
+            "<h2>Analítica</h2>"
+            "<p>Usamos Google Analytics para entender el uso agregado y mejorar el producto. El contenido de tus documentos no se envía a Analytics.</p>"
+            "<h2>Contacto</h2>"
+            '<p>Si tienes dudas, escríbenos a <a href="mailto:ecuacionesaword@gmail.com">ecuacionesaword@gmail.com</a>.</p>'
+        )
+    elif page == "terms":
+        title = "Terms of use" if is_en else "Términos de uso"
+        description = (
+            "Rules and limitations for using the converter."
+            if is_en
+            else "Normas y limitaciones de uso del conversor."
+        )
+        body_html = (
+            "<h2>Free tool</h2>"
+            "<p>This converter is provided free of charge. Limits may apply to file size.</p>"
+            "<h2>No warranties</h2>"
+            "<p>The service is provided as-is. We do our best, but we cannot guarantee perfect conversion for all documents.</p>"
+            "<h2>Acceptable use</h2>"
+            "<p>Do not upload illegal content, malware, or sensitive documents you are not allowed to share.</p>"
+            "<h2>Contact</h2>"
+            '<p>Questions: <a href="mailto:ecuacionesaword@gmail.com">ecuacionesaword@gmail.com</a>.</p>'
+            if is_en
+            else
+            "<h2>Herramienta gratuita</h2>"
+            "<p>Este conversor se ofrece de forma gratuita. Puede haber límites de tamaño de archivo.</p>"
+            "<h2>Sin garantías</h2>"
+            "<p>El servicio se ofrece tal cual. Hacemos lo posible, pero no garantizamos una conversión perfecta en todos los documentos.</p>"
+            "<h2>Uso aceptable</h2>"
+            "<p>No subas contenido ilegal, malware o documentos sensibles que no estés autorizado a compartir.</p>"
+            "<h2>Contacto</h2>"
+            '<p>Dudas: <a href="mailto:ecuacionesaword@gmail.com">ecuacionesaword@gmail.com</a>.</p>'
+        )
+    elif page == "contact":
+        title = "Contact" if is_en else "Contacto"
+        description = (
+            "Get in touch with the project."
+            if is_en
+            else "Contacta con el proyecto."
+        )
+        body_html = (
+            "<p>Email: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p>"
+            "<p>GitHub: <a href='https://github.com/jmaelectro/latex-word-equation-converter' rel='noopener'>Repository</a></p>"
+            if is_en
+            else
+            "<p>Email: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p>"
+            "<p>GitHub: <a href='https://github.com/jmaelectro/latex-word-equation-converter' rel='noopener'>Repositorio</a></p>"
+        )
+    else:
+        title = "Info" if is_en else "Información"
+        description = ""
+        body_html = "<p></p>"
+
+    # URLs
+    es_path = f"/{page}" if page in {"privacy", "terms", "contact"} else "/"
+    en_path = f"/en/{page}" if page in {"privacy", "terms", "contact"} else "/en"
+    canonical_path = en_path if is_en else es_path
+    canonical_url = _abs_url(canonical_path)
+
+    alternates = [
+        {"hreflang": "es", "href": _abs_url(es_path)},
+        {"hreflang": "en", "href": _abs_url(en_path)},
+        {"hreflang": "x-default", "href": _abs_url(es_path)},
+    ]
+
+    nav_converter = "Converter" if is_en else "Conversor"
+    nav_blog = "Blog"
+    lang_switch_href = en_path if not is_en else es_path
+    lang_switch_label = "EN" if not is_en else "ES"
+
+    return {
+        "lang": lang,
+        "site_name": site,
+        "seo_title": f"{title} | {site}",
+        "description": description,
+        "keywords": [],
+        "canonical_url": canonical_url,
+        "alternates": alternates,
+        "og_type": "website",
+        "og_title": title,
+        "og_description": description,
+        "og_image": _abs_url("/static/og-image.svg"),
+        "schema_json": _build_schema_simple_page(title, canonical_url, lang),
+        "converter_href": "/" if not is_en else "/en",
+        "blog_index_href": "/blog" if not is_en else "/en/blog",
+        "nav_converter": nav_converter,
+        "nav_blog": nav_blog,
+        "lang_switch_href": lang_switch_href,
+        "lang_switch_label": lang_switch_label,
+        "kicker": "",
+        "title": title,
+        "meta_line": "",
+        "tags": [],
+        "intro_html": [],
+        "body_html": body_html,
+        "cta_strong": "",
+        "cta_text": "",
+        "cta_primary": "",
+        "cta_secondary": "",
+        "year": datetime.now(timezone.utc).year,
+        "footer_links": True,
+        "legal_links": {
+            "privacy": "/privacy" if not is_en else "/en/privacy",
+            "terms": "/terms" if not is_en else "/en/terms",
+            "contact": "/contact" if not is_en else "/en/contact",
+        },
+    }
+
+
+@app.get("/privacy", response_class=HTMLResponse)
+async def privacy_es() -> HTMLResponse:
+    ctx = _legal_page_context("es", "privacy")
+    html = _render_template("legal_page.html", ctx)
+    return HTMLResponse(html)
+
+
+@app.get("/terms", response_class=HTMLResponse)
+async def terms_es() -> HTMLResponse:
+    ctx = _legal_page_context("es", "terms")
+    html = _render_template("legal_page.html", ctx)
+    return HTMLResponse(html)
+
+
+@app.get("/contact", response_class=HTMLResponse)
+async def contact_es() -> HTMLResponse:
+    ctx = _legal_page_context("es", "contact")
+    html = _render_template("legal_page.html", ctx)
+    return HTMLResponse(html)
+
+
+@app.get("/en/privacy", response_class=HTMLResponse)
+async def privacy_en() -> HTMLResponse:
+    ctx = _legal_page_context("en", "privacy")
+    html = _render_template("legal_page.html", ctx)
+    return HTMLResponse(html)
+
+
+@app.get("/en/terms", response_class=HTMLResponse)
+async def terms_en() -> HTMLResponse:
+    ctx = _legal_page_context("en", "terms")
+    html = _render_template("legal_page.html", ctx)
+    return HTMLResponse(html)
+
+
+@app.get("/en/contact", response_class=HTMLResponse)
+async def contact_en() -> HTMLResponse:
+    ctx = _legal_page_context("en", "contact")
+    html = _render_template("legal_page.html", ctx)
+    return HTMLResponse(html)
+
+
 @app.get("/blog", response_class=HTMLResponse)
 async def blog_index_es() -> HTMLResponse:
     lang = "es"
@@ -829,7 +1182,7 @@ async def blog_index_es() -> HTMLResponse:
         "lang_switch_label": "EN",
         "h1": "Blog",
         "intro": "Guías prácticas para pasar ecuaciones de LaTeX e IA a Word con ecuaciones nativas (OMML).",
-        "index_cta_primary": "Abrir conversor",
+        "index_cta_primary": "Conversor LaTeX → Word (OMML)",
         "search_label": "Buscar artículos",
         "search_placeholder": "Buscar por tema, herramienta o problema (ej. pandoc, overleaf, OMML, ChatGPT)…",
         "filter_label": "Filtrar por etiqueta",
@@ -838,6 +1191,7 @@ async def blog_index_es() -> HTMLResponse:
         "featured_title": "Artículos",
         "posts": posts_view,
         "year": datetime.now().year,
+        "legal_links": {"privacy": "/privacy", "terms": "/terms", "contact": "/contact"},
     }
     return HTMLResponse(_render_template("blog_index.html", ctx))
 
@@ -898,7 +1252,7 @@ async def blog_index_en() -> HTMLResponse:
         "lang_switch_label": "ES",
         "h1": "Blog",
         "intro": "Practical guides to export LaTeX/AI equations to Word as native editable OMML equations.",
-        "index_cta_primary": "Open converter",
+        "index_cta_primary": "LaTeX → OMML Converter",
         "search_label": "Search articles",
         "search_placeholder": "Search by topic, tool or issue (e.g., pandoc, overleaf, OMML, ChatGPT)…",
         "filter_label": "Filter by tag",
@@ -907,6 +1261,7 @@ async def blog_index_en() -> HTMLResponse:
         "featured_title": "Articles",
         "posts": posts_view,
         "year": datetime.now().year,
+        "legal_links": {"privacy": "/en/privacy", "terms": "/en/terms", "contact": "/en/contact"},
     }
     return HTMLResponse(_render_template("blog_index.html", ctx))
 
@@ -1004,6 +1359,15 @@ async def blog_post_es(slug: str) -> HTMLResponse:
         "og_description": post.get("description") or "",
         "og_image": _abs_url("/static/og-image.svg"),
         "schema_json": _build_schema_article(post, canonical_url),
+"related_posts": _get_related_posts(lang, post, limit=4),
+"related_title": "Related articles" if lang == "en" else "Artículos relacionados",
+"summary_box_title": "Quick tip" if lang == "en" else "Consejo rápido",
+"summary_box_text": (
+    "Convert LaTeX (or AI-generated math) into native, editable Word equations (OMML)."
+    if lang == "en"
+    else "Convierte LaTeX (o ecuaciones generadas por IA) en ecuaciones nativas y editables de Word (OMML)."
+),
+"summary_box_link_text": "LaTeX → OMML converter" if lang == "en" else "Conversor LaTeX → Word (OMML)",
         "converter_href": "/",
         "blog_index_href": "/blog",
         "nav_converter": "Conversor",
@@ -1018,9 +1382,10 @@ async def blog_post_es(slug: str) -> HTMLResponse:
         "body_html": body_html,
         "cta_strong": "¿Necesitas convertir un .docx o .txt con fórmulas LaTeX?",
         "cta_text": "Usa el conversor y descarga un Word con ecuaciones nativas (OMML).",
-        "cta_primary": "Abrir conversor",
+        "cta_primary": "Conversor LaTeX → Word (OMML)",
         "cta_secondary": "Ver más artículos",
         "year": datetime.now().year,
+        "legal_links": {"privacy": "/privacy", "terms": "/terms", "contact": "/contact"},
     }
     return HTMLResponse(_render_template("blog_post.html", ctx))
 
@@ -1077,6 +1442,15 @@ async def blog_post_en(slug: str) -> HTMLResponse:
         "og_description": post.get("description") or "",
         "og_image": _abs_url("/static/og-image.svg"),
         "schema_json": _build_schema_article(post, canonical_url),
+"related_posts": _get_related_posts(lang, post, limit=4),
+"related_title": "Related articles" if lang == "en" else "Artículos relacionados",
+"summary_box_title": "Quick tip" if lang == "en" else "Consejo rápido",
+"summary_box_text": (
+    "Convert LaTeX (or AI-generated math) into native, editable Word equations (OMML)."
+    if lang == "en"
+    else "Convierte LaTeX (o ecuaciones generadas por IA) en ecuaciones nativas y editables de Word (OMML)."
+),
+"summary_box_link_text": "LaTeX → OMML converter" if lang == "en" else "Conversor LaTeX → Word (OMML)",
         "converter_href": "/en",
         "blog_index_href": "/en/blog",
         "nav_converter": "Converter",
@@ -1091,9 +1465,10 @@ async def blog_post_en(slug: str) -> HTMLResponse:
         "body_html": body_html,
         "cta_strong": "Need to convert a .docx or .txt containing LaTeX?",
         "cta_text": "Use the converter and download a Word file with native editable OMML equations.",
-        "cta_primary": "Open converter",
+        "cta_primary": "LaTeX → OMML Converter",
         "cta_secondary": "More articles",
         "year": datetime.now().year,
+        "legal_links": {"privacy": "/en/privacy", "terms": "/en/terms", "contact": "/en/contact"},
     }
     return HTMLResponse(_render_template("blog_post.html", ctx))
 
@@ -1105,18 +1480,24 @@ async def robots_txt() -> Response:
     )
     path = os.path.join(BASE_DIR, "robots.txt")
     content = _read_text_file(path, default=default)
-    return Response(content=content, media_type="text/plain")
+    resp = Response(content=content, media_type="text/plain")
+    resp.headers["Cache-Control"] = "public, max-age=3600"
+    return resp
 
 
 @app.get("/sitemap.xml")
 async def sitemap_xml() -> Response:
     content = generate_sitemap_xml()
-    return Response(content=content, media_type="application/xml")
+    resp = Response(content=content, media_type="application/xml")
+    resp.headers["Cache-Control"] = "public, max-age=3600"
+    return resp
 
 
 @app.get("/healthz")
 async def healthz() -> PlainTextResponse:
-    return PlainTextResponse("ok")
+    resp = PlainTextResponse("ok")
+    resp.headers.update(_noindex_headers())
+    return resp
 
 
 # ================================================================
@@ -1133,6 +1514,16 @@ def _extract_text_lines_from_docx(file_bytes: bytes) -> List[str]:
 def _extract_text_lines_from_txt(file_bytes: bytes) -> List[str]:
     text = file_bytes.decode("utf-8", errors="replace")
     return text.splitlines()
+
+
+@app.get("/convert")
+async def convert_get() -> RedirectResponse:
+    """Redirect GET requests to the homepage.
+
+    Googlebot may discover /convert via the form action in the UI. The converter endpoint is POST-only,
+    so serving a redirect here avoids 4xx/405 reports in Search Console.
+    """
+    return RedirectResponse(url="/", status_code=301)
 
 
 @app.post("/convert")
@@ -1196,3 +1587,29 @@ async def custom_http_exception_handler(request: Request, exc: StarletteHTTPExce
         return HTMLResponse(html, status_code=404)
 
     return PlainTextResponse(str(exc.detail), status_code=exc.status_code)
+
+def _get_related_posts(lang: str, current_post: Dict[str, Any], limit: int = 4) -> List[Dict[str, str]]:
+    """Pick related posts by shared tags (simple, deterministic)."""
+    tags = set(current_post.get("tags") or [])
+    if not tags:
+        return []
+    cur_slug = current_post.get("slug") or ""
+    candidates = []
+    for p in BLOG_LIST.get(lang, []):
+        if (p.get("slug") or "") == cur_slug:
+            continue
+        p_tags = set(p.get("tags") or [])
+        score = len(tags.intersection(p_tags))
+        if score <= 0:
+            continue
+        # date_published is ISO (YYYY-MM-DD); lexicographic order works
+        candidates.append((score, (p.get("date_published") or ""), p))
+
+    # Sort by score desc, then date desc
+    candidates.sort(key=lambda t: (t[0], t[1]), reverse=True)
+
+    out: List[Dict[str, str]] = []
+    for _, __, p in candidates[:limit]:
+        out.append({"url": p.get("canonical_path") or "", "title": p.get("title") or ""})
+    return out
+

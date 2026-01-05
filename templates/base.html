@@ -7,6 +7,9 @@
   <meta name="description" content="{{ description }}">
   {% if keywords %}<meta name="keywords" content="{{ keywords|join(', ') }}">{% endif %}
 
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <meta name="theme-color" content="#020617">
+
   <link rel="canonical" href="{{ canonical_url }}">
   {% for alt in alternates %}
   <link rel="alternate" hreflang="{{ alt.hreflang }}" href="{{ alt.href }}">
@@ -31,6 +34,16 @@
   {% if schema_json %}
   <script type="application/ld+json">{{ schema_json|safe }}</script>
   {% endif %}
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-GS589S9BG4"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-GS589S9BG4');
+  </script>
+
 </head>
 <body>
   <div class="page">

@@ -32,7 +32,22 @@
 </header>
 
 <main>
+  <div class="summary-box">
+    <div><strong>{{ summary_box_title }}</strong> {{ summary_box_text }}</div>
+    <div><a href="{{ converter_href }}">{{ summary_box_link_text }}</a></div>
+  </div>
   {{ body_html|safe }}
+
+  {% if related_posts %}
+  <section class="related">
+    <h2>{{ related_title }}</h2>
+    <ul>
+      {% for rp in related_posts %}
+        <li><a href="{{ rp.url }}">{{ rp.title }}</a></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
 
   <div class="bottom-cta">
     <span><strong>{{ cta_strong }}</strong> {{ cta_text }}</span>
@@ -44,6 +59,10 @@
 </main>
 
 <div class="footer">
-  © {{ year }} {{ site_name }}
+  © {{ year }} {{ site_name }} ·
+  <a href="{{ legal_links.privacy }}">{{ "Privacy" if lang=="en" else "Privacidad" }}</a> ·
+  <a href="{{ legal_links.terms }}">{{ "Terms" if lang=="en" else "Términos" }}</a> ·
+  <a href="{{ legal_links.contact }}">{{ "Contact" if lang=="en" else "Contacto" }}</a> ·
+  <a href="https://github.com/jmaelectro/latex-word-equation-converter" rel="noopener">GitHub</a>
 </div>
 {% endblock %}

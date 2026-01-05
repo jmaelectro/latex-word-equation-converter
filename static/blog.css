@@ -421,3 +421,24 @@ a.button:hover{
 
 /* Optional separator styling used by some newer posts */
 hr.sep{ border-color: rgba(148,163,184,.22); }
+
+
+/* Related posts */
+.related{
+  margin-top: 1.25rem;
+  padding: 1rem 1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(148,163,184,.22);
+  background: rgba(148,163,184,.06);
+}
+.related h2{
+  margin: 0 0 .65rem 0;
+  font-size: 1.1rem;
+}
+.related ul{
+  margin: 0;
+  padding-left: 1.1rem;
+}
+.related li{
+  margin: .35rem 0;
+}

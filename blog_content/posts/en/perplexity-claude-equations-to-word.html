@@ -1,0 +1,36 @@
+<section>
+<h2>Quick answer</h2>
+<p>If your AI output includes LaTeX (like <code>\frac{a}{b}</code>) and you paste it into Word, it usually becomes plain text or breaks. Use native Word equations (OMML) instead. The fastest workflow is: save the AI output in a <code>.docx</code> or <code>.txt</code>, convert it, then download a Word file with editable equations.</p>
+<p><a href="/en">Open the LaTeX → OMML converter</a>.</p>
+</section>
+<section>
+<h2>Why “copy/paste” is inconsistent across apps</h2>
+<p>Browsers, editors, and Word treat math differently. Some preserve formatting, others strip it, and Word may replace characters depending on font and encoding.</p>
+</section>
+<section>
+<h2>Make the AI output predictable</h2>
+<ul><li>Ask for LaTeX-only math (avoid Unicode).</li><li>Ask for consistent delimiters: $...$ and \[...\].</li><li>Ask the model to avoid Markdown tables for heavy math; use plain text and blocks.</li></ul>
+</section>
+<section>
+<h2>Troubleshooting checklist</h2>
+<ol><li>If equations are plain text: convert to OMML.</li><li>If you see question marks: re-generate using LaTeX commands.</li><li>If alignment breaks: use display math blocks for each step.</li></ol>
+</section>
+<section>
+<h2>Recommended workflow (step-by-step)</h2>
+<ol>
+<li>Ask your AI (ChatGPT/Gemini/Copilot/Claude/Perplexity) to format math as LaTeX using <code>$...$</code> for inline and <code>\[...\]</code> for display.</li>
+<li>Copy the result into a <code>.docx</code> or <code>.txt</code>.</li>
+<li>Upload it to the converter and download the converted <code>.docx</code> with native Word equations (OMML).</li>
+<li>In Word, click an equation to edit it and confirm it behaves like a real Word equation.</li>
+</ol>
+<p><a href="/en">Convert a document now</a>.</p>
+</section>
+<section>
+<h2>FAQ</h2>
+<h3>Will my equations remain editable?</h3>
+<p>Yes—OMML equations are editable inside Word’s equation editor (they are not images).</p>
+<h3>Do you store my files?</h3>
+<p>No. The converter processes the upload to generate the output and does not keep files long-term.</p>
+<h3>Does it work with matrices and cases?</h3>
+<p>Most common LaTeX math is supported, including fractions, roots, matrices, and aligned equations.</p>
+</section>
