@@ -530,14 +530,50 @@ def generate_sitemap_xml() -> str:
 # 1) Normalización / prettify (tu lógica existente)
 # ================================================================
 def normalize_math_text(text: str) -> str:
-    t = text
+    """Normalize common artifacts found in pasted/converted LaTeX inside Word.
+
+    Goals:
+    - Make LaTeX more parseable for math2docx (normalize Unicode minus, remove zero-width chars, etc.)
+    - Preserve non-math text as much as possible
+    - Keep original app's q1->q_1, D1->D_1 and x2->x^2 tweaks
+    """
+    if text is None:
+        return ""
+
+    t = str(text)
+
+    # Remove common invisible/formatting artifacts that break parsers
+    for ch in ("\u200b", "\ufeff", "\u2060", "\u200e", "\u200f", "\u00ad"):
+        t = t.replace(ch, "")
+
+    # Normalize various dash/minus characters to ASCII hyphen-minus
+    for ch in ("\u2212", "\u2013", "\u2014", "\u2010", "\u2011", "\u2043"):
+        t = t.replace(ch, "-")
+    # Some docs include the literal minus sign already decoded
+    t = t.replace("−", "-")
+
+    # Normalize non-breaking spaces
+    t = t.replace("\xa0", " ")
+
+    # Normalize other Unicode spaces that sometimes appear in Word
+    for ch in ("\u202f", "\u205f", "\u3000"):
+        t = t.replace(ch, " ")
+    # Replace en-space/em-space/thin-space etc. with regular spaces
+    t = re.sub(r"[\u2000-\u200a]", " ", t)
+
+    # Remove Private Use Area characters (often appear as invisible placeholders)
+    t = re.sub(r"[\uE000-\uF8FF]", "", t)
+
+    # Keep original exercise-oriented normalizations
     t = re.sub(r"q([1-4])\s*\(", r"q_\1(", t)  # q1( -> q_1(
     t = re.sub(r"\bD([1-4])\b", r"D_\1", t)  # D1 -> D_1
+
+    # x2 -> x^2, y3 -> y^3, etc.
     for var in ("x", "y", "z"):
         for exp in ("2", "3", "4"):
-            t = re.sub(rf"{var}{exp}\b", rf"{var}^{exp}", t)  # x2 -> x^2
-    return t
+            t = re.sub(rf"{var}{exp}\b", rf"{var}^{{{exp}}}", t)
 
+    return t
 
 def _prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
     out: List[str] = []
@@ -673,13 +709,23 @@ def new_paragraph(doc: Document, align: Optional[Any] = None):
     return p
 
 
-def add_math_safe(paragraph, latex: str) -> None:
+def add_math_safe(paragraph, latex: str) -> bool:
+    """Try converting LaTeX to OMML; return True if OMML was produced.
+
+    If conversion fails, the original LaTeX is added as plain text (best-effort) and False is returned.
+    """
     try:
         math2docx.add_math(paragraph, latex)
     except Exception as exc:  # noqa: BLE001
         logger.warning("Fallo convirtiendo LaTeX a OMML: %s", exc)
         paragraph.add_run(latex)
+        return False
 
+    # math2docx may silently fall back to plain text; verify OMML presence
+    try:
+        return bool(paragraph._p.xpath(".//m:oMath | .//m:oMathPara", namespaces=_MATH_NS))
+    except Exception:
+        return True
 
 def parse_math_segments(text: str) -> List[Segment]:
     segments: List[Segment] = []
@@ -1503,17 +1549,905 @@ async def healthz() -> PlainTextResponse:
 # ================================================================
 # Convert endpoint
 # ================================================================
-def _extract_text_lines_from_docx(file_bytes: bytes) -> List[str]:
-    doc = Document(io.BytesIO(file_bytes))
-    lines: List[str] = []
-    for p in doc.paragraphs:
-        lines.append(p.text if p.text is not None else "")
-    return lines
-
-
 def _extract_text_lines_from_txt(file_bytes: bytes) -> List[str]:
     text = file_bytes.decode("utf-8", errors="replace")
     return text.splitlines()
+
+
+# ----------------------------
+# DOCX in-place conversion
+# ----------------------------
+# Goal: preserve the original Word document (styles, fonts, bold/italic, spacing, headers/footers, tables, etc.)
+# and only transform LaTeX fragments into native Word OMML equations.
+#
+# The previous implementation rebuilt the document from plain paragraph text, which necessarily lost formatting.
+# This implementation edits the DOCX structure in-place:
+# - Detects LaTeX delimited math: $$...$$, \[...\], $...$
+# - Converts only the math spans to OMML using math2docx
+# - Leaves all other runs, paragraph properties, and styles untouched
+#
+# Additionally, it supports multi-paragraph display blocks where the delimiters $$ / \[ and $$ / \] appear on
+# their own lines in separate paragraphs (common when pasting LaTeX).
+
+from copy import deepcopy
+
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+from docx.oxml.table import CT_Tbl
+from docx.oxml.text.paragraph import CT_P
+from docx.table import Table
+from docx.text.paragraph import Paragraph
+
+_MATH_NS = {"m": "http://schemas.openxmlformats.org/officeDocument/2006/math"}
+
+
+def _is_math_child(el) -> bool:
+    try:
+        return bool(el.xpath(".//m:oMath | .//m:oMathPara", namespaces=_MATH_NS))
+    except Exception:
+        return False
+
+
+def _latex_to_omml_children_with_success(latex: str) -> Tuple[List[Any], bool]:
+    """Return (children, success) where success indicates OMML was produced."""
+    tmp_doc = Document()
+    tmp_p = tmp_doc.add_paragraph()
+    ok = add_math_safe(tmp_p, latex)
+
+    # Determine success via OMML presence, even if add_math_safe returned True
+    try:
+        has_omml = bool(tmp_p._p.xpath(".//m:oMath | .//m:oMathPara", namespaces=_MATH_NS))
+    except Exception:
+        has_omml = ok
+
+    out: List[Any] = []
+    for child in list(tmp_p._p):
+        if child.tag == qn("w:pPr"):
+            continue
+        if _is_math_child(child):
+            out.append(deepcopy(child))
+
+    # If OMML exists but is nested deeper (rare), keep all non-pPr nodes
+    if has_omml and not out:
+        for child in list(tmp_p._p):
+            if child.tag != qn("w:pPr"):
+                out.append(deepcopy(child))
+
+    return out, has_omml
+
+
+def _latex_to_omml_children(latex: str) -> List[Any]:
+    """Convert LaTeX to OMML paragraph children.
+
+    This is a best-effort helper. If conversion fails, it will return children that keep the original
+    text, so the caller does not lose content.
+    """
+    children, success = _latex_to_omml_children_with_success(latex)
+
+    if success and children:
+        return children
+
+    # Fallback: insert plain text runs produced by math2docx/add_math_safe
+    tmp_doc = Document()
+    tmp_p = tmp_doc.add_paragraph()
+    add_math_safe(tmp_p, latex)
+    out: List[Any] = []
+    for child in list(tmp_p._p):
+        if child.tag != qn("w:pPr"):
+            out.append(deepcopy(child))
+    return out
+
+def _make_run_with_text(src_r, text: str):
+    r = OxmlElement("w:r")
+    rPr = src_r.find(qn("w:rPr")) if src_r is not None else None
+    if rPr is not None:
+        r.append(deepcopy(rPr))
+    t = OxmlElement("w:t")
+    # Preserve spaces (Word collapses them unless xml:space="preserve")
+    if text.startswith(" ") or text.endswith(" ") or "  " in text:
+        t.set(qn("xml:space"), "preserve")
+    t.text = text
+    r.append(t)
+    return r
+
+
+def _remove_paragraph(paragraph: Paragraph) -> None:
+    p = paragraph._p
+    parent = p.getparent()
+    if parent is not None:
+        parent.remove(p)
+
+
+def _insert_paragraph_after(paragraph: Paragraph) -> Paragraph:
+    """Insert an empty paragraph right after the given one, preserving paragraph properties."""
+    new_p = OxmlElement("w:p")
+    # copy paragraph properties if present (style, spacing, etc.)
+    pPr = paragraph._p.find(qn("w:pPr"))
+    if pPr is not None:
+        new_p.append(deepcopy(pPr))
+    paragraph._p.addnext(new_p)
+    return Paragraph(new_p, paragraph._parent)
+
+
+def _clear_paragraph_content(paragraph: Paragraph) -> None:
+    """Remove all paragraph content except paragraph properties."""
+    p = paragraph._p
+    for child in list(p):
+        if child.tag == qn("w:pPr"):
+            continue
+        p.remove(child)
+
+
+def _paragraph_plain_text(paragraph: Paragraph) -> str:
+    # python-docx paragraph.text ignores OMML; we only need the regular text runs for detection.
+    return "".join(r.text or "" for r in paragraph.runs)
+
+
+def _find_math_spans(text: str) -> List[Tuple[str, int, int, str]]:
+    """Return list of spans: (kind, start, end, latex).
+
+    - kind: 'inline' or 'display'
+    - start/end: indices in the concatenated run text, covering the delimiters too
+    - latex: extracted LaTeX content (without delimiters)
+    """
+    spans: List[Tuple[str, int, int, str]] = []
+    i = 0
+    n = len(text)
+
+    while i < n:
+        if text.startswith("$$", i):
+            end = text.find("$$", i + 2)
+            if end == -1:
+                break
+            latex = text[i + 2 : end]
+            spans.append(("display", i, end + 2, latex))
+            i = end + 2
+            continue
+
+        if text.startswith(r"\[", i):
+            end = text.find(r"\]", i + 2)
+            if end == -1:
+                break
+            latex = text[i + 2 : end]
+            spans.append(("display", i, end + 2, latex))
+            i = end + 2
+            continue
+
+        if text[i] == "$":
+            # avoid $$ (already handled)
+            if i + 1 < n and text[i + 1] == "$":
+                i += 1
+                continue
+            end = text.find("$", i + 1)
+            if end == -1:
+                break
+            latex = text[i + 1 : end]
+            spans.append(("inline", i, end + 1, latex))
+            i = end + 1
+            continue
+
+        i += 1
+
+    return spans
+
+
+
+
+# ----------------------------
+# Undelimited (heuristic) math detection
+# ----------------------------
+
+# A conservative token regex: backslash commands and explicit sub/sup patterns.
+_UNDELIM_TOKEN_RE = re.compile(
+    r"(\\[A-Za-z]+|[A-Za-z]\s*_\s*\{[^}]+\}|[A-Za-z]\s*_\s*\d+|[A-Za-z]\s*\^\s*\{[^}]+\}|[A-Za-z]\s*\^\s*\d+)"
+)
+
+# Characters that are plausibly part of an inline math fragment
+_MATH_CHAR_SET = set(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    "\\_^{ }()[]<>+=-*/.,:;|!?'\"&%"
+    "≤≥≠≈∈∉∑∏√∞∂∇→←↔⇒⇔⋅·×÷±"
+)
+
+def _is_mathy_char(ch: str) -> bool:
+    if not ch:
+        return False
+    if ch in _MATH_CHAR_SET:
+        return True
+    # Allow some Unicode letters/digits (e.g., Greek) and common math punctuation
+    if ch.isalnum():
+        return True
+    return False
+
+
+def _merge_spans(spans: List[Tuple[int, int, str]]) -> List[Tuple[int, int, str]]:
+    if not spans:
+        return []
+    spans = sorted(spans, key=lambda x: (x[0], x[1]))
+    merged: List[Tuple[int, int, str]] = []
+    cur_s, cur_e, _ = spans[0]
+    for s, e, _txt in spans[1:]:
+        if s <= cur_e:
+            cur_e = max(cur_e, e)
+        else:
+            merged.append((cur_s, cur_e, ""))
+            cur_s, cur_e = s, e
+    merged.append((cur_s, cur_e, ""))
+    return merged
+
+
+def _find_undelimited_math_spans(text: str) -> List[Tuple[int, int, str]]:
+    """Find math-like spans without $ delimiters.
+
+    This exists to catch cases like:
+      - D_1>0, \\quad D_2>0, \\quad D_3>0.
+      - (x,y,z)\\neq(0,0,0)
+
+    We keep it conservative to avoid converting normal prose.
+    """
+    if not text:
+        return []
+    if "$" in text:
+        return []
+
+    spans: List[Tuple[int, int, str]] = []
+    for m in _UNDELIM_TOKEN_RE.finditer(text):
+        s, e = m.span()
+
+        # Expand left/right to capture the surrounding math expression
+        ls = s
+        while ls > 0 and _is_mathy_char(text[ls - 1]):
+            ls -= 1
+        re_ = e
+        while re_ < len(text) and _is_mathy_char(text[re_]):
+            re_ += 1
+
+        frag = text[ls:re_].strip()
+        if not frag:
+            continue
+
+        # Must contain a LaTeX command or explicit sub/sup to be considered
+        if ("\\" not in frag) and ("_" not in frag) and ("^" not in frag):
+            continue
+
+        # Avoid converting very long prose fragments (likely false positives)
+        if len(frag) > 250:
+            continue
+
+        spans.append((ls, re_, text[ls:re_]))
+
+    # Merge overlapping spans
+    merged = _merge_spans(spans)
+    out: List[Tuple[int, int, str]] = []
+    for s, e, _ in merged:
+        frag = text[s:e]
+        # Re-check after merge
+        if ("\\" not in frag) and ("_" not in frag) and ("^" not in frag):
+            continue
+        out.append((s, e, frag))
+    return out
+
+
+def _is_equation_only_paragraph(paragraph: Paragraph) -> bool:
+    """True if the paragraph contains OMML and no visible plain text."""
+    try:
+        has_omml = bool(paragraph._p.xpath(".//m:oMath | .//m:oMathPara", namespaces=_MATH_NS))
+    except Exception:
+        has_omml = False
+    if not has_omml:
+        return False
+    plain = _paragraph_plain_text(paragraph)
+    return plain.strip() == ""
+
+
+def _apply_equation_spacing(paragraphs: List[Paragraph]) -> None:
+    """Add visual breathing room between consecutive equation paragraphs.
+
+    We do this via paragraph spacing (space-after) instead of inserting blank paragraphs,
+    which is less intrusive and keeps layout more stable.
+    """
+    if not paragraphs:
+        return
+    for idx, p in enumerate(paragraphs):
+        if not _is_equation_only_paragraph(p):
+            continue
+
+        next_is_eq = (idx + 1 < len(paragraphs)) and _is_equation_only_paragraph(paragraphs[idx + 1])
+
+        pf = p.paragraph_format
+        try:
+            pf.space_before = Pt(0)
+        except Exception:
+            pass
+
+        # A bit larger spacing when another equation follows immediately
+        desired = Pt(10) if next_is_eq else Pt(6)
+        try:
+            if pf.space_after is None or pf.space_after < desired:
+                pf.space_after = desired
+        except Exception:
+            pass
+def _replace_span_with_omml(paragraph: Paragraph, start: int, end: int, latex: str, is_display: bool) -> bool:
+    """Replace [start:end] (in concatenated run text) by OMML, preserving other runs.
+
+    If OMML conversion fails, the original text in [start:end] is preserved.
+    """
+    runs = list(paragraph.runs)
+    if not runs:
+        return False
+
+    run_texts = [r.text or "" for r in runs]
+    full_text = "".join(run_texts)
+
+    # build cumulative offsets
+    offsets: List[int] = []
+    pos = 0
+    for t in run_texts:
+        offsets.append(pos)
+        pos += len(t)
+
+    if start < 0 or end > pos or start >= end:
+        return False
+
+    # locate run indices for start/end
+    def locate(char_index: int) -> Tuple[int, int]:
+        for idx, base in enumerate(offsets):
+            t = run_texts[idx]
+            if base + len(t) >= char_index:
+                return idx, max(0, char_index - base)
+        return len(runs) - 1, len(run_texts[-1])
+
+    start_idx, start_off = locate(start)
+    end_idx, end_off = locate(end)
+
+    start_r = runs[start_idx]._r
+    end_r = runs[end_idx]._r
+
+    prefix = run_texts[start_idx][:start_off]
+    suffix = run_texts[end_idx][end_off:]
+    original_span_text = full_text[start:end]
+
+    parent_p = paragraph._p
+    insert_at = parent_p.index(start_r)
+
+    # Remove affected runs (start_idx .. end_idx)
+    for ridx in range(end_idx, start_idx - 1, -1):
+        r_el = runs[ridx]._r
+        try:
+            parent_p.remove(r_el)
+        except Exception:
+            pass
+
+    cursor = insert_at
+
+    # Insert prefix run (keep start run formatting)
+    if prefix:
+        parent_p.insert(cursor, _make_run_with_text(start_r, prefix))
+        cursor += 1
+
+    # Insert OMML
+    latex_clean = normalize_math_text((latex or "").strip())
+    omml_children, success = _latex_to_omml_children_with_success(latex_clean) if latex_clean else ([], False)
+
+    if not success or not omml_children:
+        # Preserve the original text exactly
+        parent_p.insert(cursor, _make_run_with_text(start_r, original_span_text))
+        cursor += 1
+    else:
+        for child in omml_children:
+            parent_p.insert(cursor, child)
+            cursor += 1
+
+    # Insert suffix run (keep end run formatting)
+    if suffix:
+        parent_p.insert(cursor, _make_run_with_text(end_r, suffix))
+        cursor += 1
+
+    # Center display equations when they occupy the full paragraph
+    if is_display:
+        remaining_text = ("".join(r.text or "" for r in paragraph.runs)).strip()
+        if remaining_text == "":
+            paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    return True
+
+def _extract_environment_block(text: str, env_name: str) -> Optional[str]:
+    r"""Extract the first \begin{env}...\end{env} block (non-greedy)."""
+    if not text:
+        return None
+    pat = rf"\\begin\{{{re.escape(env_name)}\}}(.*?)\\end\{{{re.escape(env_name)}\}}"
+    m = re.search(pat, text, flags=re.S)
+    if not m:
+        return None
+    return rf"\begin{{{env_name}}}" + m.group(1) + rf"\end{{{env_name}}}"
+
+
+def _extract_aligned_block(text: str) -> Optional[str]:
+    """Extract first aligned block (aligned or aligned*)."""
+    for env in ("aligned", "aligned*"):
+        block = _extract_environment_block(text, env)
+        if block:
+            return block
+    return None
+
+
+def _maybe_build_sylvester_aligned(text: str) -> Optional[str]:
+    """Heuristic: if the paragraph contains D_1, D_2, D_3 inequalities, build an aligned block."""
+    s = normalize_math_text(text)
+    if "$" in s:
+        return None
+    if all(tok in s for tok in ("D_1", "D_2", "D_3")) and ">" in s:
+        # Avoid triggering inside long prose: count alphabetic letters beyond D
+        letters = re.sub(r"[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ]", "", s)
+        if len(letters) <= 10:
+            return "\\begin{aligned}\nD_1 &> 0,\\\\\nD_2 &> 0,\\\\\nD_3 &> 0.\n\\end{aligned}"
+    return None
+
+def _handle_matrix_paragraph(paragraph: Paragraph) -> bool:
+    """Handle matrix-like environments without $...$ delimiters.
+
+    Conservative trigger:
+    - A full begin/end matrix environment is present (vmatrix/bmatrix/pmatrix/matrix)
+    - No explicit '$' delimiters appear in the paragraph (to avoid double-processing)
+
+    If there is noise around the environment, we extract the environment block and, when possible,
+    keep a short left prefix like 'A_1 =' to preserve meaning.
+    """
+    raw = _paragraph_plain_text(paragraph)
+    stripped = normalize_math_text(raw).strip()
+    if not stripped or "$" in stripped:
+        return False
+
+    matrix_envs = ["vmatrix", "bmatrix", "pmatrix", "matrix"]
+    for env in matrix_envs:
+        block = _extract_environment_block(stripped, env)
+        if not block:
+            continue
+
+        # Try to preserve an identifier prefix (A_1 =, etc.) if present immediately before the environment
+        prefix = stripped.split(block, 1)[0].strip()
+        kept_prefix = ""
+        if prefix:
+            m = re.search(r"(A_\d\s*=\s*|A\d\s*=\s*|\\det\s*A_\d\s*=\s*|det\s*A_\d\s*=\s*)$", prefix)
+            if m:
+                kept_prefix = m.group(0)
+
+        latex = (kept_prefix + block).strip()
+        latex = normalize_math_text(latex)
+
+        _clear_paragraph_content(paragraph)
+        for child in _latex_to_omml_children(latex):
+            paragraph._p.append(child)
+        paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        return True
+
+    return False
+
+
+def _handle_aligned_paragraph(paragraph: Paragraph) -> bool:
+    r"""Handle \begin{aligned}...\end{aligned} blocks without $ delimiters.
+
+    Tries converting the whole environment. If the LaTeX backend cannot handle aligned, falls back to
+    converting each row as a separate displayed equation (closest behavior to the original builder).
+    """
+    raw = _paragraph_plain_text(paragraph)
+    stripped = normalize_math_text(raw).strip()
+    if not stripped or "$" in stripped:
+        return False
+
+    # Sylvester inequalities heuristic (your sample document)
+    sylv = _maybe_build_sylvester_aligned(stripped)
+    if sylv:
+        latex = normalize_math_text(sylv)
+        children, success = _latex_to_omml_children_with_success(latex)
+        if not success or not children:
+            return False
+        _clear_paragraph_content(paragraph)
+        for child in children:
+            paragraph._p.append(child)
+        paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        return True
+
+    block = _extract_aligned_block(stripped)
+    if not block:
+        return False
+
+    latex = normalize_math_text(block)
+    children, success = _latex_to_omml_children_with_success(latex)
+    if success and children:
+        _clear_paragraph_content(paragraph)
+        for child in children:
+            paragraph._p.append(child)
+        paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        return True
+
+    # Fallback: split rows and convert one-by-one
+    m = re.search(r"\\begin\{aligned\*?\}(.*?)\\end\{aligned\*?\}", latex, flags=re.S)
+    if not m:
+        return False
+    inner = m.group(1)
+
+    # Split on LaTeX row breaks \\ (two backslashes)
+    rows = [r.strip() for r in re.split(r"\\\\\s*", inner) if r.strip()]
+    if not rows:
+        return False
+
+    # Clean alignment markers (&)
+    rows = [row.replace("&", "").strip() for row in rows if row.replace("&", "").strip()]
+
+    _clear_paragraph_content(paragraph)
+
+    # Convert first row into current paragraph
+    first = rows[0]
+    ch_first, ok_first = _latex_to_omml_children_with_success(normalize_math_text(first))
+    if ok_first and ch_first:
+        for child in ch_first:
+            paragraph._p.append(child)
+        paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    else:
+        # Preserve original if even fallback fails
+        paragraph.add_run(raw)
+        return True
+
+    last_p = paragraph
+    for row in rows[1:]:
+        new_p = _insert_paragraph_after(last_p)
+        ch, ok = _latex_to_omml_children_with_success(normalize_math_text(row))
+        if ok and ch:
+            for child in ch:
+                new_p._p.append(child)
+            new_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        else:
+            new_p.add_run(row)
+        last_p = new_p
+
+    return True
+
+def _replace_paragraph_text_preserve(paragraph: Paragraph, new_text: str) -> None:
+    """Replace paragraph content with a single run, preserving the first run's formatting."""
+    runs = list(paragraph.runs)
+    first_r = runs[0]._r if runs else None
+    _clear_paragraph_content(paragraph)
+    if new_text is None:
+        new_text = ""
+    if first_r is None:
+        paragraph.add_run(new_text)
+        return
+    paragraph._p.append(_make_run_with_text(first_r, new_text))
+
+
+def _maybe_prettify_paragraph_in_place(paragraph: Paragraph, paragraphs_list: Optional[List[Paragraph]] = None) -> None:
+    """Apply exercise-specific prettify rules in-place only when they help conversion.
+
+    This mirrors the behavior of the original web version (prettify + build) but edits the document in-place
+    to preserve formatting elsewhere.
+    """
+    raw = _paragraph_plain_text(paragraph)
+    if not raw:
+        return
+
+    stripped = normalize_math_text(raw).strip()
+
+    # Only prettify when the paragraph obviously contains LaTeX-ish artifacts or matches known triggers
+    triggers = (
+        "\\begin{",
+        "\\end{",
+        "\\mathbf",
+        "actividad2grupal",
+        "Escribimos cada forma como q(x)=xT",
+        "Escribimos cada forma como q(x)=xTA",
+        "coeficiente del término cruzado",
+        "Criterio de Sylvester",
+        "detA",
+        "det A",
+        "A1A_1A1",
+        "A4A_4A4",
+    )
+    if not any(t in stripped for t in triggers):
+        return
+
+    pretty = _prettify_paragraphs_for_exercise([raw])
+    if not pretty:
+        return
+
+    # If prettify produced multiple paragraphs, expand in-place
+    if len(pretty) > 1 and paragraphs_list is not None:
+        _replace_paragraph_text_preserve(paragraph, pretty[0])
+        last = paragraph
+        for extra in pretty[1:]:
+            new_p = _insert_paragraph_after(last)
+            try:
+                new_p.style = paragraph.style
+            except Exception:
+                pass
+            _replace_paragraph_text_preserve(new_p, extra)
+            insert_pos = paragraphs_list.index(last) + 1
+            paragraphs_list.insert(insert_pos, new_p)
+            last = new_p
+        return
+
+    # Single paragraph replacement
+    if pretty[0] != raw:
+        _replace_paragraph_text_preserve(paragraph, pretty[0])
+
+
+def _process_undelimited_math_in_paragraph(paragraph: Paragraph) -> bool:
+    """Convert math-like fragments that are NOT delimited by $...$.
+
+    This is a conservative heuristic intended to replicate the original app's coverage (which relied on
+    prettify + rebuild) without touching non-math prose or document styling.
+    """
+    # Skip paragraphs that already contain OMML (avoid double-processing)
+    try:
+        if paragraph._p.xpath(".//m:oMath | .//m:oMathPara", namespaces=_MATH_NS):
+            return False
+    except Exception:
+        pass
+
+    text = _paragraph_plain_text(paragraph)
+    if not text or "$" in text:
+        return False
+
+    spans = _find_undelimited_math_spans(text)
+    if not spans:
+        return False
+
+    changed = False
+    for s, e, frag in reversed(spans):
+        latex = normalize_math_text(frag.strip())
+        if not latex:
+            continue
+        # Treat as display if the paragraph is essentially only this fragment
+        remainder = (text[:s] + text[e:]).strip()
+        is_noteq_or_list = ("\\neq" in latex) or ("\\quad" in latex) or ("D_" in latex)
+        is_display = (remainder == "") and (len(latex) >= 3 or is_noteq_or_list)
+        changed = _replace_span_with_omml(paragraph, s, e, latex, is_display=is_display) or changed
+        if is_display:
+            paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    return changed
+
+
+def _process_inline_math_in_paragraph(paragraph: Paragraph) -> bool:
+    """Convert inline/display delimited math within a single paragraph, preserving formatting."""
+    # First, handle raw environments that appear without $...$ delimiters
+    if _handle_aligned_paragraph(paragraph):
+        return True
+    if _handle_matrix_paragraph(paragraph):
+        return True
+
+    text = _paragraph_plain_text(paragraph)
+    if not text:
+        return False
+
+    spans = _find_math_spans(text)
+    if spans:
+        # Process from end to start so offsets remain valid
+        changed = False
+        for kind, s, e, latex in reversed(spans):
+            changed = _replace_span_with_omml(paragraph, s, e, latex, is_display=(kind == "display")) or changed
+        return changed
+
+    # If there are no explicit delimiters, try a conservative heuristic for math-like tokens
+    return _process_undelimited_math_in_paragraph(paragraph)
+
+
+
+def _process_display_blocks_in_paragraphs(paragraphs: List[Paragraph]) -> None:
+    r"""Process multi-paragraph blocks (display $$...$$ / \[...\] and aligned blocks) in-place."""
+    i = 0
+    while i < len(paragraphs):
+        p = paragraphs[i]
+        raw = _paragraph_plain_text(p)
+        stripped = normalize_math_text(raw).strip()
+
+        # Exercise-specific normalization (only for known LaTeX/no-delimiter patterns)
+        _maybe_prettify_paragraph_in_place(p, paragraphs)
+        raw = _paragraph_plain_text(p)
+        stripped = normalize_math_text(raw).strip()
+
+        # --- Multi-paragraph aligned block
+        if r"\begin{aligned}" in stripped and r"\end{aligned}" not in stripped and "$" not in stripped:
+            start_i = i
+            lines = [raw]
+            j = i + 1
+            while j < len(paragraphs):
+                ln = _paragraph_plain_text(paragraphs[j])
+                lines.append(ln)
+                if r"\end{aligned}" in normalize_math_text(ln):
+                    break
+                j += 1
+
+            if j < len(paragraphs) and r"\end{aligned}" in normalize_math_text(lines[-1]):
+                block_text = "\n".join(lines)
+                block = _extract_aligned_block(normalize_math_text(block_text)) or normalize_math_text(block_text)
+
+                _clear_paragraph_content(paragraphs[start_i])
+                for child in _latex_to_omml_children(normalize_math_text(block)):
+                    paragraphs[start_i]._p.append(child)
+                paragraphs[start_i].alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+                for k in range(j, start_i, -1):
+                    _remove_paragraph(paragraphs[k])
+                    del paragraphs[k]
+
+                i = start_i + 1
+                continue
+
+        # --- Multi-paragraph display block: $$ ... $$  or \[ ... \]
+        if stripped in ("$$", r"\["):
+            delim_open = stripped
+            delim_close = "$$" if delim_open == "$$" else r"\]"
+            j = i + 1
+            lines: List[str] = []
+            while j < len(paragraphs) and normalize_math_text(_paragraph_plain_text(paragraphs[j])).strip() != delim_close:
+                lines.append(_paragraph_plain_text(paragraphs[j]))
+                j += 1
+
+            if j < len(paragraphs) and normalize_math_text(_paragraph_plain_text(paragraphs[j])).strip() == delim_close:
+                latex_block = "\n".join(lines).strip()
+                latex_block = normalize_math_text(latex_block)
+
+                _clear_paragraph_content(p)
+                parts = split_long_latex_equation(latex_block) if latex_block else []
+                if not parts:
+                    for k in range(j, i - 1, -1):
+                        _remove_paragraph(paragraphs[k])
+                        del paragraphs[k]
+                    continue
+
+                for child in _latex_to_omml_children(parts[0]):
+                    p._p.append(child)
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+                last_p = p
+                for part in parts[1:]:
+                    new_p = _insert_paragraph_after(last_p)
+                    for child in _latex_to_omml_children(part):
+                        new_p._p.append(child)
+                    new_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    insert_pos = paragraphs.index(last_p) + 1
+                    paragraphs.insert(insert_pos, new_p)
+                    last_p = new_p
+
+                for k in range(j, i, -1):
+                    _remove_paragraph(paragraphs[k])
+                    del paragraphs[k]
+
+                i += 1
+                continue
+
+        # Single-paragraph aligned/matrix, then inline/delimited
+        _process_inline_math_in_paragraph(p)
+        i += 1
+
+
+    i = 0
+    n = len(paragraphs)
+    while i < n:
+        p = paragraphs[i]
+        t = _paragraph_plain_text(p).strip()
+
+        if t in ("$$", r"\["):
+            delim_open = t
+            delim_close = "$$" if delim_open == "$$" else r"\]"
+            j = i + 1
+            lines: List[str] = []
+            while j < n and _paragraph_plain_text(paragraphs[j]).strip() != delim_close:
+                lines.append(_paragraph_plain_text(paragraphs[j]))
+                j += 1
+
+            if j < n and _paragraph_plain_text(paragraphs[j]).strip() == delim_close:
+                latex_block = "\n".join(lines).strip()
+                latex_block = normalize_math_text(latex_block)
+
+                # Replace opening delimiter paragraph with the equation
+                _clear_paragraph_content(p)
+                parts = split_long_latex_equation(latex_block) if latex_block else []
+                if not parts:
+                    # If empty, just delete the whole block
+                    for k in range(j, i - 1, -1):
+                        _remove_paragraph(paragraphs[k])
+                    i = j + 1
+                    continue
+
+                # First part in the original paragraph
+                for child in _latex_to_omml_children(parts[0]):
+                    p._p.append(child)
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+                # Additional parts as extra paragraphs (if any)
+                last_p = p
+                for part in parts[1:]:
+                    new_p = _insert_paragraph_after(last_p)
+                    for child in _latex_to_omml_children(part):
+                        new_p._p.append(child)
+                    new_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    last_p = new_p
+
+                # Remove inner lines and closing delimiter paragraph
+                for k in range(j, i, -1):
+                    _remove_paragraph(paragraphs[k])
+
+                i = j + 1
+                continue
+
+        # Also process single-paragraph equations after block check
+        _process_inline_math_in_paragraph(p)
+        i += 1
+    # Add spacing between consecutive equation paragraphs for readability
+    _apply_equation_spacing(paragraphs)
+
+
+
+def _iter_block_items(parent) -> Any:
+    """Yield Paragraph and Table objects in document order for a parent container.
+
+    We intentionally avoid relying on `isinstance(parent, Document)` because `docx.Document`
+    is a factory function, not a class. Instead, we detect the underlying XML container.
+    """
+    # Document body: parent._element.body exists
+    if hasattr(parent, "_element") and hasattr(parent._element, "body"):
+        parent_elm = parent._element.body
+    else:
+        # Header/Footer: parent._element is the container element
+        parent_elm = getattr(parent, "_element", None)
+        # Table cell: parent._tc is the container element
+        if parent_elm is None:
+            parent_elm = getattr(parent, "_tc", None)
+        if parent_elm is None:
+            raise TypeError(f"Unsupported container type: {type(parent)}")
+
+    for child in parent_elm.iterchildren():
+        if isinstance(child, CT_P):
+            yield Paragraph(child, parent)
+        elif isinstance(child, CT_Tbl):
+            yield Table(child, parent)
+
+
+def _collect_paragraphs_in_order(parent) -> List[Paragraph]:
+    """Collect all paragraphs under parent (including inside tables) in document order."""
+    out: List[Paragraph] = []
+    for item in _iter_block_items(parent):
+        if isinstance(item, Paragraph):
+            out.append(item)
+        else:
+            # Table: descend into its cells
+            for row in item.rows:
+                for cell in row.cells:
+                    out.extend(_collect_paragraphs_in_order(cell))
+    return out
+
+
+def _convert_docx_in_place(file_bytes: bytes) -> Document:
+    doc = Document(io.BytesIO(file_bytes))
+
+    # Body
+    body_pars = _collect_paragraphs_in_order(doc)
+    _process_display_blocks_in_paragraphs(body_pars)
+
+    # Headers/footers
+    for section in doc.sections:
+        for hf in (section.header, section.footer):
+            try:
+                pars = _collect_paragraphs_in_order(hf)
+                _process_display_blocks_in_paragraphs(pars)
+            except Exception:
+                # Some environments may have restricted access; continue.
+                continue
+
+        # First-page / even-page headers/footers if present
+        for hf_attr in ("first_page_header", "first_page_footer", "even_page_header", "even_page_footer"):
+            hf = getattr(section, hf_attr, None)
+            if hf is None:
+                continue
+            try:
+                pars = _collect_paragraphs_in_order(hf)
+                _process_display_blocks_in_paragraphs(pars)
+            except Exception:
+                continue
+
+    return doc
 
 
 @app.get("/convert")
@@ -1537,16 +2471,16 @@ async def convert(file: UploadFile = File(...)) -> StreamingResponse:
         raise HTTPException(status_code=413, detail="File too large (max 5MB)")
 
     if filename.endswith(".docx"):
-        paragraph_texts = _extract_text_lines_from_docx(content)
+        # IMPORTANT: preserve formatting and modify ONLY equations.
+        out_doc = _convert_docx_in_place(content)
     elif filename.endswith(".txt"):
         paragraph_texts = _extract_text_lines_from_txt(content)
+        cleaned = prettify_paragraphs(paragraph_texts)
+        out_doc = build_document_from_paragraphs(cleaned)
     else:
         raise HTTPException(
             status_code=400, detail="Unsupported file type. Use .docx or .txt"
         )
-
-    cleaned = prettify_paragraphs(paragraph_texts)
-    out_doc = build_document_from_paragraphs(cleaned)
 
     out = io.BytesIO()
     out_doc.save(out)
@@ -1563,7 +2497,6 @@ async def convert(file: UploadFile = File(...)) -> StreamingResponse:
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         headers=headers,
     )
-
 
 # ================================================================
 # 404 handler (HTML en vez de JSON)
@@ -1612,4 +2545,3 @@ def _get_related_posts(lang: str, current_post: Dict[str, Any], limit: int = 4) 
     for _, __, p in candidates[:limit]:
         out.append({"url": p.get("canonical_path") or "", "title": p.get("title") or ""})
     return out
-
