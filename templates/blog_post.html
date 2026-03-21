@@ -14,6 +14,18 @@
   </div>
 
   {% if kicker %}<p class="kicker">{{ kicker }}</p>{% endif %}
+  {% if breadcrumbs %}
+  <nav class="breadcrumbs" aria-label="{{ 'Breadcrumb' if lang == 'en' else 'Migas de pan' }}">
+    {% for crumb in breadcrumbs %}
+      {% if loop.last %}
+        <span aria-current="page">{{ crumb.name }}</span>
+      {% else %}
+        <a href="{{ crumb.url }}">{{ crumb.name }}</a>
+        <span class="sep">/</span>
+      {% endif %}
+    {% endfor %}
+  </nav>
+  {% endif %}
   <h1>{{ title }}</h1>
 
   <p class="meta">

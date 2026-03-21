@@ -41,7 +41,13 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
+    // Consent mode base hook. Defaults remain granted to avoid changing current measurement behavior.
+    gtag('consent', 'default', { analytics_storage: 'granted' });
     gtag('config', 'G-GS589S9BG4');
+    // Future CMP integration can call this global without changing templates.
+    window.setAnalyticsConsent = function(granted) {
+      gtag('consent', 'update', { analytics_storage: granted ? 'granted' : 'denied' });
+    };
   </script>
 
 </head>

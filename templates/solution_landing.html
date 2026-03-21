@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<header>
+  <div class="topbar">
+    <a class="brand" href="{{ converter_href }}" aria-label="{{ site_name }}">
+      <span class="logo">∑</span>
+      <span class="brand-text">{{ site_name }}</span>
+    </a>
+    <nav class="nav">
+      <a href="{{ converter_href }}">{{ nav_converter }}</a>
+      <a href="{{ blog_index_href }}">{{ nav_blog }}</a>
+      <a href="{{ lang_switch_href }}">{{ lang_switch_label }}</a>
+    </nav>
+  </div>
+
+  <p class="kicker">{{ page_kicker }}</p>
+  <h1>{{ page_title }}</h1>
+  <p class="intro">{{ page_intro }}</p>
+</header>
+
+<main>
+  <section class="summary-box">
+    <div><strong>{{ "What this page solves" if lang == "en" else "Qué resuelve esta página" }}</strong></div>
+    <ul>
+      {% for item in intent_items %}
+        <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="bottom-cta">
+    <span>
+      <strong>{{ "Ready to convert your file?" if lang == "en" else "¿Listo para convertir tu archivo?" }}</strong>
+      {{ "Upload .docx or .txt and get editable Word equations." if lang == "en" else "Sube .docx o .txt y descarga ecuaciones editables en Word." }}
+    </span>
+    <span>
+      <a class="button" href="{{ converter_href }}#converter">{{ cta_label }}</a>
+      <a class="button" href="{{ related_blog_href }}">{{ related_blog_label }}</a>
+    </span>
+  </section>
+</main>
+
+<div class="footer">
+  © {{ year }} {{ site_name }} ·
+  <a href="{{ legal_links.privacy }}">{{ "Privacy" if lang=="en" else "Privacidad" }}</a> ·
+  <a href="{{ legal_links.terms }}">{{ "Terms" if lang=="en" else "Términos" }}</a> ·
+  <a href="{{ legal_links.contact }}">{{ "Contact" if lang=="en" else "Contacto" }}</a> ·
+  <a href="https://github.com/jmaelectro/latex-word-equation-converter" rel="noopener">GitHub</a>
+</div>
+{% endblock %}
