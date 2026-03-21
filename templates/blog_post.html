@@ -50,6 +50,27 @@
   </div>
   {{ body_html|safe }}
 
+  <section class="related" style="margin-top:1.2rem;">
+    <h2>{{ checklist_title }}</h2>
+    <ul>
+      {% for item in checklist_items %}
+        <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="related" style="margin-top:1.2rem;">
+    <h2>{{ faq_title }}</h2>
+    <ul>
+      {% for item in faq_items %}
+        <li style="margin-bottom:.8rem;">
+          <strong>{{ item.q }}</strong><br>
+          <span>{{ item.a }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+
   {% if related_posts %}
   <section class="related">
     <h2>{{ related_title }}</h2>

@@ -34,6 +34,9 @@
   {% if schema_json %}
   <script type="application/ld+json">{{ schema_json|safe }}</script>
   {% endif %}
+  {% if extra_schema_json %}
+  <script type="application/ld+json">{{ extra_schema_json|safe }}</script>
+  {% endif %}
 
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-GS589S9BG4"></script>
