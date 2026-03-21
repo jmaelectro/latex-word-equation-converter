@@ -33,7 +33,11 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
+    gtag('consent', 'default', { analytics_storage: 'granted' });
     gtag('config', 'G-GS589S9BG4');
+    window.setAnalyticsConsent = function(granted) {
+      gtag('consent', 'update', { analytics_storage: granted ? 'granted' : 'denied' });
+    };
   </script>
 <!-- Fin Google Analytics -->
 <style>
@@ -658,12 +662,93 @@
     }
     .blog-more:hover { text-decoration: underline; }
 
+    .trust-list {
+      margin-top: 8px;
+      display: grid;
+      gap: 6px;
+      color: #d1d5db;
+      font-size: 12px;
+    }
+
+    .support-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .support-card {
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      border-radius: 14px;
+      padding: 14px;
+      background: rgba(15, 23, 42, 0.5);
+    }
+
+    .support-card h3 {
+      font-size: 14px;
+      margin-bottom: 8px;
+      color: var(--fg);
+    }
+
+    .support-card ul {
+      margin-left: 16px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #d1d5db;
+    }
+
+    .example-box {
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      border-radius: 14px;
+      padding: 14px;
+      background: rgba(2, 6, 23, 0.5);
+      margin-top: 10px;
+      font-size: 12px;
+      color: #d1d5db;
+    }
+
+    .example-box code {
+      display: block;
+      white-space: pre-wrap;
+      margin-top: 8px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      background: rgba(2, 6, 23, 0.7);
+      color: #e5e7eb;
+    }
+
+    .landing-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .landing-links a {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      color: #d1d5db;
+      font-size: 11px;
+    }
+
+    .file-label.is-dragover {
+      border-color: rgba(34, 197, 94, 0.9);
+      background: rgba(34, 197, 94, 0.14);
+      box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
+    }
+
     .file-label:hover {
       transform: translateY(-1px);
       border-color: rgba(34, 197, 94, 0.35);
       box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
       background: rgba(2, 6, 23, 0.5);
-    }</style>
+    }
+
+    @media (max-width: 840px) {
+      .support-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -759,17 +844,16 @@
 
 </div>
 <h1 class="hero-title">
-          Convertidor LaTeX a Word: convierte fórmulas en ecuaciones nativas (OMML) en un solo clic
+          Convierte LaTeX a Word (OMML editable) en menos de 1 minuto
         </h1>
 
 <p class="hero-subtitle">
-          Sube un documento <strong>.docx</strong> o <strong>.txt</strong> con fórmulas en <strong>LaTeX</strong> (por ejemplo, generadas por ChatGPT, Gemini u otra IA) y obtén un Word con <strong>ecuaciones nativas</strong>, listo para editar o entregar. 
-          Muchas inteligencias artificiales devuelven resultados en LaTeX; con esta herramienta puedes transformar <strong>todo el documento de una sola vez</strong> sin volver a escribir ecuaciones.
+          Sube un <strong>.docx</strong> o <strong>.txt</strong> con fórmulas en <strong>LaTeX</strong> (ChatGPT, Gemini, Copilot, Overleaf o Pandoc) y descarga un Word con <strong>ecuaciones nativas OMML</strong>. Sin copiar ecuación por ecuación.
         </p>
 
 <div class="hero-grid">
 <!-- FORMULARIO PRINCIPAL -->
-<div class="upload-card">
+<div class="upload-card" id="converter">
 <div class="upload-header">
 <div class="upload-title">
                 1. Elige un archivo .docx o .txt
@@ -792,7 +876,7 @@
 </label>
 <input accept=".docx,.txt" class="file-input" id="file-input" name="file" required="" type="file"/>
 <button class="convert-btn" id="convert-btn" type="submit">
-<span>Convertir documento</span>
+<span>Convertir y descargar</span>
 
 <span>⬇</span>
 </button>
@@ -808,6 +892,7 @@
 
 </span>
 </div>
+<p class="mini-note">Conversión online inmediata. Máximo 5MB por archivo.</p>
 </div>
 </form>
 </div>
@@ -827,6 +912,11 @@
               Ideal para TFG, TFM, prácticas, hojas de ejercicios o apuntes que
               tienes que entregar obligatoriamente en Word.
             </p>
+<div class="trust-list">
+<span>• Ecuaciones en formato nativo de Word (OMML).</span>
+<span>• No se vende ni reutiliza el contenido de tus documentos.</span>
+<span>• Flujo pensado para entregas académicas y técnicas.</span>
+</div>
 
 <div class="side-tag">
 <span>✅</span>
@@ -897,6 +987,62 @@
 
 </div>
 </section>
+
+<section class="how-section">
+<div class="how-card">
+<h2>Qué soporta</h2>
+<div class="support-grid">
+<div class="support-card">
+<h3>Entradas compatibles</h3>
+<ul>
+<li>Archivos <strong>.docx</strong> y <strong>.txt</strong>.</li>
+<li>LaTeX inline: <code>$...$</code>.</li>
+<li>LaTeX en bloque: <code>$$...$$</code> y <code>\[...\]</code>.</li>
+</ul>
+</div>
+<div class="support-card">
+<h3>Casos de uso</h3>
+<ul>
+<li>ChatGPT/Gemini/Copilot a Word.</li>
+<li>Overleaf/LaTeX a entregas en Word.</li>
+<li>Salida de Pandoc con ecuaciones no editables.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="how-card">
+<h2>Errores comunes y solución</h2>
+<ul class="how-steps">
+<li class="how-step"><div class="how-step-number">1</div><div class="how-step-text"><strong>No seleccionaste archivo.</strong> Elige un .docx/.txt antes de convertir.</div></li>
+<li class="how-step"><div class="how-step-number">2</div><div class="how-step-text"><strong>Archivo no válido.</strong> Si falla, reexporta como .docx estándar y vuelve a subirlo.</div></li>
+<li class="how-step"><div class="how-step-number">3</div><div class="how-step-text"><strong>Ecuaciones no interpretadas.</strong> Revisa delimitadores LaTeX: <code>$...$</code>, <code>$$...$$</code>, <code>\[...\]</code>.</div></li>
+</ul>
+<div class="example-box">
+<strong>Ejemplo rápido (input → output)</strong>
+<code>Input (.txt): Energía: $E=mc^2$</code>
+<code>Output (.docx): ecuación OMML editable dentro de Word</code>
+</div>
+</div>
+</section>
+
+<section class="how-section">
+<div class="how-card">
+<h2>Privacidad y seguridad (resumen)</h2>
+<p>Procesamos el archivo únicamente para generar el documento convertido. No enviamos el contenido de tus fórmulas a Google Analytics.</p>
+<p>Consulta los detalles en <a href="/privacy">Privacidad</a>, <a href="/terms">Términos</a> y <a href="/contact">Contacto</a>.</p>
+</div>
+<div class="how-card">
+<h2>Páginas de solución</h2>
+<p>También puedes entrar por una landing según tu necesidad:</p>
+<div class="landing-links">
+<a href="/soluciones/chatgpt-ecuaciones-a-word">ChatGPT equations to Word</a>
+<a href="/soluciones/gemini-ecuaciones-a-word">Gemini equations to Word</a>
+<a href="/soluciones/pandoc-a-word-omml">Pandoc to Word OMML</a>
+<a href="/soluciones/overleaf-latex-documento-a-word">Overleaf / LaTeX document to Word</a>
+<a href="/soluciones/conversor-omml">OMML converter</a>
+</div>
+</div>
+</section>
 </section>
 <!-- BLOG / RECURSOS -->
 <section class="blog-section" id="guias">
@@ -923,9 +1069,9 @@
   <p class="desc">Método práctico para resolver ejercicios con IA, estructurar la respuesta y pasar las fórmulas a Word con ecuaciones nativas.</p>
   <div class="meta"><span class="pill">ejercicios en Word</span><span class="pill">IA</span><span class="pill">fórmulas</span></div>
 </article>
-<article class="card half guide-card" data-href="/blog/pegar-latex-editor-ecuaciones-word" tabindex="0" role="link" aria-label="Pegar LaTeX en Word (Alt+=): trucos para ecuaciones limpias">
+<article class="card half guide-card" data-href="/blog/pegar-latex-en-word-alt-eq" tabindex="0" role="link" aria-label="Pegar LaTeX en Word (Alt+=): trucos para ecuaciones limpias">
   <div class="kicker">Word · Editor de ecuaciones</div>
-  <h3 class="title"><a href="/blog/pegar-latex-editor-ecuaciones-word">Pegar LaTeX en Word (Alt+=): trucos para ecuaciones limpias</a></h3>
+  <h3 class="title"><a href="/blog/pegar-latex-en-word-alt-eq">Pegar LaTeX en Word (Alt+=): trucos para ecuaciones limpias</a></h3>
   <p class="desc">Cómo usar el editor de ecuaciones de Word con LaTeX y cuándo conviene convertir documentos automáticamente.</p>
   <div class="meta"><span class="pill">pegar LaTeX en Word</span><span class="pill">Alt+=</span><span class="pill">UnicodeMath</span></div>
 </article>
@@ -1015,7 +1161,7 @@
 
 <p>
               Para más detalles, consulta la política completa en el apartado
-              legal del sitio (en preparación).
+              legal del sitio.
             </p>
 
 </div>
@@ -1049,11 +1195,31 @@
 (() => {
   const endpoint = "/convert";
   const isEnglish = window.location.pathname.startsWith("/en");
+  const baseParams = {
+    lang: isEnglish ? "en" : "es",
+    page_type: "home",
+    source_page: window.location.pathname || (isEnglish ? "/en" : "/"),
+  };
+
   function track(name, params = {}) {
     if (typeof gtag === "function") {
-      gtag("event", name, params);
+      gtag("event", name, { ...baseParams, ...params });
     }
   }
+
+  function fileSizeBucket(size) {
+    if (size < 100 * 1024) return "lt_100kb";
+    if (size < 500 * 1024) return "100_500kb";
+    if (size < 1024 * 1024) return "500kb_1mb";
+    if (size < 3 * 1024 * 1024) return "1_3mb";
+    return "3_5mb";
+  }
+
+  function getFileExt(name) {
+    const idx = (name || "").lastIndexOf(".");
+    return idx > -1 ? name.slice(idx + 1).toLowerCase() : "unknown";
+  }
+
   // Language switcher (home)
   const langSelect = document.getElementById("lang-select");
   if (langSelect) {
@@ -1089,6 +1255,10 @@
     document.getElementById("file-name-display") ||
     (uploadForm ? uploadForm.querySelector("#file-name-display") : null);
 
+  const fileDropTarget =
+    (uploadForm ? uploadForm.querySelector('label[for="file-input"]') : null) ||
+    document.querySelector('label[for="file-input"]');
+
   const convertBtn =
     document.getElementById("convert-btn") ||
     (uploadForm ? uploadForm.querySelector("button") : document.querySelector("button"));
@@ -1096,6 +1266,7 @@
   const statusDot = document.getElementById("status-dot");
   const statusTextEs = document.getElementById("status-text");
   const statusTextEn = document.getElementById("status-text-en");
+  let inFlight = false;
 
   function setStatus(type, messageEs, messageEn) {
     if (statusDot) {
@@ -1104,6 +1275,9 @@
     }
     if (statusTextEs) statusTextEs.textContent = messageEs;
     if (statusTextEn) statusTextEn.textContent = messageEn;
+    if (convertBtn) {
+      convertBtn.setAttribute("aria-busy", type === "loading" ? "true" : "false");
+    }
   }
 
   function parseFilename(contentDisposition, fallbackName) {
@@ -1125,6 +1299,7 @@
 
   async function convert(e) {
     if (e) e.preventDefault();
+    if (inFlight) return;
 
     if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
       setStatus(
@@ -1132,15 +1307,19 @@
         "Selecciona un archivo .docx o .txt antes de convertir.",
         "Please select a .docx or .txt file before converting."
       );
+      track("convert_error", { error_type: "missing_file" });
       return;
     }
 
-
-    track("convert_clicked");
-
     const file = fileInput.files[0];
+    const commonFileParams = {
+      file_ext: getFileExt(file.name),
+      file_size_bucket: fileSizeBucket(file.size),
+    };
 
+    inFlight = true;
     if (convertBtn) convertBtn.disabled = true;
+    track("convert_started", commonFileParams);
     setStatus("loading", "Convirtiendo documento…", "Converting document...");
 
     const fd = new FormData();
@@ -1152,8 +1331,9 @@
     try {
       res = await fetch(endpoint, { method: "POST", body: fd, cache: "no-store" });
     } catch (err) {
+      inFlight = false;
       if (convertBtn) convertBtn.disabled = false;
-      track("convert_error", { error_type: "network" });
+      track("convert_error", { ...commonFileParams, error_type: "network" });
       setStatus(
         "error",
         "Error de conexión al convertir. Revisa que el servidor está activo.",
@@ -1163,12 +1343,13 @@
     }
 
     if (!res.ok) {
-      track("convert_error", { http_status: res.status });
+      track("convert_error", { ...commonFileParams, error_type: "http", http_status: res.status });
       let detail = "";
 try {
         const txt = await res.text();
         detail = txt ? ` (${txt.slice(0, 200)})` : "";
       } catch {}
+      inFlight = false;
       if (convertBtn) convertBtn.disabled = false;
       setStatus(
         "error",
@@ -1187,11 +1368,13 @@ try {
     a.href = url;
     a.download = filename;
     document.body.appendChild(a);
-    track("convert_success");
+    track("convert_success", commonFileParams);
     a.click();
+    track("download_completed", commonFileParams);
     a.remove();
     URL.revokeObjectURL(url);
 
+    inFlight = false;
     if (convertBtn) convertBtn.disabled = false;
     setStatus("ok", "Listo. Documento descargado.", "Done. Document downloaded.");
   }
@@ -1200,21 +1383,48 @@ try {
     fileInput.addEventListener("change", () => {
       const f = (fileInput.files && fileInput.files[0]) ? fileInput.files[0] : null;
       fileNameDisplay.textContent = f ? f.name : "";
-      if (f) track("file_selected", { file_size: f.size });
+      if (f) {
+        track("file_selected", {
+          file_ext: getFileExt(f.name),
+          file_size_bucket: fileSizeBucket(f.size),
+        });
+        setStatus("ok", "Archivo listo. Pulsa convertir.", "File ready. Press convert.");
+      } else {
+        setStatus("ok", "Estado: listo para convertir.", "Status: ready to convert.");
+      }
     });
-}
+  }
+
+  if (fileDropTarget && fileInput) {
+    const prevent = (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+    };
+    ["dragenter", "dragover"].forEach((evt) => {
+      fileDropTarget.addEventListener(evt, (ev) => {
+        prevent(ev);
+        fileDropTarget.classList.add("is-dragover");
+      });
+    });
+    ["dragleave", "drop"].forEach((evt) => {
+      fileDropTarget.addEventListener(evt, (ev) => {
+        prevent(ev);
+        fileDropTarget.classList.remove("is-dragover");
+      });
+    });
+    fileDropTarget.addEventListener("drop", (ev) => {
+      const dt = ev.dataTransfer;
+      if (!dt || !dt.files || !dt.files.length) return;
+      fileInput.files = dt.files;
+      fileInput.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+  }
 
   // Fallback sin JS: si el usuario envía el form, que haga POST /convert (no GET /?file=...)
   if (uploadForm) {
     uploadForm.setAttribute("method", "post");
     uploadForm.setAttribute("action", endpoint);
     uploadForm.addEventListener("submit", convert);
-  }
-
-  // Evitar submit accidental por click si el handler no estuviera enganchado
-  if (convertBtn) {
-    // Dejamos submit por fallback, pero interceptamos el click igualmente
-    convertBtn.addEventListener("click", (e) => convert(e));
   }
 })();
 </script>

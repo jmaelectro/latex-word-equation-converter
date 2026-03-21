@@ -1,9 +1,10 @@
 User-agent: *
 Allow: /
 
-# Evita que Google intente indexar endpoints de backend
+# Backend / technical endpoints
 Disallow: /api/v1/convert
 Disallow: /health
 Disallow: /healthz
 
+Host: https://www.ecuacionesaword.com
 Sitemap: https://www.ecuacionesaword.com/sitemap.xml

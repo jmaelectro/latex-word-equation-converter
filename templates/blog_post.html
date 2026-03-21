@@ -14,6 +14,18 @@
   </div>
 
   {% if kicker %}<p class="kicker">{{ kicker }}</p>{% endif %}
+  {% if breadcrumbs %}
+  <nav class="breadcrumbs" aria-label="{{ 'Breadcrumb' if lang == 'en' else 'Migas de pan' }}">
+    {% for crumb in breadcrumbs %}
+      {% if loop.last %}
+        <span aria-current="page">{{ crumb.name }}</span>
+      {% else %}
+        <a href="{{ crumb.url }}">{{ crumb.name }}</a>
+        <span class="sep">/</span>
+      {% endif %}
+    {% endfor %}
+  </nav>
+  {% endif %}
   <h1>{{ title }}</h1>
 
   <p class="meta">
@@ -37,6 +49,27 @@
     <div><a href="{{ converter_href }}">{{ summary_box_link_text }}</a></div>
   </div>
   {{ body_html|safe }}
+
+  <section class="related" style="margin-top:1.2rem;">
+    <h2>{{ checklist_title }}</h2>
+    <ul>
+      {% for item in checklist_items %}
+        <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="related" style="margin-top:1.2rem;">
+    <h2>{{ faq_title }}</h2>
+    <ul>
+      {% for item in faq_items %}
+        <li style="margin-bottom:.8rem;">
+          <strong>{{ item.q }}</strong><br>
+          <span>{{ item.a }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
 
   {% if related_posts %}
   <section class="related">

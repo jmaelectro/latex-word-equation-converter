@@ -53,6 +53,39 @@
       </a>
     {% endfor %}
   </div>
+
+  <section class="summary-box" style="margin-top:1.2rem;">
+    <div><strong>{{ trust_title }}</strong> {{ trust_intro }}</div>
+    <ul style="margin:.6rem 0 0 1rem;">
+      {% for item in trust_items %}
+        <li style="margin:.2rem 0;">{{ item }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="related" style="margin-top:1.2rem;">
+    <h2>{{ comparison_title }}</h2>
+    <div class="grid">
+      {% for row in comparison_rows %}
+        <article class="card">
+          <div class="title">{{ row.title }}</div>
+          <div class="desc">{{ row.desc }}</div>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="related" style="margin-top:1.2rem;">
+    <h2>{{ faq_title }}</h2>
+    <div class="grid">
+      {% for item in faq_items %}
+        <article class="card">
+          <div class="title">{{ item.q }}</div>
+          <div class="desc">{{ item.a }}</div>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
 </main>
 
 <div class="footer">

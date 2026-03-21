@@ -324,6 +324,29 @@ hr{
 .kicker a{ color: var(--text-muted); text-decoration:none; }
 .kicker a:hover{ color: var(--text-main); }
 
+.breadcrumbs{
+  display:flex;
+  align-items:center;
+  gap: .45rem;
+  flex-wrap:wrap;
+  margin: .4rem 0 .6rem;
+  font-size: .86rem;
+  color: var(--text-muted);
+}
+
+.breadcrumbs a{
+  color: var(--text-muted);
+  text-decoration:none;
+}
+
+.breadcrumbs a:hover{
+  color: var(--text-main);
+}
+
+.breadcrumbs .sep{
+  opacity: .75;
+}
+
 .title{
   margin: 0 0 .35rem;
   font-size: 1.25rem;
@@ -380,6 +403,11 @@ hr{
   background: rgba(148,163,184,.08);
   border-radius: 16px;
   color: #e5e7eb;
+}
+
+.summary-box ul{
+  margin: .6rem 0 0;
+  padding-left: 1.2rem;
 }
 
 .bottom-cta{
