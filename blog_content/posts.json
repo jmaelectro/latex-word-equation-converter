@@ -592,7 +592,7 @@
         "<p class=\"intro\">Si ChatGPT te devuelve las ecuaciones en <strong>LaTeX</strong>, pegarlas directamente en Word suele acabar en texto plano o símbolos raros. Un <strong>convertidor</strong> que genere <strong>ecuaciones nativas (OMML)</strong> te evita reescribirlas a mano.</p>",
         "<p class=\"intro\">Aquí tienes el flujo más rápido para convertir una respuesta (o un documento completo) y descargar un <strong>.docx con ecuaciones editables</strong>.</p>"
       ],
-      "translation_slug": ""
+      "translation_slug": "latex-to-word-quick-guide-no-broken-equations"
     },
     {
       "lang": "es",
@@ -621,7 +621,7 @@
         "<p class=\"intro\">Si al convertir ecuaciones de ChatGPT a Word ves <strong>texto con $...$</strong>, ecuaciones rotas o símbolos raros, suele ser un problema de <strong>entrada (LaTeX)</strong>, no del Word final.</p>",
         "<p class=\"intro\">Este checklist te ayuda a detectar el fallo en minutos y dejar el documento listo para convertirlo a <strong>OMML</strong>.</p>"
       ],
-      "translation_slug": ""
+      "translation_slug": "weird-symbols-word-equations-cambria-math-fix"
     },
     {
       "lang": "es",
@@ -1019,6 +1019,120 @@
       "intro_html": [
         "<p>Word supports linear equation input, but OMML is the native equation format. Learn when Alt+= is enough and when you should convert LaTeX to OMML.</p>"
       ]
+    },
+    {
+      "lang": "es",
+      "slug": "latex-a-word-online-gratis-ecuaciones-editables",
+      "title": "LaTeX a Word online gratis: consigue ecuaciones editables (OMML) en minutos",
+      "seo_title": "LaTeX a Word online gratis: ecuaciones editables (OMML) | Ecuaciones a Word",
+      "description": "Guía práctica para convertir LaTeX a Word online gratis y obtener ecuaciones nativas editables (OMML), sin capturas ni formato roto.",
+      "keywords": [
+        "latex a word online",
+        "latex a word gratis",
+        "convertir latex a word online",
+        "ecuaciones editables word",
+        "omml"
+      ],
+      "canonical_path": "/blog/latex-a-word-online-gratis-ecuaciones-editables",
+      "date_published": "2026-03-27",
+      "date_modified": "2026-03-27",
+      "reading_time": "6-8 min",
+      "kicker": "LaTeX a Word online · Guía rápida",
+      "tags": [
+        "LaTeX → Word",
+        "OMML",
+        "DOCX",
+        "Conversor"
+      ],
+      "intro_html": [
+        "<p class=\"intro\">Si buscas <strong>LaTeX a Word online gratis</strong>, el objetivo real no es solo convertir: es que el archivo final quede con <strong>ecuaciones editables</strong> en Word (OMML), listo para entregar.</p>"
+      ],
+      "translation_slug": "latex-to-word-online-free-editable-equations"
+    },
+    {
+      "lang": "en",
+      "slug": "latex-to-word-online-free-editable-equations",
+      "title": "LaTeX to Word online for free: get editable equations (OMML) fast",
+      "seo_title": "LaTeX to Word online free: editable equations (OMML) | Equations to Word",
+      "description": "Practical workflow to convert LaTeX to Word online for free and keep equations editable as native OMML instead of broken plain text.",
+      "keywords": [
+        "latex to word online",
+        "latex to word online free",
+        "convert latex to word editable equations",
+        "omml converter",
+        "word equation editor"
+      ],
+      "canonical_path": "/en/blog/latex-to-word-online-free-editable-equations",
+      "date_published": "2026-03-27",
+      "date_modified": "2026-03-27",
+      "reading_time": "6-8 min",
+      "kicker": "LaTeX to Word online · Practical workflow",
+      "tags": [
+        "LaTeX to Word",
+        "OMML",
+        "DOCX",
+        "Converter"
+      ],
+      "intro_html": [
+        "<p class=\"intro\">When people search for <strong>LaTeX to Word online free</strong>, they usually need one thing: a clean .docx with <strong>editable equations</strong>, not screenshots or broken symbols.</p>"
+      ],
+      "translation_slug": "latex-a-word-online-gratis-ecuaciones-editables"
+    },
+    {
+      "lang": "en",
+      "slug": "latex-to-word-quick-guide-no-broken-equations",
+      "title": "LaTeX to Word quick guide: convert documents without breaking equations",
+      "seo_title": "LaTeX to Word quick guide: convert documents without broken equations",
+      "description": "7-step checklist to move from LaTeX to Word while preserving editable equations (OMML) in your final .docx.",
+      "keywords": [
+        "latex to word quick guide",
+        "convert latex document to word",
+        "latex to omml",
+        "editable equations word",
+        "docx equations"
+      ],
+      "canonical_path": "/en/blog/latex-to-word-quick-guide-no-broken-equations",
+      "date_published": "2026-03-27",
+      "date_modified": "2026-03-27",
+      "reading_time": "5-7 min",
+      "kicker": "Full document · Quick checklist",
+      "tags": [
+        "LaTeX to Word",
+        "DOCX",
+        "OMML"
+      ],
+      "intro_html": [
+        "<p class=\"intro\">If your document has many formulas, manual copy/paste does not scale. This quick checklist helps you convert LaTeX to Word and keep equations editable.</p>"
+      ],
+      "translation_slug": "de-latex-a-word-guia-rapida"
+    },
+    {
+      "lang": "en",
+      "slug": "weird-symbols-word-equations-cambria-math-fix",
+      "title": "Weird symbols in Word equations: Cambria Math and square boxes fixed",
+      "seo_title": "Weird symbols in Word equations: Cambria Math and square boxes fixed",
+      "description": "Fix square boxes, diamonds, and broken symbols in Word equations by checking math fonts, compatibility, and conversion workflow.",
+      "keywords": [
+        "weird symbols word equations",
+        "cambria math word fix",
+        "squares in word equations",
+        "broken equation symbols word",
+        "word equation font issue"
+      ],
+      "canonical_path": "/en/blog/weird-symbols-word-equations-cambria-math-fix",
+      "date_published": "2026-03-27",
+      "date_modified": "2026-03-27",
+      "reading_time": "4-6 min",
+      "kicker": "Word · Fonts and compatibility",
+      "tags": [
+        "Word",
+        "Cambria Math",
+        "Unicode"
+      ],
+      "intro_html": [
+        "<p class=\"intro\">If equations look fine on your computer but show <strong>square boxes</strong> or replaced symbols on another device, this is usually a font or compatibility issue, not a math issue.</p>"
+      ],
+      "translation_slug": "simbolos-raros-ecuaciones-word-cambria-math"
     }
   ],
   "aliases": {
@@ -1031,7 +1145,9 @@
       "que-es-omml": "que-es-omml-ecuaciones-word",
       "markdown-latex-a-word-docx": "markdown-con-latex-a-word-docx",
       "omml-vs-mathtype-vs-latex-word": "omml-vs-mathtype-vs-latex-word-tfg",
-      "pandoc-word-ecuaciones-no-editables": "pandoc-ecuaciones-word-no-editables-soluciones"
+      "pandoc-word-ecuaciones-no-editables": "pandoc-ecuaciones-word-no-editables-soluciones",
+      "latex-a-word-online-gratis": "latex-a-word-online-gratis-ecuaciones-editables",
+      "latex-a-word-guia-rapida": "de-latex-a-word-guia-rapida"
     },
     "en": {
       "copy-chatgpt-equations-to-word": "copy-chatgpt-equations-word",
@@ -1042,7 +1158,10 @@
       "what-is-omml": "what-is-omml-word-equations",
       "question-marks-when-pasting-chatgpt-equations-word": "question-marks-chatgpt-equations-word",
       "omml-vs-mathtype-vs-latex-in-word": "omml-vs-mathtype-vs-latex-word-thesis",
-      "pandoc-to-word-equations-not-editable": "pandoc-math-to-word-omml-troubleshooting"
+      "pandoc-to-word-equations-not-editable": "pandoc-math-to-word-omml-troubleshooting",
+      "latex-to-word-online-free": "latex-to-word-online-free-editable-equations",
+      "latex-to-word-quick-guide": "latex-to-word-quick-guide-no-broken-equations",
+      "cambria-math-word-symbols-fix": "weird-symbols-word-equations-cambria-math-fix"
     }
   }
 }

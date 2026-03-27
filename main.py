@@ -365,55 +365,6 @@ LANDING_PAGES: Dict[str, Dict[str, Dict[str, Any]]] = {
 }
 
 
-def _fix_text_mojibake(value: str) -> str:
-    if not isinstance(value, str):
-        return value
-    if not re.search(r"[ÃƒÃ‚Ã¢â‚¬]", value):
-        return value
-
-    # First pass: common broken punctuation.
-    replacements = {
-        "Ã¢â‚¬â„¢": "'",
-        "Ã¢â‚¬Ëœ": "'",
-        'Ã¢â‚¬Å“': '"',
-        "Ã¢â‚¬Â": '"',
-        "Ã¢â‚¬â€œ": "-",
-        "Ã¢â‚¬â€": "-",
-        "Ã‚Â¿": "Â¿",
-        "Ã‚Â¡": "Â¡",
-        "Ã‚Â·": "Â·",
-        "Ã¢â€ â€™": "â†’",
-        "Ã¢â€ Â": "â†",
-        "Ã¢Ë†â€˜": "âˆ‘",
-    }
-    out = value
-    for old, new in replacements.items():
-        out = out.replace(old, new)
-
-    # Additional decode passes when data was double-encoded.
-    for _ in range(2):
-        if not re.search(r"[ÃƒÃ‚Ã¢â‚¬]", out):
-            break
-        try:
-            decoded = out.encode("latin1", errors="ignore").decode("utf-8", errors="ignore")
-        except Exception:
-            break
-        if decoded and decoded != out:
-            out = decoded
-
-    return out.replace("ï¿½", "")
-
-
-def _clean_mojibake(obj: Any) -> Any:
-    if isinstance(obj, str):
-        return _fix_text_mojibake(obj)
-    if isinstance(obj, list):
-        return [_clean_mojibake(x) for x in obj]
-    if isinstance(obj, dict):
-        return {k: _clean_mojibake(v) for k, v in obj.items()}
-    return obj
-
-
 def _load_blog_data() -> Dict[str, Any]:
     """Load blog metadata from blog_content/posts.json.
 
@@ -430,7 +381,7 @@ def _load_blog_data() -> Dict[str, Any]:
             raise ValueError("posts.json root is not a JSON object")
         data.setdefault("posts", [])
         data.setdefault("aliases", {})
-        return _clean_mojibake(data)
+        return data
     except Exception:
         logger.exception("Failed to load blog data from %s", BLOG_DATA_PATH)
         # Keep the app running (converter is critical). Blog will 404 gracefully.
@@ -480,7 +431,7 @@ _init_blog_cache()
 
 def _render_template(template_name: str, context: Dict[str, Any]) -> str:
     template = JINJA_ENV.get_template(template_name)
-    return template.render(**_clean_mojibake(context))
+    return template.render(**context)
 
 
 def _read_blog_body(lang: str, slug: str) -> str:
@@ -648,29 +599,6 @@ def _build_schema_solution_page(
                 ],
             },
         ],
-    }
-    return json.dumps(schema, ensure_ascii=False)
-
-
-def _build_schema_faq(lang: str, qa_items: List[Dict[str, str]]) -> str:
-    entries = []
-    for item in qa_items:
-        q = (item.get("q") or "").strip()
-        a = (item.get("a") or "").strip()
-        if not q or not a:
-            continue
-        entries.append(
-            {
-                "@type": "Question",
-                "name": q,
-                "acceptedAnswer": {"@type": "Answer", "text": a},
-            }
-        )
-    schema = {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        "inLanguage": lang,
-        "mainEntity": entries,
     }
     return json.dumps(schema, ensure_ascii=False)
 
@@ -1654,6 +1582,7 @@ async def blog_index_es() -> HTMLResponse:
     lang = "es"
     canonical_url = _abs_url("/blog")
     other_url = _abs_url("/en/blog")
+
     posts_view: List[Dict[str, Any]] = []
     tag_counts: Dict[str, int] = {}
     for p in BLOG_LIST.get(lang, []):
@@ -1668,16 +1597,23 @@ async def blog_index_es() -> HTMLResponse:
                 "description": p.get("description") or "",
                 "kicker": p.get("kicker") or "",
                 "tags": p.get("tags") or [],
-                "meta": f"{_format_date(lang, p.get('date_published') or '')} | {p.get('reading_time') or ''}".strip(" |"),
+                "meta": f"{_format_date(lang, p.get('date_published') or '')} Â· {p.get('reading_time') or ''}".strip(
+                    " Â·"
+                ),
             }
         )
-    top_tags = [k for k, _ in sorted(tag_counts.items(), key=lambda kv: (-kv[1], kv[0].lower()))][:8]
+
+    top_tags = [
+        k
+        for k, _ in sorted(tag_counts.items(), key=lambda kv: (-kv[1], kv[0].lower()))
+    ][:8]
+
     ctx = {
         "lang": lang,
         "site_name": SITE_NAME,
         "seo_title": "Blog | Ecuaciones a Word",
-        "description": "Guias para convertir LaTeX e IA a Word con ecuaciones nativas (OMML), sin imagenes ni formulas rotas.",
-        "keywords": ["LaTeX a Word", "OMML", "Word ecuaciones", "ChatGPT", "Pandoc"],
+        "description": "GuÃ­as para convertir LaTeX e IA a Word con ecuaciones nativas (OMML), sin imÃ¡genes ni fÃ³rmulas rotas.",
+        "keywords": ["LaTeX a Word", "LaTeX a Word online", "OMML", "Word ecuaciones", "ChatGPT", "Pandoc"],
         "canonical_url": canonical_url,
         "alternates": [
             {"hreflang": "es", "href": canonical_url},
@@ -1686,16 +1622,9 @@ async def blog_index_es() -> HTMLResponse:
         ],
         "og_type": "website",
         "og_title": "Blog | Ecuaciones a Word",
-        "og_description": "Guias practicas para llevar ecuaciones LaTeX a Word (OMML) de forma limpia y editable.",
+        "og_description": "GuÃ­as prÃ¡cticas para llevar ecuaciones LaTeX a Word (OMML) de forma limpia y editable.",
         "og_image": _abs_url("/static/og-image.svg"),
         "schema_json": _build_schema_index(lang, canonical_url),
-        "extra_schema_json": _build_schema_faq(
-            "es",
-            [
-                {"q": "Convierte ecuaciones de ChatGPT a Word editable?", "a": "Si. Convierte LaTeX a ecuaciones OMML nativas de Word."},
-                {"q": "Sirve para TFG, TFM o informes?", "a": "Si. Esta pensada para entregas academicas y documentos tecnicos en .docx."},
-            ],
-        ),
         "converter_href": "/",
         "blog_index_href": "/blog",
         "nav_converter": "Conversor",
@@ -1703,43 +1632,27 @@ async def blog_index_es() -> HTMLResponse:
         "lang_switch_href": "/en/blog",
         "lang_switch_label": "EN",
         "h1": "Blog",
-        "intro": "Guias practicas para pasar ecuaciones de LaTeX e IA a Word con ecuaciones nativas (OMML).",
-        "index_cta_primary": "Conversor LaTeX -> Word (OMML)",
-        "search_label": "Buscar articulos",
-        "search_placeholder": "Buscar por tema, herramienta o problema (ej. pandoc, overleaf, OMML, ChatGPT)...",
+        "intro": "GuÃ­as prÃ¡cticas para pasar ecuaciones de LaTeX e IA a Word con ecuaciones nativas (OMML), incluyendo flujos online y troubleshooting.",
+        "index_cta_primary": "Conversor LaTeX â†’ Word (OMML)",
+        "search_label": "Buscar artÃ­culos",
+        "search_placeholder": "Buscar por tema, herramienta o problema (ej. pandoc, overleaf, OMML, ChatGPT)â€¦",
         "filter_label": "Filtrar por etiqueta",
         "filter_all": "Todos",
         "top_tags": top_tags,
-        "featured_title": "Articulos",
-        "trust_title": "Por que confiar en este flujo",
-        "trust_intro": "El objetivo es que tus ecuaciones sean editables y revisables en Word, no imagenes pegadas.",
-        "trust_items": [
-            "Conversion directa de LaTeX a OMML nativo.",
-            "Pensado para entregas academicas y documentacion tecnica.",
-            "Guias especificas para ChatGPT, Gemini, Copilot y Pandoc.",
-        ],
-        "comparison_title": "Que camino elegir segun tu caso",
-        "comparison_rows": [
-            {"title": "Pegar formula suelta", "desc": "Util para una ecuacion rapida. Si tienes muchas, usa conversion por archivo."},
-            {"title": "Convertir documento completo", "desc": "Ideal para TFG/TFM, informes y ejercicios con muchas ecuaciones."},
-            {"title": "Corregir salida de IA", "desc": "Cuando la IA devuelve LaTeX, conviertelo a OMML para editar en Word."},
-        ],
-        "faq_title": "Preguntas frecuentes",
-        "faq_items": [
-            {"q": "Las ecuaciones quedan editables?", "a": "Si, se insertan como OMML nativo de Word."},
-            {"q": "Puedo usar archivos .txt y .docx?", "a": "Si, ambos formatos estan soportados."},
-            {"q": "Sirve para contenido de ChatGPT/Gemini?", "a": "Si, esta optimizado para ese flujo."},
-        ],
+        "featured_title": "ArtÃ­culos",
         "posts": posts_view,
         "year": datetime.now().year,
         "legal_links": {"privacy": "/privacy", "terms": "/terms", "contact": "/contact"},
     }
     return HTMLResponse(_render_template("blog_index.html", ctx))
+
+
 @app.get("/en/blog", response_class=HTMLResponse)
 async def blog_index_en() -> HTMLResponse:
     lang = "en"
     canonical_url = _abs_url("/en/blog")
     other_url = _abs_url("/blog")
+
     posts_view: List[Dict[str, Any]] = []
     tag_counts: Dict[str, int] = {}
     for p in BLOG_LIST.get(lang, []):
@@ -1754,16 +1667,23 @@ async def blog_index_en() -> HTMLResponse:
                 "description": p.get("description") or "",
                 "kicker": p.get("kicker") or "",
                 "tags": p.get("tags") or [],
-                "meta": f"{_format_date(lang, p.get('date_published') or '')} | {p.get('reading_time') or ''}".strip(" |"),
+                "meta": f"{_format_date(lang, p.get('date_published') or '')} Â· {p.get('reading_time') or ''}".strip(
+                    " Â·"
+                ),
             }
         )
-    top_tags = [k for k, _ in sorted(tag_counts.items(), key=lambda kv: (-kv[1], kv[0].lower()))][:8]
+
+    top_tags = [
+        k
+        for k, _ in sorted(tag_counts.items(), key=lambda kv: (-kv[1], kv[0].lower()))
+    ][:8]
+
     ctx = {
         "lang": lang,
         "site_name": SITE_NAME,
         "seo_title": "Blog | Ecuaciones a Word",
         "description": "Practical guides to convert LaTeX/AI content to Word with native (OMML) editable equations.",
-        "keywords": ["LaTeX to Word", "OMML", "Word equations", "ChatGPT", "Pandoc"],
+        "keywords": ["LaTeX to Word", "LaTeX to Word online", "OMML", "Word equations", "ChatGPT", "Pandoc"],
         "canonical_url": canonical_url,
         "alternates": [
             {"hreflang": "en", "href": canonical_url},
@@ -1775,13 +1695,6 @@ async def blog_index_en() -> HTMLResponse:
         "og_description": "Practical guides for converting LaTeX equations to native Word (OMML) cleanly and reliably.",
         "og_image": _abs_url("/static/og-image.svg"),
         "schema_json": _build_schema_index(lang, canonical_url),
-        "extra_schema_json": _build_schema_faq(
-            "en",
-            [
-                {"q": "Can this convert ChatGPT math to editable Word equations?", "a": "Yes. It converts LaTeX into native Word OMML equations."},
-                {"q": "Is it useful for thesis and assignments?", "a": "Yes. It is designed for academic and technical .docx workflows."},
-            ],
-        ),
         "converter_href": "/en",
         "blog_index_href": "/en/blog",
         "nav_converter": "Converter",
@@ -1789,33 +1702,14 @@ async def blog_index_en() -> HTMLResponse:
         "lang_switch_href": "/blog",
         "lang_switch_label": "ES",
         "h1": "Blog",
-        "intro": "Practical guides to export LaTeX/AI equations to Word as native editable OMML equations.",
-        "index_cta_primary": "LaTeX -> OMML Converter",
+        "intro": "Practical guides to export LaTeX/AI equations to Word as native editable OMML equations, including online workflows and troubleshooting.",
+        "index_cta_primary": "LaTeX â†’ OMML Converter",
         "search_label": "Search articles",
-        "search_placeholder": "Search by topic, tool or issue (e.g., pandoc, overleaf, OMML, ChatGPT)...",
+        "search_placeholder": "Search by topic, tool or issue (e.g., pandoc, overleaf, OMML, ChatGPT)â€¦",
         "filter_label": "Filter by tag",
         "filter_all": "All",
         "top_tags": top_tags,
         "featured_title": "Articles",
-        "trust_title": "Why this workflow is reliable",
-        "trust_intro": "The goal is editable, review-friendly equations in Word, not screenshots.",
-        "trust_items": [
-            "Direct LaTeX to native OMML conversion.",
-            "Built for thesis, reports, and technical submissions.",
-            "Guides for ChatGPT, Gemini, Copilot, and Pandoc workflows.",
-        ],
-        "comparison_title": "Pick the right path",
-        "comparison_rows": [
-            {"title": "Paste one equation", "desc": "Useful for quick edits. For many formulas, convert the full file."},
-            {"title": "Convert full document", "desc": "Best for thesis, assignments, and long technical docs."},
-            {"title": "Fix AI math output", "desc": "Turn AI-generated LaTeX into editable Word OMML."},
-        ],
-        "faq_title": "Frequently asked questions",
-        "faq_items": [
-            {"q": "Are equations editable after conversion?", "a": "Yes. Output equations are native OMML in Word."},
-            {"q": "Do you support .txt and .docx?", "a": "Yes, both input formats are supported."},
-            {"q": "Does it work with ChatGPT/Gemini output?", "a": "Yes, that is one of the main use cases."},
-        ],
         "posts": posts_view,
         "year": datetime.now().year,
         "legal_links": {"privacy": "/en/privacy", "terms": "/en/terms", "contact": "/en/contact"},
@@ -1872,12 +1766,17 @@ async def blog_post_es(slug: str) -> HTMLResponse:
         return RedirectResponse(url=redirect_url, status_code=301)
     if not post:
         raise HTTPException(status_code=404, detail="Blog post not found")
+
     body_html = _read_blog_body(lang, post["slug"])
     if not body_html.strip():
         raise HTTPException(status_code=404, detail="Blog post body not found")
+
     canonical_url = _abs_url(post.get("canonical_path") or f"/blog/{post['slug']}")
     translation_slug = (post.get("translation_slug") or "").strip()
-    has_translation = bool(translation_slug and translation_slug in BLOG_POSTS.get("en", {}))
+    has_translation = bool(
+        translation_slug and translation_slug in BLOG_POSTS.get("en", {})
+    )
+
     alternates = [{"hreflang": "es", "href": canonical_url}]
     lang_switch_href = "/en/blog"
     if has_translation:
@@ -1889,17 +1788,15 @@ async def blog_post_es(slug: str) -> HTMLResponse:
     else:
         alternates.append({"hreflang": "en", "href": _abs_url("/en/blog")})
         alternates.append({"hreflang": "x-default", "href": canonical_url})
+
     date_pub = post.get("date_published") or ""
     date_mod = post.get("date_modified") or ""
     meta_line = f"Publicado {_format_date(lang, date_pub)}"
     if post.get("reading_time"):
-        meta_line += f" | {post['reading_time']}"
+        meta_line += f" Â· {post['reading_time']}"
     if date_mod and date_mod != date_pub:
-        meta_line += f" | Actualizado {_format_date(lang, date_mod)}"
-    faq_items = [
-        {"q": "Cual es el formato final en Word?", "a": "Ecuaciones OMML nativas, editables dentro de Microsoft Word."},
-        {"q": "Que hago si una formula no queda perfecta?", "a": "Revisa delimitadores LaTeX y vuelve a convertir el documento."},
-    ]
+        meta_line += f" Â· Actualizado {_format_date(lang, date_mod)}"
+
     ctx = {
         "lang": lang,
         "site_name": SITE_NAME,
@@ -1913,12 +1810,15 @@ async def blog_post_es(slug: str) -> HTMLResponse:
         "og_description": post.get("description") or "",
         "og_image": _abs_url("/static/og-image.svg"),
         "schema_json": _build_schema_article(post, canonical_url),
-        "extra_schema_json": _build_schema_faq("es", faq_items),
-        "related_posts": _get_related_posts(lang, post, limit=4),
-        "related_title": "Articulos relacionados",
-        "summary_box_title": "Consejo rapido",
-        "summary_box_text": "Convierte LaTeX (o ecuaciones de IA) en ecuaciones nativas y editables de Word (OMML).",
-        "summary_box_link_text": "Conversor LaTeX -> Word (OMML)",
+"related_posts": _get_related_posts(lang, post, limit=4),
+"related_title": "Related articles" if lang == "en" else "ArtÃ­culos relacionados",
+"summary_box_title": "Quick tip" if lang == "en" else "Consejo rÃ¡pido",
+"summary_box_text": (
+    "Convert LaTeX (or AI-generated math) into native, editable Word equations (OMML)."
+    if lang == "en"
+    else "Convierte LaTeX (o ecuaciones generadas por IA) en ecuaciones nativas y editables de Word (OMML)."
+),
+"summary_box_link_text": "LaTeX â†’ OMML converter" if lang == "en" else "Conversor LaTeX â†’ Word (OMML)",
         "converter_href": "/",
         "blog_index_href": "/blog",
         "nav_converter": "Conversor",
@@ -1936,22 +1836,16 @@ async def blog_post_es(slug: str) -> HTMLResponse:
             {"name": post.get("title") or "", "url": post.get("canonical_path") or f"/blog/{post['slug']}"},
         ],
         "body_html": body_html,
-        "checklist_title": "Checklist antes de entregar",
-        "checklist_items": [
-            "Verifica que las ecuaciones queden editables en Word.",
-            "Comprueba simbolos y subindices en las formulas criticas.",
-            "Guarda una version final .docx antes de compartir.",
-        ],
-        "faq_title": "Preguntas frecuentes",
-        "faq_items": faq_items,
-        "cta_strong": "Necesitas convertir un .docx o .txt con formulas LaTeX?",
+        "cta_strong": "Â¿Necesitas convertir un .docx o .txt con fÃ³rmulas LaTeX?",
         "cta_text": "Usa el conversor y descarga un Word con ecuaciones nativas (OMML).",
-        "cta_primary": "Conversor LaTeX -> Word (OMML)",
-        "cta_secondary": "Ver mas articulos",
+        "cta_primary": "Conversor LaTeX â†’ Word (OMML)",
+        "cta_secondary": "Ver mÃ¡s artÃ­culos",
         "year": datetime.now().year,
         "legal_links": {"privacy": "/privacy", "terms": "/terms", "contact": "/contact"},
     }
     return HTMLResponse(_render_template("blog_post.html", ctx))
+
+
 @app.get("/en/blog/{slug}", response_class=HTMLResponse)
 async def blog_post_en(slug: str) -> HTMLResponse:
     lang = "en"
@@ -1960,12 +1854,17 @@ async def blog_post_en(slug: str) -> HTMLResponse:
         return RedirectResponse(url=redirect_url, status_code=301)
     if not post:
         raise HTTPException(status_code=404, detail="Blog post not found")
+
     body_html = _read_blog_body(lang, post["slug"])
     if not body_html.strip():
         raise HTTPException(status_code=404, detail="Blog post body not found")
+
     canonical_url = _abs_url(post.get("canonical_path") or f"/en/blog/{post['slug']}")
     translation_slug = (post.get("translation_slug") or "").strip()
-    has_translation = bool(translation_slug and translation_slug in BLOG_POSTS.get("es", {}))
+    has_translation = bool(
+        translation_slug and translation_slug in BLOG_POSTS.get("es", {})
+    )
+
     alternates = [{"hreflang": "en", "href": canonical_url}]
     lang_switch_href = "/blog"
     if has_translation:
@@ -1977,17 +1876,15 @@ async def blog_post_en(slug: str) -> HTMLResponse:
     else:
         alternates.append({"hreflang": "es", "href": _abs_url("/blog")})
         alternates.append({"hreflang": "x-default", "href": _abs_url("/blog")})
+
     date_pub = post.get("date_published") or ""
     date_mod = post.get("date_modified") or ""
     meta_line = f"Published {_format_date(lang, date_pub)}"
     if post.get("reading_time"):
-        meta_line += f" | {post['reading_time']}"
+        meta_line += f" Â· {post['reading_time']}"
     if date_mod and date_mod != date_pub:
-        meta_line += f" | Updated {_format_date(lang, date_mod)}"
-    faq_items = [
-        {"q": "What output format does Word receive?", "a": "Native OMML equations editable directly in Microsoft Word."},
-        {"q": "What if one formula does not render perfectly?", "a": "Review LaTeX delimiters and convert again after small fixes."},
-    ]
+        meta_line += f" Â· Updated {_format_date(lang, date_mod)}"
+
     ctx = {
         "lang": lang,
         "site_name": SITE_NAME,
@@ -2001,12 +1898,15 @@ async def blog_post_en(slug: str) -> HTMLResponse:
         "og_description": post.get("description") or "",
         "og_image": _abs_url("/static/og-image.svg"),
         "schema_json": _build_schema_article(post, canonical_url),
-        "extra_schema_json": _build_schema_faq("en", faq_items),
-        "related_posts": _get_related_posts(lang, post, limit=4),
-        "related_title": "Related articles",
-        "summary_box_title": "Quick tip",
-        "summary_box_text": "Convert LaTeX (or AI-generated math) into native, editable Word equations (OMML).",
-        "summary_box_link_text": "LaTeX -> OMML converter",
+"related_posts": _get_related_posts(lang, post, limit=4),
+"related_title": "Related articles" if lang == "en" else "ArtÃ­culos relacionados",
+"summary_box_title": "Quick tip" if lang == "en" else "Consejo rÃ¡pido",
+"summary_box_text": (
+    "Convert LaTeX (or AI-generated math) into native, editable Word equations (OMML)."
+    if lang == "en"
+    else "Convierte LaTeX (o ecuaciones generadas por IA) en ecuaciones nativas y editables de Word (OMML)."
+),
+"summary_box_link_text": "LaTeX â†’ OMML converter" if lang == "en" else "Conversor LaTeX â†’ Word (OMML)",
         "converter_href": "/en",
         "blog_index_href": "/en/blog",
         "nav_converter": "Converter",
@@ -2024,17 +1924,9 @@ async def blog_post_en(slug: str) -> HTMLResponse:
             {"name": post.get("title") or "", "url": post.get("canonical_path") or f"/en/blog/{post['slug']}"},
         ],
         "body_html": body_html,
-        "checklist_title": "Checklist before submitting",
-        "checklist_items": [
-            "Confirm equations remain editable in Word.",
-            "Review symbols/subscripts in critical formulas.",
-            "Save a final .docx copy before sharing.",
-        ],
-        "faq_title": "Frequently asked questions",
-        "faq_items": faq_items,
         "cta_strong": "Need to convert a .docx or .txt containing LaTeX?",
         "cta_text": "Use the converter and download a Word file with native editable OMML equations.",
-        "cta_primary": "LaTeX -> OMML Converter",
+        "cta_primary": "LaTeX â†’ OMML Converter",
         "cta_secondary": "More articles",
         "year": datetime.now().year,
         "legal_links": {"privacy": "/en/privacy", "terms": "/en/terms", "contact": "/en/contact"},
@@ -3058,18 +2950,16 @@ async def custom_http_exception_handler(request: Request, exc: StarletteHTTPExce
     return PlainTextResponse(str(exc.detail), status_code=exc.status_code)
 
 def _get_related_posts(lang: str, current_post: Dict[str, Any], limit: int = 4) -> List[Dict[str, str]]:
-    """Pick related posts by shared tags (simple, deterministic)."""
+    """Pick related posts by shared tags, with a recent-post fallback."""
     tags = set(current_post.get("tags") or [])
-    if not tags:
-        return []
     cur_slug = current_post.get("slug") or ""
-    candidates = []
+    candidates: List[Tuple[int, str, Dict[str, Any]]] = []
     for p in BLOG_LIST.get(lang, []):
         if (p.get("slug") or "") == cur_slug:
             continue
         p_tags = set(p.get("tags") or [])
         score = len(tags.intersection(p_tags))
-        if score <= 0:
+        if tags and score <= 0:
             continue
         # date_published is ISO (YYYY-MM-DD); lexicographic order works
         candidates.append((score, (p.get("date_published") or ""), p))
@@ -3080,7 +2970,22 @@ def _get_related_posts(lang: str, current_post: Dict[str, Any], limit: int = 4) 
     out: List[Dict[str, str]] = []
     for _, __, p in candidates[:limit]:
         out.append({"url": p.get("canonical_path") or "", "title": p.get("title") or ""})
+
+    if len(out) >= limit:
+        return out
+
+    # Fallback: fill with most recent posts not yet included.
+    used_urls = {item["url"] for item in out}
+    for p in BLOG_LIST.get(lang, []):
+        if (p.get("slug") or "") == cur_slug:
+            continue
+        url = p.get("canonical_path") or ""
+        if not url or url in used_urls:
+            continue
+        out.append({"url": url, "title": p.get("title") or ""})
+        used_urls.add(url)
+        if len(out) >= limit:
+            break
+
     return out
-
-
 

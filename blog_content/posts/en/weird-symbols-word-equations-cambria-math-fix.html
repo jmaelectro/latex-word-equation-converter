@@ -1,0 +1,47 @@
+﻿<section>
+<h2>Symptom</h2>
+<p>
+  Equations look fine on your computer, but on another device they show <strong>square boxes</strong>,
+  replaced symbols, or unexpected characters.
+</p>
+</section>
+
+<section>
+<h2>Most common cause: math font mismatch</h2>
+<p>
+  Word equations usually rely on <strong>Cambria Math</strong> (or equivalent math fonts).
+  If the font is missing or overridden by an aggressive template style, symbols may break.
+</p>
+</section>
+
+<section>
+<h2>Fixes in priority order</h2>
+<ol>
+  <li>Select the equation and confirm a math-capable font is applied (Cambria Math).</li>
+  <li>Avoid forcing a global body font inside equation runs.</li>
+  <li>Reopen the file in desktop Word if the issue appears in preview apps.</li>
+  <li>Prefer LaTeX-to-OMML conversion instead of mixed rich-text paste from AI chats.</li>
+</ol>
+</section>
+
+<section>
+<h2>If the source is ChatGPT</h2>
+<p>
+  If you also see question marks or odd symbols after copy/paste, check:
+  <a href="/en/blog/question-marks-chatgpt-equations-word">question marks when pasting ChatGPT equations</a>.
+</p>
+</section>
+
+<section>
+<h2>Stable delivery checklist</h2>
+<ul>
+  <li>Convert your source file to OMML equations.</li>
+  <li>Review the final .docx in the same Word version used for grading/review.</li>
+  <li>Keep a clean copy without manual symbol substitutions.</li>
+</ul>
+</section>
+
+<hr class="sep">
+<p class="cta">
+  Stable workflow: upload a <code>.docx</code>/<code>.txt</code> with LaTeX at <a href="/en">Equations to Word</a> and download editable OMML equations.
+</p>
