@@ -187,7 +187,7 @@
       "slug": "signos-interrogacion-ecuaciones-chatgpt-word",
       "title": "Signos de interrogación al pegar ecuaciones de ChatGPT a Word: por qué pasa y cómo solucionarlo",
       "seo_title": "Signos de interrogación al pegar ecuaciones de ChatGPT a Word: por qué pasa y cómo solucionarlo | Ecuaciones a Word",
-      "description": "Cuando copias fórmulas en LaTeX desde ChatGPT y las pegas en Word, pueden aparecer “??”, rombos o símbolos raros. Te explico la causa y las soluciones más fiables.",
+      "description": "Cuando copias fórmulas en LaTeX desde ChatGPT y las pegas en Word, pueden aparecer "??", rombos o símbolos raros. Te explico la causa y las soluciones más fiables.",
       "keywords": [],
       "canonical_path": "/blog/signos-interrogacion-ecuaciones-chatgpt-word",
       "date_published": "2025-12-14",
@@ -200,7 +200,7 @@
         "Word"
       ],
       "intro_html": [
-        "<p class=\"intro\">Cuando copias fórmulas en LaTeX desde ChatGPT y las pegas en Word, pueden aparecer “??”, rombos o símbolos raros. Te explico la causa y las soluciones más fiables.</p>\n      "
+        "<p class=\"intro\">Cuando copias fórmulas en LaTeX desde ChatGPT y las pegas en Word, pueden aparecer "??", rombos o símbolos raros. Te explico la causa y las soluciones más fiables.</p>\n      "
       ],
       "translation_slug": "question-marks-chatgpt-equations-word"
     },
@@ -299,7 +299,7 @@
         "word"
       ],
       "intro_html": [
-        "<p class=\"intro\">If you use <strong>ChatGPT</strong> to solve math, physics or engineering problems, you’ve probably hit this: the AI outputs <strong>LaTeX</strong>, but when you paste it into <strong>Word</strong>, the equations are not editable (or they break).</p>",
+        "<p class=\"intro\">If you use <strong>ChatGPT</strong> to solve math, physics or engineering problems, you've probably hit this: the AI outputs <strong>LaTeX</strong>, but when you paste it into <strong>Word</strong>, the equations are not editable (or they break).</p>",
         "<p class=\"intro\">This guide shows a reliable workflow: <strong>ChatGPT → LaTeX → Equations to Word → .docx with native Word equations (OMML)</strong>.</p>"
       ],
       "translation_slug": "pasar-ecuaciones-chatgpt-word"
@@ -375,7 +375,7 @@
       "slug": "paste-latex-into-word-alt-eq",
       "title": "Paste LaTeX into Word (Alt+=): tips for clean, editable equations",
       "seo_title": "Paste LaTeX into Word (Alt+=): What Works, What Breaks, and Fixes",
-      "description": "Using Word’s equation editor (Alt+=) with LaTeX can be inconsistent. Learn the limits and when to convert to OMML for reliability.",
+      "description": "Using Word's equation editor (Alt+=) with LaTeX can be inconsistent. Learn the limits and when to convert to OMML for reliability.",
       "keywords": [
         "paste latex into word",
         "alt+= word equation",
@@ -398,7 +398,7 @@
         "word"
       ],
       "intro_html": [
-        "<p class=\"intro\">Word’s equation editor can accept LaTeX-style input in many cases. If you only have a few equations, this can be fast.</p>",
+        "<p class=\"intro\">Word's equation editor can accept LaTeX-style input in many cases. If you only have a few equations, this can be fast.</p>",
         "<p class=\"intro\">If you have many equations (e.g., a full ChatGPT solution), using a converter to generate native Word equations (OMML) is usually faster and cleaner.</p>"
       ],
       "translation_slug": "pegar-latex-en-word-alt-eq"
@@ -407,8 +407,8 @@
       "lang": "en",
       "slug": "what-is-omml-word-equations",
       "title": "What is OMML (Word equations) and why equations break when you paste from ChatGPT",
-      "seo_title": "What Is OMML? Word’s Equation Format (and how to convert LaTeX)",
-      "description": "OMML is Word’s native equation format. See how it differs from LaTeX, why it matters, and how to convert LaTeX into editable Word equations.",
+      "seo_title": "What Is OMML? Word's Equation Format (and how to convert LaTeX)",
+      "description": "OMML is Word's native equation format. See how it differs from LaTeX, why it matters, and how to convert LaTeX into editable Word equations.",
       "keywords": [
         "OMML",
         "office math markup language",
@@ -474,7 +474,7 @@
       "slug": "question-marks-chatgpt-equations-word",
       "title": "Question marks when pasting ChatGPT equations into Word: causes and fixes",
       "seo_title": "Question Marks in Word Equations from ChatGPT: Causes and Fixes",
-      "description": "Why Word shows “?” or strange symbols after pasting LaTeX. Fix fonts, hidden characters, and convert to native OMML for editable equations.",
+      "description": "Why Word shows "?" or strange symbols after pasting LaTeX. Fix fonts, hidden characters, and convert to native OMML for editable equations.",
       "keywords": [],
       "canonical_path": "/en/blog/question-marks-chatgpt-equations-word",
       "date_published": "2025-12-14",
@@ -491,7 +491,7 @@
         "word"
       ],
       "intro_html": [
-        "<p class=\"intro\">If Word shows “??”, diamonds, or broken symbols when you paste LaTeX from ChatGPT, here’s why it happens and the most reliable ways to fix it.</p>\n      "
+        "<p class=\"intro\">If Word shows "??", diamonds, or broken symbols when you paste LaTeX from ChatGPT, here's why it happens and the most reliable ways to fix it.</p>\n      "
       ],
       "translation_slug": "signos-interrogacion-ecuaciones-chatgpt-word"
     },
@@ -542,7 +542,7 @@
     {
       "lang": "en",
       "slug": "pandoc-math-to-word-omml-troubleshooting",
-      "title": "Pandoc to Word: why your equations aren’t editable (7 fixes)",
+      "title": "Pandoc to Word: why your equations aren't editable (7 fixes)",
       "seo_title": "Pandoc to Word: Fix Non‑Editable Equations (OMML Troubleshooting)",
       "description": "7 practical fixes when Pandoc math in DOCX is not editable. Learn why it happens and how to get native Word equations (OMML) reliably.",
       "keywords": [],
@@ -561,7 +561,7 @@
         "word"
       ],
       "intro_html": [
-        "<p class=\"intro\">If you convert Markdown/LaTeX to DOCX with Pandoc and equations disappear or become plain text, here’s a practical troubleshooting checklist.</p>\n      "
+        "<p class=\"intro\">If you convert Markdown/LaTeX to DOCX with Pandoc and equations disappear or become plain text, here's a practical troubleshooting checklist.</p>\n      "
       ],
       "translation_slug": "pandoc-ecuaciones-word-no-editables-soluciones"
     },
@@ -675,7 +675,7 @@
         "OMML"
       ],
       "intro_html": [
-        "<p class=\"intro\">Cuando el documento tiene muchas fórmulas, el enfoque “copiar/pegar ecuación por ecuación” se vuelve inviable. Este flujo te permite pasar de <strong>LaTeX a Word</strong> conservando ecuaciones <strong>editables</strong> (OMML).</p>"
+        "<p class=\"intro\">Cuando el documento tiene muchas fórmulas, el enfoque "copiar/pegar ecuación por ecuación" se vuelve inviable. Este flujo te permite pasar de <strong>LaTeX a Word</strong> conservando ecuaciones <strong>editables</strong> (OMML).</p>"
       ],
       "translation_slug": ""
     },
@@ -936,7 +936,7 @@
       "translation_slug": "",
       "title": "Copilot math to Word: keep equations editable (OMML workflow)",
       "kicker": "Stop screenshots—use native Word equations.",
-      "description": "Microsoft Copilot can output LaTeX. Here’s how to convert it into editable Word equations (OMML) and avoid formatting disasters.",
+      "description": "Microsoft Copilot can output LaTeX. Here's how to convert it into editable Word equations (OMML) and avoid formatting disasters.",
       "seo_title": "Copilot math to Word — editable equations (OMML) workflow",
       "keywords": [
         "copilot math to word",
@@ -956,7 +956,7 @@
       "date_published": "2026-01-05",
       "date_modified": "2026-01-05",
       "intro_html": [
-        "<p>Microsoft Copilot can output LaTeX. Here’s how to convert it into editable Word equations (OMML) and avoid formatting disasters.</p>"
+        "<p>Microsoft Copilot can output LaTeX. Here's how to convert it into editable Word equations (OMML) and avoid formatting disasters.</p>"
       ]
     },
     {

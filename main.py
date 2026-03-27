@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import io
 import logging
@@ -89,7 +89,7 @@ import math2docx
 # ================================================================
 # Config
 # ================================================================
-APP_TITLE = "Ecuaciones a Word (LaTeX â†’ Word OMML)"
+APP_TITLE = "Ecuaciones a Word (LaTeX → Word OMML)"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 logger = logging.getLogger("ecuacionesaword")
@@ -99,7 +99,7 @@ if not logger.handlers:
 MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
 Segment = Tuple[str, str]  # ("text" | "inline" | "display", contenido)
 
-# Puedes desactivar reglas especÃ­ficas del "ejercicio" si no las quieres:
+# Puedes desactivar reglas específicas del "ejercicio" si no las quieres:
 USE_EXERCISE_TWEAKS = True
 
 
@@ -187,18 +187,18 @@ LANDING_PAGES: Dict[str, Dict[str, Dict[str, Any]]] = {
             "path": "/soluciones/chatgpt-ecuaciones-a-word",
             "title": "Convertir ecuaciones de ChatGPT a Word (OMML)",
             "seo_title": "Convertir ecuaciones de ChatGPT a Word (OMML editable) | Ecuaciones a Word",
-            "description": "Pasa respuestas matemÃ¡ticas de ChatGPT a Word con ecuaciones OMML nativas y editables, sin copiar fÃ³rmula por fÃ³rmula.",
+            "description": "Pasa respuestas matemáticas de ChatGPT a Word con ecuaciones OMML nativas y editables, sin copiar fórmula por fórmula.",
             "h1": "De ChatGPT a Word con ecuaciones editables",
             "kicker": "Flujo recomendado",
             "intro": "Sube un .docx o .txt con LaTeX generado por ChatGPT y descarga un Word con ecuaciones nativas (OMML).",
             "intent_items": [
-                "Entrega en Word sin capturas ni fÃ³rmulas rotas.",
+                "Entrega en Word sin capturas ni fórmulas rotas.",
                 "Evita rehacer ecuaciones a mano en el editor de Word.",
-                "MantÃ©n formato editable para revisiones y tutorÃ­as.",
+                "Mantén formato editable para revisiones y tutorías.",
             ],
             "cta_label": "Convertir archivo ahora",
             "related_blog_href": "/blog/pasar-ecuaciones-chatgpt-word",
-            "related_blog_label": "GuÃ­a: pasar ecuaciones de ChatGPT a Word",
+            "related_blog_label": "Guía: pasar ecuaciones de ChatGPT a Word",
         },
         "en": {
             "path": "/en/solutions/chatgpt-equations-to-word",
@@ -223,7 +223,7 @@ LANDING_PAGES: Dict[str, Dict[str, Dict[str, Any]]] = {
             "path": "/soluciones/gemini-ecuaciones-a-word",
             "title": "Gemini equations to Word (OMML)",
             "seo_title": "Gemini a Word con ecuaciones OMML editables | Ecuaciones a Word",
-            "description": "Convierte fÃ³rmulas de Gemini en ecuaciones nativas de Word (OMML) para entregar documentos limpios y editables.",
+            "description": "Convierte fórmulas de Gemini en ecuaciones nativas de Word (OMML) para entregar documentos limpios y editables.",
             "h1": "Gemini a Word en formato OMML",
             "kicker": "IA a documento final",
             "intro": "Cuando Gemini te devuelve LaTeX, este conversor lo transforma en ecuaciones de Word nativas para tu entrega final.",
@@ -234,7 +234,7 @@ LANDING_PAGES: Dict[str, Dict[str, Dict[str, Any]]] = {
             ],
             "cta_label": "Subir y convertir",
             "related_blog_href": "/blog/ia-chatgpt-a-word-ejercicios",
-            "related_blog_label": "GuÃ­a: usar IA + Word en ejercicios",
+            "related_blog_label": "Guía: usar IA + Word en ejercicios",
         },
         "en": {
             "path": "/en/solutions/gemini-equations-to-word",
@@ -259,10 +259,10 @@ LANDING_PAGES: Dict[str, Dict[str, Dict[str, Any]]] = {
             "path": "/soluciones/pandoc-a-word-omml",
             "title": "Pandoc a Word OMML",
             "seo_title": "Pandoc to Word OMML: ecuaciones editables | Ecuaciones a Word",
-            "description": "Si Pandoc no deja tus fÃ³rmulas editables en Word, convierte el resultado a OMML nativo sin rehacer el documento.",
+            "description": "Si Pandoc no deja tus fórmulas editables en Word, convierte el resultado a OMML nativo sin rehacer el documento.",
             "h1": "Convierte salidas de Pandoc a OMML editable",
-            "kicker": "SoluciÃ³n prÃ¡ctica",
-            "intro": "Sube tu .docx o .txt posterior a Pandoc y obtÃ©n ecuaciones compatibles con Word en formato OMML.",
+            "kicker": "Solución práctica",
+            "intro": "Sube tu .docx o .txt posterior a Pandoc y obtén ecuaciones compatibles con Word en formato OMML.",
             "intent_items": [
                 "Recupera editabilidad de ecuaciones.",
                 "Reduce errores de copy/paste.",
@@ -270,7 +270,7 @@ LANDING_PAGES: Dict[str, Dict[str, Dict[str, Any]]] = {
             ],
             "cta_label": "Arreglar ecuaciones",
             "related_blog_href": "/blog/pandoc-ecuaciones-word-no-editables-soluciones",
-            "related_blog_label": "GuÃ­a: problemas tÃ­picos con Pandoc",
+            "related_blog_label": "Guía: problemas típicos con Pandoc",
         },
         "en": {
             "path": "/en/solutions/pandoc-to-word-omml",
@@ -297,16 +297,16 @@ LANDING_PAGES: Dict[str, Dict[str, Dict[str, Any]]] = {
             "seo_title": "Overleaf o documento LaTeX a Word con OMML | Ecuaciones a Word",
             "description": "Convierte documentos de Overleaf/LaTeX a Word con ecuaciones OMML editables para entregar TFG, TFM e informes.",
             "h1": "De Overleaf o LaTeX a Word editable",
-            "kicker": "Entrega acadÃ©mica",
-            "intro": "Transforma contenido LaTeX de Overleaf en un .docx con ecuaciones nativas de Word listas para revisiÃ³n final.",
+            "kicker": "Entrega académica",
+            "intro": "Transforma contenido LaTeX de Overleaf en un .docx con ecuaciones nativas de Word listas para revisión final.",
             "intent_items": [
-                "Ãštil para TFG/TFM y documentaciÃ³n tÃ©cnica.",
-                "Sin perder editabilidad matemÃ¡tica.",
-                "Flujo rÃ¡pido para entregas.",
+                "Útil para TFG/TFM y documentación técnica.",
+                "Sin perder editabilidad matemática.",
+                "Flujo rápido para entregas.",
             ],
             "cta_label": "Preparar mi entrega",
             "related_blog_href": "/blog/overleaf-latex-a-word-ecuaciones-editables",
-            "related_blog_label": "GuÃ­a: Overleaf a Word",
+            "related_blog_label": "Guía: Overleaf a Word",
         },
         "en": {
             "path": "/en/solutions/overleaf-latex-document-to-word",
@@ -331,18 +331,18 @@ LANDING_PAGES: Dict[str, Dict[str, Dict[str, Any]]] = {
             "path": "/soluciones/conversor-omml",
             "title": "OMML converter",
             "seo_title": "Conversor OMML para ecuaciones editables en Word | Ecuaciones a Word",
-            "description": "Convierte fÃ³rmulas LaTeX a formato OMML, el estÃ¡ndar nativo de ecuaciones en Word, para documentos editables y estables.",
+            "description": "Convierte fórmulas LaTeX a formato OMML, el estándar nativo de ecuaciones en Word, para documentos editables y estables.",
             "h1": "Conversor OMML para Word",
             "kicker": "Formato nativo Word",
             "intro": "Pasa de LaTeX a OMML en un solo flujo para obtener ecuaciones editables dentro de Word.",
             "intent_items": [
                 "Salida compatible con Microsoft Word.",
-                "Mejor consistencia tipogrÃ¡fica.",
-                "Ideal para colaboraciÃ³n en .docx.",
+                "Mejor consistencia tipográfica.",
+                "Ideal para colaboración en .docx.",
             ],
             "cta_label": "Convertir a OMML",
             "related_blog_href": "/blog/que-es-omml-ecuaciones-word",
-            "related_blog_label": "GuÃ­a: quÃ© es OMML",
+            "related_blog_label": "Guía: qué es OMML",
         },
         "en": {
             "path": "/en/solutions/omml-converter",
@@ -695,7 +695,7 @@ def generate_sitemap_xml() -> str:
     """
     Sitemap XML generado desde las rutas reales del sitio y desde posts.json (cache BLOG_LIST/BLOG_POSTS).
 
-    Incluye alternates hreflang (xhtml:link) cuando existe traducciÃ³n ES/EN.
+    Incluye alternates hreflang (xhtml:link) cuando existe traducción ES/EN.
     """
     urls: List[str] = []
 
@@ -815,7 +815,7 @@ def generate_sitemap_xml() -> str:
 
 
 # ================================================================
-# 1) NormalizaciÃ³n / prettify (tu lÃ³gica existente)
+# 1) Normalización / prettify (tu lógica existente)
 # ================================================================
 def normalize_math_text(text: str) -> str:
     """Normalize common artifacts found in pasted/converted LaTeX inside Word.
@@ -838,7 +838,7 @@ def normalize_math_text(text: str) -> str:
     for ch in ("\u2212", "\u2013", "\u2014", "\u2010", "\u2011", "\u2043"):
         t = t.replace(ch, "-")
     # Some docs include the literal minus sign already decoded
-    t = t.replace("âˆ’", "-")
+    t = t.replace("−", "-")
 
     # Normalize non-breaking spaces
     t = t.replace("\xa0", " ")
@@ -887,9 +887,9 @@ def _prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
 
         if stripped.startswith("Interpretamos que") and "garantizar beneficios" in stripped:
             out.append(
-                "Interpretamos que â€œgarantizar beneficiosâ€ significa que el beneficio "
+                "Interpretamos que \"garantizar beneficios\" significa que el beneficio "
                 "$q(x,y,z)$ sea positivo para todo $(x,y,z)\\neq(0,0,0)$, es decir, "
-                "que la forma cuadrÃ¡tica sea definida positiva."
+                "que la forma cuadrática sea definida positiva."
             )
             continue
 
@@ -907,9 +907,9 @@ def _prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
             )
             continue
 
-        if "coeficiente del tÃ©rmino cruzado" in stripped:
+        if "coeficiente del término cruzado" in stripped:
             out.append(
-                "Recordando que el coeficiente del tÃ©rmino cruzado $2x_i y_j$ se reparte como $a_{ij}=a_{ji}=1$:"
+                "Recordando que el coeficiente del término cruzado $2x_i y_j$ se reparte como $a_{ij}=a_{ji}=1$:"
             )
             continue
 
@@ -929,9 +929,9 @@ def _prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
         if "Criterio de Sylvester" in stripped:
             out.append("2. Criterio de Sylvester")
             continue
-        if "Una matriz simÃ©trica" in stripped and "definida positiva" in stripped:
+        if "Una matriz simétrica" in stripped and "definida positiva" in stripped:
             out.append(
-                "Una matriz simÃ©trica $A$ es definida positiva si todos sus menores principales lÃ­deres son positivos:"
+                "Una matriz simétrica $A$ es definida positiva si todos sus menores principales líderes son positivos:"
             )
             continue
 
@@ -950,10 +950,10 @@ def _prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
             continue
 
         if "A1A_1A1" in stripped or "A1A1" in stripped:
-            out.append("â‡’ $A_1$ es definida positiva â‡’ $q_1$ definida positiva.")
+            out.append("⇒ $A_1$ es definida positiva ⇒ $q_1$ definida positiva.")
             continue
         if "A4A_4A4" in stripped or "A4A4" in stripped:
-            out.append("â‡’ $A_4$ es definida positiva â‡’ $q_4$ definida positiva.")
+            out.append("⇒ $A_4$ es definida positiva ⇒ $q_4$ definida positiva.")
             continue
 
         if "detA2" in stripped or "det A_2" in stripped:
@@ -964,7 +964,7 @@ def _prettify_paragraphs_for_exercise(paragraph_texts: List[str]) -> List[str]:
             continue
 
         if "q3q_3q3" in stripped and "indefinida" in stripped:
-            out.append("â‡’ $q_3$ tambiÃ©n es indefinida.")
+            out.append("⇒ $q_3$ también es indefinida.")
             continue
 
         out.append(stripped)
@@ -1166,7 +1166,7 @@ def build_document_from_paragraphs(paragraph_texts: List[str]) -> Document:
         text = normalize_math_text(raw_text)
         stripped = text.strip()
 
-        # aligned multi-lÃ­nea
+        # aligned multi-línea
         if in_aligned_block:
             aligned_lines.append(text)
             if r"\end{aligned}" in text:
@@ -1183,7 +1183,7 @@ def build_document_from_paragraphs(paragraph_texts: List[str]) -> Document:
                 aligned_lines = [stripped]
             continue
 
-        # display multi-lÃ­nea $$ ... $$  o \[ ... \]
+        # display multi-línea $$ ... $$  o \[ ... \]
         if in_display_block:
             if (
                 (display_block_delim == "$$" and stripped == "$$")
@@ -1212,7 +1212,7 @@ def build_document_from_paragraphs(paragraph_texts: List[str]) -> Document:
             display_lines = []
             continue
 
-        # matrices en una lÃ­nea
+        # matrices en una línea
         handled_matrix = False
         for env in matrix_envs:
             begin = rf"\begin{{{env}}}"
@@ -1258,7 +1258,7 @@ def build_document_from_paragraphs(paragraph_texts: List[str]) -> Document:
 
 
 # ================================================================
-# Routes: pÃ¡ginas
+# Routes: páginas
 # ================================================================
 @app.get("/", response_class=HTMLResponse)
 async def home() -> HTMLResponse:
@@ -1404,11 +1404,11 @@ def _legal_page_context(lang: str, page: str) -> Dict[str, Any]:
     site = SITE_NAME
 
     if page == "privacy":
-        title = "Privacy Policy" if is_en else "PolÃ­tica de privacidad"
+        title = "Privacy Policy" if is_en else "Política de privacidad"
         description = (
             "How we handle your uploaded files and data when converting LaTeX to Word."
             if is_en
-            else "CÃ³mo tratamos tus archivos y datos al convertir LaTeX a Word."
+            else "Cómo tratamos tus archivos y datos al convertir LaTeX a Word."
         )
         body_html = (
             "<h2>File handling</h2>"
@@ -1423,17 +1423,17 @@ def _legal_page_context(lang: str, page: str) -> Dict[str, Any]:
             if is_en
             else
             "<h2>Tratamiento de archivos</h2>"
-            "<p>Procesamos tu archivo Ãºnicamente para realizar la conversiÃ³n. No vendemos tus datos.</p>"
+            "<p>Procesamos tu archivo únicamente para realizar la conversión. No vendemos tus datos.</p>"
             "<h2>Almacenamiento</h2>"
-            "<p>No almacenamos permanentemente tus documentos. Puede existir un procesamiento temporal en memoria durante la conversiÃ³n.</p>"
-            "<h2>AnalÃ­tica</h2>"
-            "<p>Usamos Google Analytics para entender el uso agregado y mejorar el producto. El contenido de tus documentos no se envÃ­a a Analytics.</p>"
-            "<p>Para trÃ¡fico UE, estamos preparando una integraciÃ³n de gestiÃ³n de consentimiento (compatible con Google Consent Mode v2) para ofrecer controles mÃ¡s claros.</p>"
+            "<p>No almacenamos permanentemente tus documentos. Puede existir un procesamiento temporal en memoria durante la conversión.</p>"
+            "<h2>Analítica</h2>"
+            "<p>Usamos Google Analytics para entender el uso agregado y mejorar el producto. El contenido de tus documentos no se envía a Analytics.</p>"
+            "<p>Para tráfico UE, estamos preparando una integración de gestión de consentimiento (compatible con Google Consent Mode v2) para ofrecer controles más claros.</p>"
             "<h2>Contacto</h2>"
-            '<p>Si tienes dudas, escrÃ­benos a <a href="mailto:ecuacionesaword@gmail.com">ecuacionesaword@gmail.com</a>.</p>'
+            '<p>Si tienes dudas, escríbenos a <a href="mailto:ecuacionesaword@gmail.com">ecuacionesaword@gmail.com</a>.</p>'
         )
     elif page == "terms":
-        title = "Terms of use" if is_en else "TÃ©rminos de uso"
+        title = "Terms of use" if is_en else "Términos de uso"
         description = (
             "Rules and limitations for using the converter."
             if is_en
@@ -1451,11 +1451,11 @@ def _legal_page_context(lang: str, page: str) -> Dict[str, Any]:
             if is_en
             else
             "<h2>Herramienta gratuita</h2>"
-            "<p>Este conversor se ofrece de forma gratuita. Puede haber lÃ­mites de tamaÃ±o de archivo.</p>"
-            "<h2>Sin garantÃ­as</h2>"
-            "<p>El servicio se ofrece tal cual. Hacemos lo posible, pero no garantizamos una conversiÃ³n perfecta en todos los documentos.</p>"
+            "<p>Este conversor se ofrece de forma gratuita. Puede haber límites de tamaño de archivo.</p>"
+            "<h2>Sin garantías</h2>"
+            "<p>El servicio se ofrece tal cual. Hacemos lo posible, pero no garantizamos una conversión perfecta en todos los documentos.</p>"
             "<h2>Uso aceptable</h2>"
-            "<p>No subas contenido ilegal, malware o documentos sensibles que no estÃ©s autorizado a compartir.</p>"
+            "<p>No subas contenido ilegal, malware o documentos sensibles que no estés autorizado a compartir.</p>"
             "<h2>Contacto</h2>"
             '<p>Dudas: <a href="mailto:ecuacionesaword@gmail.com">ecuacionesaword@gmail.com</a>.</p>'
         )
@@ -1475,7 +1475,7 @@ def _legal_page_context(lang: str, page: str) -> Dict[str, Any]:
             "<p>GitHub: <a href='https://github.com/jmaelectro/latex-word-equation-converter' rel='noopener'>Repositorio</a></p>"
         )
     else:
-        title = "Info" if is_en else "InformaciÃ³n"
+        title = "Info" if is_en else "Información"
         description = ""
         body_html = "<p></p>"
 
@@ -1597,8 +1597,8 @@ async def blog_index_es() -> HTMLResponse:
                 "description": p.get("description") or "",
                 "kicker": p.get("kicker") or "",
                 "tags": p.get("tags") or [],
-                "meta": f"{_format_date(lang, p.get('date_published') or '')} Â· {p.get('reading_time') or ''}".strip(
-                    " Â·"
+                "meta": f"{_format_date(lang, p.get('date_published') or '')} · {p.get('reading_time') or ''}".strip(
+                    " ·"
                 ),
             }
         )
@@ -1612,7 +1612,7 @@ async def blog_index_es() -> HTMLResponse:
         "lang": lang,
         "site_name": SITE_NAME,
         "seo_title": "Blog | Ecuaciones a Word",
-        "description": "GuÃ­as para convertir LaTeX e IA a Word con ecuaciones nativas (OMML), sin imÃ¡genes ni fÃ³rmulas rotas.",
+        "description": "Guías para convertir LaTeX e IA a Word con ecuaciones nativas (OMML), sin imágenes ni fórmulas rotas.",
         "keywords": ["LaTeX a Word", "LaTeX a Word online", "OMML", "Word ecuaciones", "ChatGPT", "Pandoc"],
         "canonical_url": canonical_url,
         "alternates": [
@@ -1622,7 +1622,7 @@ async def blog_index_es() -> HTMLResponse:
         ],
         "og_type": "website",
         "og_title": "Blog | Ecuaciones a Word",
-        "og_description": "GuÃ­as prÃ¡cticas para llevar ecuaciones LaTeX a Word (OMML) de forma limpia y editable.",
+        "og_description": "Guías prácticas para llevar ecuaciones LaTeX a Word (OMML) de forma limpia y editable.",
         "og_image": _abs_url("/static/og-image.svg"),
         "schema_json": _build_schema_index(lang, canonical_url),
         "converter_href": "/",
@@ -1632,14 +1632,14 @@ async def blog_index_es() -> HTMLResponse:
         "lang_switch_href": "/en/blog",
         "lang_switch_label": "EN",
         "h1": "Blog",
-        "intro": "GuÃ­as prÃ¡cticas para pasar ecuaciones de LaTeX e IA a Word con ecuaciones nativas (OMML), incluyendo flujos online y troubleshooting.",
-        "index_cta_primary": "Conversor LaTeX â†’ Word (OMML)",
-        "search_label": "Buscar artÃ­culos",
-        "search_placeholder": "Buscar por tema, herramienta o problema (ej. pandoc, overleaf, OMML, ChatGPT)â€¦",
+        "intro": "Guías prácticas para pasar ecuaciones de LaTeX e IA a Word con ecuaciones nativas (OMML), incluyendo flujos online y troubleshooting.",
+        "index_cta_primary": "Conversor LaTeX → Word (OMML)",
+        "search_label": "Buscar artículos",
+        "search_placeholder": "Buscar por tema, herramienta o problema (ej. pandoc, overleaf, OMML, ChatGPT)…",
         "filter_label": "Filtrar por etiqueta",
         "filter_all": "Todos",
         "top_tags": top_tags,
-        "featured_title": "ArtÃ­culos",
+        "featured_title": "Artículos",
         "posts": posts_view,
         "year": datetime.now().year,
         "legal_links": {"privacy": "/privacy", "terms": "/terms", "contact": "/contact"},
@@ -1667,8 +1667,8 @@ async def blog_index_en() -> HTMLResponse:
                 "description": p.get("description") or "",
                 "kicker": p.get("kicker") or "",
                 "tags": p.get("tags") or [],
-                "meta": f"{_format_date(lang, p.get('date_published') or '')} Â· {p.get('reading_time') or ''}".strip(
-                    " Â·"
+                "meta": f"{_format_date(lang, p.get('date_published') or '')} · {p.get('reading_time') or ''}".strip(
+                    " ·"
                 ),
             }
         )
@@ -1703,9 +1703,9 @@ async def blog_index_en() -> HTMLResponse:
         "lang_switch_label": "ES",
         "h1": "Blog",
         "intro": "Practical guides to export LaTeX/AI equations to Word as native editable OMML equations, including online workflows and troubleshooting.",
-        "index_cta_primary": "LaTeX â†’ OMML Converter",
+        "index_cta_primary": "LaTeX → OMML Converter",
         "search_label": "Search articles",
-        "search_placeholder": "Search by topic, tool or issue (e.g., pandoc, overleaf, OMML, ChatGPT)â€¦",
+        "search_placeholder": "Search by topic, tool or issue (e.g., pandoc, overleaf, OMML, ChatGPT)…",
         "filter_label": "Filter by tag",
         "filter_all": "All",
         "top_tags": top_tags,
@@ -1793,9 +1793,9 @@ async def blog_post_es(slug: str) -> HTMLResponse:
     date_mod = post.get("date_modified") or ""
     meta_line = f"Publicado {_format_date(lang, date_pub)}"
     if post.get("reading_time"):
-        meta_line += f" Â· {post['reading_time']}"
+        meta_line += f" · {post['reading_time']}"
     if date_mod and date_mod != date_pub:
-        meta_line += f" Â· Actualizado {_format_date(lang, date_mod)}"
+        meta_line += f" · Actualizado {_format_date(lang, date_mod)}"
 
     ctx = {
         "lang": lang,
@@ -1811,14 +1811,14 @@ async def blog_post_es(slug: str) -> HTMLResponse:
         "og_image": _abs_url("/static/og-image.svg"),
         "schema_json": _build_schema_article(post, canonical_url),
 "related_posts": _get_related_posts(lang, post, limit=4),
-"related_title": "Related articles" if lang == "en" else "ArtÃ­culos relacionados",
-"summary_box_title": "Quick tip" if lang == "en" else "Consejo rÃ¡pido",
+"related_title": "Related articles" if lang == "en" else "Artículos relacionados",
+"summary_box_title": "Quick tip" if lang == "en" else "Consejo rápido",
 "summary_box_text": (
     "Convert LaTeX (or AI-generated math) into native, editable Word equations (OMML)."
     if lang == "en"
     else "Convierte LaTeX (o ecuaciones generadas por IA) en ecuaciones nativas y editables de Word (OMML)."
 ),
-"summary_box_link_text": "LaTeX â†’ OMML converter" if lang == "en" else "Conversor LaTeX â†’ Word (OMML)",
+"summary_box_link_text": "LaTeX → OMML converter" if lang == "en" else "Conversor LaTeX → Word (OMML)",
         "converter_href": "/",
         "blog_index_href": "/blog",
         "nav_converter": "Conversor",
@@ -1836,10 +1836,10 @@ async def blog_post_es(slug: str) -> HTMLResponse:
             {"name": post.get("title") or "", "url": post.get("canonical_path") or f"/blog/{post['slug']}"},
         ],
         "body_html": body_html,
-        "cta_strong": "Â¿Necesitas convertir un .docx o .txt con fÃ³rmulas LaTeX?",
+        "cta_strong": "¿Necesitas convertir un .docx o .txt con fórmulas LaTeX?",
         "cta_text": "Usa el conversor y descarga un Word con ecuaciones nativas (OMML).",
-        "cta_primary": "Conversor LaTeX â†’ Word (OMML)",
-        "cta_secondary": "Ver mÃ¡s artÃ­culos",
+        "cta_primary": "Conversor LaTeX → Word (OMML)",
+        "cta_secondary": "Ver más artículos",
         "year": datetime.now().year,
         "legal_links": {"privacy": "/privacy", "terms": "/terms", "contact": "/contact"},
     }
@@ -1881,9 +1881,9 @@ async def blog_post_en(slug: str) -> HTMLResponse:
     date_mod = post.get("date_modified") or ""
     meta_line = f"Published {_format_date(lang, date_pub)}"
     if post.get("reading_time"):
-        meta_line += f" Â· {post['reading_time']}"
+        meta_line += f" · {post['reading_time']}"
     if date_mod and date_mod != date_pub:
-        meta_line += f" Â· Updated {_format_date(lang, date_mod)}"
+        meta_line += f" · Updated {_format_date(lang, date_mod)}"
 
     ctx = {
         "lang": lang,
@@ -1899,14 +1899,14 @@ async def blog_post_en(slug: str) -> HTMLResponse:
         "og_image": _abs_url("/static/og-image.svg"),
         "schema_json": _build_schema_article(post, canonical_url),
 "related_posts": _get_related_posts(lang, post, limit=4),
-"related_title": "Related articles" if lang == "en" else "ArtÃ­culos relacionados",
-"summary_box_title": "Quick tip" if lang == "en" else "Consejo rÃ¡pido",
+"related_title": "Related articles" if lang == "en" else "Artículos relacionados",
+"summary_box_title": "Quick tip" if lang == "en" else "Consejo rápido",
 "summary_box_text": (
     "Convert LaTeX (or AI-generated math) into native, editable Word equations (OMML)."
     if lang == "en"
     else "Convierte LaTeX (o ecuaciones generadas por IA) en ecuaciones nativas y editables de Word (OMML)."
 ),
-"summary_box_link_text": "LaTeX â†’ OMML converter" if lang == "en" else "Conversor LaTeX â†’ Word (OMML)",
+"summary_box_link_text": "LaTeX → OMML converter" if lang == "en" else "Conversor LaTeX → Word (OMML)",
         "converter_href": "/en",
         "blog_index_href": "/en/blog",
         "nav_converter": "Converter",
@@ -1926,7 +1926,7 @@ async def blog_post_en(slug: str) -> HTMLResponse:
         "body_html": body_html,
         "cta_strong": "Need to convert a .docx or .txt containing LaTeX?",
         "cta_text": "Use the converter and download a Word file with native editable OMML equations.",
-        "cta_primary": "LaTeX â†’ OMML Converter",
+        "cta_primary": "LaTeX → OMML Converter",
         "cta_secondary": "More articles",
         "year": datetime.now().year,
         "legal_links": {"privacy": "/en/privacy", "terms": "/en/terms", "contact": "/en/contact"},
@@ -2161,7 +2161,7 @@ _UNDELIM_TOKEN_RE = re.compile(
 _MATH_CHAR_SET = set(
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     "\\_^{ }()[]<>+=-*/.,:;|!?'\"&%"
-    "â‰¤â‰¥â‰ â‰ˆâˆˆâˆ‰âˆ‘âˆâˆšâˆžâˆ‚âˆ‡â†’â†â†”â‡’â‡”â‹…Â·Ã—Ã·Â±"
+    "≤≥≠≈∈∉∑∏√∞∂∇→←↔⇒⇔⋅·×÷±"
 )
 
 def _is_mathy_char(ch: str) -> bool:
@@ -2393,7 +2393,7 @@ def _maybe_build_sylvester_aligned(text: str) -> Optional[str]:
         return None
     if all(tok in s for tok in ("D_1", "D_2", "D_3")) and ">" in s:
         # Avoid triggering inside long prose: count alphabetic letters beyond D
-        letters = re.sub(r"[^A-Za-zÃÃ‰ÃÃ“ÃšÃœÃ‘Ã¡Ã©Ã­Ã³ÃºÃ¼Ã±]", "", s)
+        letters = re.sub(r"[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ]", "", s)
         if len(letters) <= 10:
             return "\\begin{aligned}\nD_1 &> 0,\\\\\nD_2 &> 0,\\\\\nD_3 &> 0.\n\\end{aligned}"
     return None
@@ -2551,7 +2551,7 @@ def _maybe_prettify_paragraph_in_place(paragraph: Paragraph, paragraphs_list: Op
         "actividad2grupal",
         "Escribimos cada forma como q(x)=xT",
         "Escribimos cada forma como q(x)=xTA",
-        "coeficiente del tÃ©rmino cruzado",
+        "coeficiente del término cruzado",
         "Criterio de Sylvester",
         "detA",
         "det A",
@@ -2935,15 +2935,15 @@ async def custom_http_exception_handler(request: Request, exc: StarletteHTTPExce
         is_en = str(request.url.path).startswith("/en")
         if is_en:
             html = f"""
-            <h1>404 Â· Page not found</h1>
+            <h1>404 · Page not found</h1>
             <p>The URL <code>{safe_path}</code> does not exist.</p>
-            <p><a href="/en">Go to the converter</a> Â· <a href="/en/blog">Read the guides</a></p>
+            <p><a href="/en">Go to the converter</a> · <a href="/en/blog">Read the guides</a></p>
             """
         else:
             html = f"""
-            <h1>404 Â· PÃ¡gina no encontrada</h1>
+            <h1>404 · Página no encontrada</h1>
             <p>No existe la URL <code>{safe_path}</code>.</p>
-            <p><a href="/">Ir al conversor</a> Â· <a href="/blog">Ver las guÃ­as</a></p>
+            <p><a href="/">Ir al conversor</a> · <a href="/blog">Ver las guías</a></p>
             """
         return HTMLResponse(html, status_code=404)
 
