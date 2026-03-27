@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Guides: LaTeX, Word & native equations (OMML) | Equations to Word</title>
+  <meta name="description" content="Guides to convert LaTeX formulas into native Word equations (OMML). Fix copy/paste issues from ChatGPT/AI into Word." />
+  <link rel="canonical" href="https://www.ecuacionesaword.com/en/blog" />
+  <meta property="og:title" content="Guides: LaTeX, Word & native equations (OMML)" />
+  <meta property="og:description" content="Convert LaTeX (also from AI) into editable Word equations (OMML). Guides and troubleshooting." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.ecuacionesaword.com/en/blog" />
+  <meta name="robots" content="index,follow" />
+
+  <style>
+    :root{
+      --bg0:#050816; --bg1:#070b1e; --card:rgba(255,255,255,.06);
+      --stroke:rgba(255,255,255,.10);
+      --text:#e7e9ee; --muted:#b8beca;
+      --brand:#32d074;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:18px;
+      --radius2:22px;
+      --max:1100px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(900px 500px at 20% 10%, rgba(50,208,116,.20), transparent 60%),
+        radial-gradient(900px 500px at 90% 0%, rgba(60,120,255,.18), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      min-height:100vh;
+    }
+    a{color:inherit}
+    .wrap{max-width:var(--max); margin:0 auto; padding:28px 18px 60px;}
+    .top{
+      display:flex; align-items:center; justify-content:space-between; gap:14px;
+      padding:18px 18px; border:1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      border-radius:var(--radius2); box-shadow:var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+    .brand{display:flex; gap:10px; align-items:center; text-decoration:none}
+    .logo{
+      width:34px; height:34px; border-radius:10px; display:grid; place-items:center;
+      background:rgba(50,208,116,.16); border:1px solid rgba(50,208,116,.35);
+      color:var(--brand); font-weight:800;
+    }
+    .brand h1{font-size:16px; margin:0; letter-spacing:.2px}
+    .brand p{margin:0; font-size:12px; color:var(--muted)}
+    nav{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.03);
+      padding:9px 12px; border-radius:999px; text-decoration:none;
+      font-size:13px; color:var(--text);
+    }
+    .pill strong{font-weight:700}
+    .pill:hover{border-color:rgba(255,255,255,.18)}
+    .pill.primary{border-color:rgba(50,208,116,.35); background:rgba(50,208,116,.12)}
+    .hero{
+      margin-top:18px;
+      border:1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      border-radius:var(--radius2);
+      padding:22px 20px;
+      box-shadow:var(--shadow);
+    }
+    .kicker{
+      display:inline-flex; align-items:center; gap:8px;
+      font-size:12px; color:#cfead9;
+      border:1px solid rgba(50,208,116,.28);
+      background:rgba(50,208,116,.10);
+      padding:6px 10px; border-radius:999px;
+    }
+    .hero h2{margin:12px 0 8px; font-size:34px; line-height:1.15}
+    .hero p{margin:0; color:var(--muted); max-width:900px; line-height:1.55}
+    .actions{margin-top:14px; display:flex; gap:10px; flex-wrap:wrap}
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      padding:10px 14px; border-radius:12px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.03);
+      text-decoration:none; font-size:13px;
+    }
+    .btn:hover{border-color:rgba(255,255,255,.18)}
+    .btn.cta{
+      border-color:rgba(50,208,116,.40);
+      background:linear-gradient(180deg, rgba(50,208,116,.25), rgba(50,208,116,.12));
+      color:var(--text);
+    }
+
+    h3.section{margin:22px 4px 10px; color:#dfe6f3; font-size:14px; letter-spacing:.2px}
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:14px;
+    }
+    .card{
+      grid-column: span 6;
+      border:1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border-radius:var(--radius);
+      padding:16px 16px 14px;
+      box-shadow: 0 10px 22px rgba(0,0,0,.22);
+      text-decoration:none;
+      min-height:160px;
+    }
+    .card:hover{border-color:rgba(255,255,255,.18)}
+    .meta{display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom:8px}
+    .cat{font-size:12px; color:#d6deee; opacity:.9}
+    .dot{
+      width:8px;height:8px;border-radius:50%;
+      background:rgba(50,208,116,.85);
+      box-shadow:0 0 0 3px rgba(50,208,116,.16);
+      display:inline-block; margin-right:8px;
+      transform: translateY(1px);
+    }
+    .title{margin:0; font-size:18px; line-height:1.25}
+    .excerpt{margin:8px 0 10px; color:var(--muted); line-height:1.45; font-size:13px}
+    .tags{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+    .tag{
+      font-size:12px; padding:5px 9px; border-radius:999px;
+      background:rgba(50,208,116,.10);
+      border:1px solid rgba(50,208,116,.22);
+      color:#d7ffe7;
+    }
+    .tag.gray{
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.10);
+      color:#d6dbe6;
+    }
+    footer{
+      margin-top:22px;
+      color:rgba(255,255,255,.55);
+      font-size:12px;
+      display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
+      padding:0 6px;
+    }
+    @media (max-width: 920px){
+      .card{grid-column: span 12;}
+      .hero h2{font-size:28px;}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header class="top">
+      <a class="brand" href="/en">
+        <div class="logo">∑</div>
+        <div>
+          <h1>Equations to Word</h1>
+          <p>Guides: LaTeX → Word (OMML) and AI copy/paste fixes</p>
+        </div>
+      </a>
+      <nav>
+        <a class="pill" href="/en"><strong>Converter</strong></a>
+        <a class="pill primary" href="/en/blog"><strong>Blog</strong></a>
+        <a class="pill" href="/blog">Leer este blog en Español →</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <span class="kicker">📘 Guides & resources</span>
+      <h2>Guides: LaTeX, Word and native equations (OMML)</h2>
+      <p>
+        Guides for students and professionals who need to convert LaTeX formulas into Word without breaking formatting.
+        If you copy equations from ChatGPT (or another AI) and they fall apart in Word, these posts will help.
+      </p>
+      <div class="actions">
+        <a class="btn cta" href="/en">Go to the converter</a>
+        <a class="btn" href="/sitemap.xml">View sitemap</a>
+      </div>
+    </section>
+
+    <h3 class="section">Featured posts</h3>
+
+    <section class="grid" aria-label="Blog guides list">
+      <a class="card" href="/en/blog/copy-chatgpt-equations-word">
+        <div class="meta"><div class="cat"><span class="dot"></span>AI → Word · Common issue</div></div>
+        <h3 class="title">Copy ChatGPT equations into Word (editable equations)</h3>
+        <p class="excerpt">Recommended workflow: ChatGPT → LaTeX → .docx/.txt → convert to native Word equations (OMML) you can edit.</p>
+        <div class="tags">
+          <span class="tag">ChatGPT</span><span class="tag gray">LaTeX</span><span class="tag gray">OMML</span>
+        </div>
+      </a>
+
+      <a class="card" href="/en/blog/convert-latex-document-to-word-omml">
+        <div class="meta"><div class="cat"><span class="dot"></span>Thesis / Assignments · Word submissions</div></div>
+        <h3 class="title">Convert a LaTeX document to Word with editable equations (OMML)</h3>
+        <p class="excerpt">How to prepare math-heavy documents to submit in Word: editable, consistent equations without screenshots.</p>
+        <div class="tags">
+          <span class="tag">docx</span><span class="tag gray">LaTeX → Word</span><span class="tag gray">Word equations</span>
+        </div>
+      </a>
+
+      <a class="card" href="/en/blog/use-ai-equations-to-word-exercises">
+        <div class="meta"><div class="cat"><span class="dot"></span>AI + productivity · Studying</div></div>
+        <h3 class="title">Use AI + Equations to Word to submit exercises in Word</h3>
+        <p class="excerpt">A practical method to solve problems with AI, structure your answer, and export formulas as native Word equations.</p>
+        <div class="tags">
+          <span class="tag">AI</span><span class="tag gray">Word</span><span class="tag gray">formulas</span>
+        </div>
+      </a>
+
+      <a class="card" href="/en/blog/paste-latex-into-word-alt-equals">
+        <div class="meta"><div class="cat"><span class="dot"></span>Word · Equation editor</div></div>
+        <h3 class="title">Paste LaTeX into Word (Alt+=): clean equation tips</h3>
+        <p class="excerpt">How to use Word’s equation editor with LaTeX and when it’s better to convert a full document automatically.</p>
+        <div class="tags">
+          <span class="tag">Alt+=</span><span class="tag gray">Word</span><span class="tag gray">LaTeX</span>
+        </div>
+      </a>
+
+      <a class="card" href="/en/blog/what-is-omml">
+        <div class="meta"><div class="cat"><span class="dot"></span>Formatting · Concepts</div></div>
+        <h3 class="title">What is OMML and why equations break when you paste into Word</h3>
+        <p class="excerpt">A clear explanation of OMML (Office Math Markup Language) and why Word doesn’t understand raw LaTeX pasted as text.</p>
+        <div class="tags">
+          <span class="tag">OMML</span><span class="tag gray">Office Math</span><span class="tag gray">Word</span>
+        </div>
+      </a>
+
+      <a class="card" href="/en/blog/markdown-latex-to-word-docx">
+        <div class="meta"><div class="cat"><span class="dot"></span>Pandoc · Markdown</div></div>
+        <h3 class="title">Markdown + LaTeX to Word (.docx): options and common issues</h3>
+        <p class="excerpt">How to prevent equations from disappearing or becoming plain text when converting Markdown/MathJax to Word.</p>
+        <div class="tags">
+          <span class="tag">Pandoc</span><span class="tag gray">Markdown</span><span class="tag gray">docx</span>
+        </div>
+      </a>
+
+      <a class="card" href="/en/blog/question-marks-when-pasting-chatgpt-equations-word">
+        <div class="meta"><div class="cat"><span class="dot"></span>AI → Word · Copy/paste</div></div>
+        <h3 class="title">Question marks when pasting ChatGPT equations into Word: causes and fixes</h3>
+        <p class="excerpt">If you see “??”, diamonds, or weird symbols, here’s why it happens and the most reliable fixes.</p>
+        <div class="tags">
+          <span class="tag">ChatGPT</span><span class="tag gray">LaTeX</span><span class="tag gray">OMML</span>
+        </div>
+      </a>
+
+      <a class="card" href="/en/blog/overleaf-latex-to-word-editable-equations">
+        <div class="meta"><div class="cat"><span class="dot"></span>LaTeX → Word · Overleaf</div></div>
+        <h3 class="title">Overleaf/LaTeX to Word with editable equations: the cleanest workflow</h3>
+        <p class="excerpt">A practical workflow to keep equations editable (not images) when you must submit in Word.</p>
+        <div class="tags">
+          <span class="tag">Overleaf</span><span class="tag gray">OMML</span><span class="tag gray">Word</span>
+        </div>
+      </a>
+
+      <a class="card" href="/en/blog/omml-vs-mathtype-vs-latex-in-word">
+        <div class="meta"><div class="cat"><span class="dot"></span>Formatting · Comparison</div></div>
+        <h3 class="title">OMML vs MathType vs LaTeX in Word: what to choose (and why)</h3>
+        <p class="excerpt">A clear comparison with pros/cons and recommendations depending on your use case.</p>
+        <div class="tags">
+          <span class="tag">OMML</span><span class="tag gray">MathType</span><span class="tag gray">Word</span>
+        </div>
+      </a>
+
+      <a class="card" href="/en/blog/pandoc-to-word-equations-not-editable">
+        <div class="meta"><div class="cat"><span class="dot"></span>Pandoc · Troubleshooting</div></div>
+        <h3 class="title">Pandoc to Word: why your equations are not editable (7 fixes)</h3>
+        <p class="excerpt">A checklist for when equations disappear, become plain text, or are not editable in the generated DOCX.</p>
+        <div class="tags">
+          <span class="tag">Pandoc</span><span class="tag gray">DOCX</span><span class="tag gray">OMML</span>
+        </div>
+      </a>
+    </section>
+
+    <footer>
+      <div>© 2025 Equations to Word</div>
+      <div>
+        <a href="/robots.txt">robots.txt</a> ·
+        <a href="/sitemap.xml">sitemap.xml</a>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

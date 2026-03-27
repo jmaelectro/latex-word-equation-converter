@@ -1,0 +1,41 @@
+<h2>El problema: Word no entiende LaTeX “pegado como texto”</h2>
+      <p>Muchas IA (ChatGPT, Gemini, Copilot, etc.) devuelven matemáticas en <strong>LaTeX</strong>. Word, en cambio, guarda sus ecuaciones como <strong>OMML</strong> (Office Math Markup Language). Cuando pegas LaTeX como texto o HTML, Word intenta “interpretar” caracteres y puede mostrar signos de interrogación o glifos incorrectos.</p>
+      <h2>Causas típicas (y cómo reconocerlas)</h2>
+      <ul>
+        <li><strong>El texto llega como HTML/Unicode raro</strong>: espacios invisibles o puntuación “especial”.</li>
+        <li><strong>Fuente incorrecta</strong>: en ecuaciones conviene usar una fuente matemática (Cambria Math suele ser la referencia).</li>
+        <li><strong>Has pegado fuera del editor de ecuaciones</strong>: pegar en párrafos normales no crea ecuaciones nativas.</li>
+        <li><strong>Documento largo</strong>: a más fórmulas, más probabilidad de que el pegado manual falle en algún punto.</li>
+      </ul>
+      <h2>Solución A (recomendada): convertir el documento completo a ecuaciones nativas (OMML)</h2>
+      <p>Si tienes muchas fórmulas (una respuesta larga de IA o un documento entero), el flujo con mejor resultado es:</p>
+      <ol>
+        <li>Guarda el texto (con LaTeX) en un <strong>.docx</strong> o <strong>.txt</strong>.</li>
+        <li>Sube el archivo al <a href="/">conversor LaTeX → Word</a>.</li>
+        <li>Descarga el <strong>.docx</strong> final con ecuaciones nativas (OMML) <strong>editables</strong>.</li>
+      </ol>
+      <h2>Solución B: si solo son 1–3 fórmulas, usa Alt+= (pero bien)</h2>
+      <p>En Word, pulsa <strong>Alt + =</strong> para abrir el editor de ecuaciones. Pega/escribe la fórmula dentro del editor (modo lineal) y conviértela a “Profesional”.</p>
+      <h2>Checklist rápida</h2>
+      <ul>
+        <li>Muchas ecuaciones: <strong>convierte el documento completo</strong> (OMML).</li>
+        <li>Pocas ecuaciones: <strong>Alt+=</strong> y pega dentro del editor.</li>
+        <li>Evita copiar desde herramientas que añadan HTML raro.</li>
+        <li>Si es para entregar: prioriza ecuaciones <strong>editables</strong>, no capturas.</li>
+      </ul>
+      <h2>Relacionado</h2>
+      <ul>
+        <li><a href="/blog/pegar-latex-en-word-alt-eq">Pegar LaTeX en Word (Alt+=): trucos para ecuaciones limpias</a></li>
+        <li><a href="/blog/que-es-omml-ecuaciones-word">Qué es OMML y por qué tus ecuaciones no se copian bien en Word</a></li>
+        <li><a href="/blog/markdown-con-latex-a-word-docx">Markdown con LaTeX a Word (.docx): opciones y errores típicos</a></li>
+      </ul>
+
+      <hr class="sep">
+      <div class="callout">
+        <strong>Consejo rápido:</strong>
+        Si estás pegando muchas fórmulas (por ejemplo, una respuesta larga de IA) lo más estable es convertir el documento completo a ecuaciones nativas (OMML) y así editarlo sin errores en Word.
+      </div>
+      <div class="footer-cta">
+        <a class="button primary" href="/">Convertir un documento</a>
+        <a class="button" href="/blog">Volver al blog</a>
+      </div>

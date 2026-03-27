@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{ seo_title }}</title>
+  <meta name="description" content="{{ description }}">
+  {% if keywords %}<meta name="keywords" content="{{ keywords|join(', ') }}">{% endif %}
+
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <meta name="theme-color" content="#020617">
+
+  <link rel="canonical" href="{{ canonical_url }}">
+  {% for alt in alternates %}
+  <link rel="alternate" hreflang="{{ alt.hreflang }}" href="{{ alt.href }}">
+  {% endfor %}
+
+  <meta property="og:type" content="{{ og_type }}">
+  <meta property="og:site_name" content="{{ site_name }}">
+  <meta property="og:title" content="{{ og_title }}">
+  <meta property="og:description" content="{{ og_description }}">
+  <meta property="og:url" content="{{ canonical_url }}">
+  <meta property="og:image" content="{{ og_image }}">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ og_title }}">
+  <meta name="twitter:description" content="{{ og_description }}">
+  <meta name="twitter:image" content="{{ og_image }}">
+
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="manifest" href="/static/site.webmanifest">
+  <link rel="stylesheet" href="/static/blog.css?v=2">
+
+  {% if schema_json %}
+  <script type="application/ld+json">{{ schema_json|safe }}</script>
+  {% endif %}
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-GS589S9BG4"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    // Consent mode base hook. Defaults remain granted to avoid changing current measurement behavior.
+    gtag('consent', 'default', { analytics_storage: 'granted' });
+    gtag('config', 'G-GS589S9BG4');
+    // Future CMP integration can call this global without changing templates.
+    window.setAnalyticsConsent = function(granted) {
+      gtag('consent', 'update', { analytics_storage: granted ? 'granted' : 'denied' });
+    };
+  </script>
+
+</head>
+<body>
+  <div class="page">
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>

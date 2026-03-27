@@ -1,0 +1,61 @@
+<h2>What is OMML (and why it matters)</h2>
+<p>Microsoft Word stores equations in a native format called <strong>OMML</strong> (Office Math Markup Language). When your equations are in OMML, you can edit them with Word’s equation editor, align them with text, and keep them consistent across platforms.</p>
+<p>By contrast, plain LaTeX pasted into Word is usually treated as text. In some cases Word attempts to interpret it, but the result is inconsistent: missing symbols, broken spacing, or “question marks” for unsupported glyphs.</p>
+
+<h2>Typical scenarios: ChatGPT, Pandoc, Overleaf</h2>
+<ul>
+  <li><strong>ChatGPT/Gemini/Copilot:</strong> outputs LaTeX quickly, but copy/paste into Word often fails or is not editable.</li>
+  <li><strong>Pandoc:</strong> can generate DOCX, but math may be images or not reliably editable depending on the pipeline and macros.</li>
+  <li><strong>Overleaf/LaTeX projects:</strong> exporting to Word may preserve layout but not editable equations, especially in large documents.</li>
+</ul>
+
+<h2>The reliable workflow (submission-ready)</h2>
+<ol>
+  <li>Keep equations in LaTeX with consistent delimiters (<code>$...$</code>, <code>$$...$$</code>, or <code>\[...\]</code>).</li>
+  <li>Export your content to a <code>.txt</code> (or keep in a <code>.docx</code>) where LaTeX appears as text.</li>
+  <li>Use the <a href="/en">LaTeX → OMML converter</a> to generate a DOCX where equations are native and editable.</li>
+  <li>Open the result in Word and verify a few representative equations (fractions, matrices, aligned equations).</li>
+  <li>For final formatting, keep fonts consistent (Cambria Math is a safe default) and use Word styles for headings and captions.</li>
+</ol>
+
+<h2>Examples you can test</h2>
+<p>Try these in a .txt and convert:</p>
+<pre><code>Inline: $\frac{a}{b} + \sqrt{x}$
+
+Display:
+$$
+\begin{aligned}
+f(x) &= x^2 + 2x + 1\\
+&= (x+1)^2
+\end{aligned}
+$$
+
+Matrix:
+$$
+A = \begin{pmatrix}
+1 & 2\\
+3 & 4
+\end{pmatrix}
+$$</code></pre>
+
+<h2>Why Word shows question marks or strange symbols</h2>
+<p>This usually happens when the font used to render math does not include the required glyphs, or when the equation is not actually an equation object (OMML) but plain text. Another common cause is copying from a rich-text source that injects invisible characters.</p>
+<p>See: <a href="/en/blog/question-marks-chatgpt-equations-word">Question marks in equations from ChatGPT</a>.</p>
+
+<h2>Pandoc vs OMML conversion</h2>
+<p>Pandoc is excellent for document conversion, but math to editable Word equations can be inconsistent depending on templates and extensions. If you need reliably editable equations for academic submission, using an OMML-focused conversion step is typically the most stable approach.</p>
+<p>See: <a href="/en/blog/pandoc-math-to-word-omml-troubleshooting">Pandoc troubleshooting for OMML</a>.</p>
+
+<h2>FAQ</h2>
+<h3>Will my equations be editable in Word?</h3>
+<p>Yes—when the output uses native Word equation objects (OMML), you can click an equation and edit it with the equation editor.</p>
+<h3>Do you store my files?</h3>
+<p>No. The tool processes your upload to generate a DOCX and does not keep the file after conversion.</p>
+<h3>Does it work with long documents?</h3>
+<p>Yes. For very long documents, keep macros simple and test conversion on a representative section first.</p>
+<h3>What delimiters are supported?</h3>
+<p>Use consistent delimiters like <code>$...$</code> for inline and <code>$$...$$</code> or <code>\[...\]</code> for display math.</p>
+<h3>What if I already have a DOCX with LaTeX typed as text?</h3>
+<p>That is a common case. Upload the DOCX and the converter will replace LaTeX segments with editable OMML equations.</p>
+
+<p><strong>Next steps:</strong> If you are coming from Markdown, see <a href="/en/blog/markdown-latex-to-word-docx">Markdown + LaTeX to DOCX</a>. If you are coming from ChatGPT, see <a href="/en/blog/copy-chatgpt-equations-word">Copying AI equations into Word</a>.</p>

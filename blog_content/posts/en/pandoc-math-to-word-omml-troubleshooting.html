@@ -1,0 +1,44 @@
+<h2>7 practical fixes</h2>
+      <ol>
+        <li>Use consistent delimiters ($...$, $$...$$).</li>
+        <li>Avoid heavy macros or expand them.</li>
+        <li>Test with a minimal sample file.</li>
+        <li>Prioritize an OMML-friendly pipeline if you need editable equations.</li>
+        <li>For long docs, convert the whole document rather than copy/paste.</li>
+        <li>Validate on a second machine.</li>
+        <li>For submissions: DOCX + native editable equations.</li>
+      </ol>
+      <h2>When Pandoc won’t give reliable OMML</h2>
+      <p>Export to .txt/.docx with LaTeX and convert with <a href="/en">Equations to Word</a>.</p>
+      <h2>Related</h2>
+      <ul>
+        <li><a href="/en/blog/markdown-latex-to-word-docx">Markdown + LaTeX to Word (.docx): options and common issues</a></li>
+      </ul>
+
+      <hr class="sep">
+      <div class="callout">
+        <strong>Quick tip:</strong>
+        If you are pasting many formulas (for example, a long AI answer), the most reliable approach is converting the full document into native Word equations (OMML) so you can edit it without formatting issues.
+      </div>
+      <div class="footer-cta">
+        <a class="button primary" href="/en">Convert a document</a>
+        <a class="button" href="/en/blog">Back to blog</a>
+      </div>
+
+<!-- SEO-EXPANSION-V4 START -->
+<h2>Why Pandoc math becomes non-editable</h2>
+<p>Pandoc can produce a DOCX that <em>looks</em> correct, but math may end up as images, embedded objects, or non-native content depending on the template and the way LaTeX is written. Macros, custom packages, and mixed delimiters are common sources of inconsistent output.</p>
+<p><strong>Tip:</strong> For a complete workflow, see the <a href="/en/blog/latex-to-omml-word-equations-guide">LaTeX → OMML guide</a>.</p>
+<h2>Step-by-step checklist (fast)</h2>
+<ol>
+  <li>Reduce the document to a minimal sample with 3–5 representative equations.</li>
+  <li>Use consistent delimiters and avoid custom macros where possible.</li>
+  <li>Check if equations are editable: click an equation in Word; if you cannot edit it, it is not native OMML.</li>
+  <li>If you must deliver editable equations, convert LaTeX to native Word equations (OMML) using the <a href="/en">converter</a>.</li>
+</ol>
+<h2>FAQ</h2>
+<h3>How do I know if an equation is OMML?</h3>
+<p>In Word, click the equation. If the equation editor opens and you can edit individual components, it is a native equation object (OMML).</p>
+<h3>Does Pandoc support OMML perfectly?</h3>
+<p>It can in some cases, but reliability varies. For consistent editable equations, an OMML-focused step is typically safer.</p>
+<!-- SEO-EXPANSION-V4 END -->

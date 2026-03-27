@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+<header>
+  <div class="topbar">
+    <a class="brand" href="{{ converter_href }}" aria-label="{{ site_name }}">
+      <span class="logo">∑</span>
+      <span class="brand-text">{{ site_name }}</span>
+    </a>
+    <nav class="nav">
+      <a href="{{ converter_href }}">{{ nav_converter }}</a>
+      <a href="{{ blog_index_href }}" aria-current="page">{{ nav_blog }}</a>
+      <a href="{{ lang_switch_href }}">{{ lang_switch_label }}</a>
+    </nav>
+  </div>
+
+  {% if kicker %}<p class="kicker">{{ kicker }}</p>{% endif %}
+  {% if breadcrumbs %}
+  <nav class="breadcrumbs" aria-label="{{ 'Breadcrumb' if lang == 'en' else 'Migas de pan' }}">
+    {% for crumb in breadcrumbs %}
+      {% if loop.last %}
+        <span aria-current="page">{{ crumb.name }}</span>
+      {% else %}
+        <a href="{{ crumb.url }}">{{ crumb.name }}</a>
+        <span class="sep">/</span>
+      {% endif %}
+    {% endfor %}
+  </nav>
+  {% endif %}
+  <h1>{{ title }}</h1>
+
+  <p class="meta">
+    {{ meta_line }}
+  </p>
+
+  {% if tags %}
+  <p class="tags">
+    {% for t in tags %}<span class="pill">{{ t }}</span>{% endfor %}
+  </p>
+  {% endif %}
+
+  {% for p in intro_html %}
+    {{ p|safe }}
+  {% endfor %}
+</header>
+
+<main>
+  <div class="summary-box">
+    <div><strong>{{ summary_box_title }}</strong> {{ summary_box_text }}</div>
+    <div><a href="{{ converter_href }}">{{ summary_box_link_text }}</a></div>
+  </div>
+  {{ body_html|safe }}
+
+  {% if related_posts %}
+  <section class="related">
+    <h2>{{ related_title }}</h2>
+    <ul>
+      {% for rp in related_posts %}
+        <li><a href="{{ rp.url }}">{{ rp.title }}</a></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  <div class="bottom-cta">
+    <span><strong>{{ cta_strong }}</strong> {{ cta_text }}</span>
+    <span>
+      <a class="button" href="{{ converter_href }}">{{ cta_primary }}</a>
+      <a class="button" href="{{ blog_index_href }}">{{ cta_secondary }}</a>
+    </span>
+  </div>
+</main>
+
+<div class="footer">
+  © {{ year }} {{ site_name }} ·
+  <a href="{{ legal_links.privacy }}">{{ "Privacy" if lang=="en" else "Privacidad" }}</a> ·
+  <a href="{{ legal_links.terms }}">{{ "Terms" if lang=="en" else "Términos" }}</a> ·
+  <a href="{{ legal_links.contact }}">{{ "Contact" if lang=="en" else "Contacto" }}</a> ·
+  <a href="https://github.com/jmaelectro/latex-word-equation-converter" rel="noopener">GitHub</a>
+</div>
+{% endblock %}

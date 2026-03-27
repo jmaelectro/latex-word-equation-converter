@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Pegar LaTeX en Word (Alt+=): trucos para ecuaciones limpias</title>
+<meta content="Cómo pegar LaTeX en el editor de ecuaciones de Word (Alt+=), cuándo funciona bien y cuándo conviene convertir un documento completo a ecuaciones nativas (OMML)." name="description"/>
+<meta content="pegar latex en word, alt+=, editor de ecuaciones word, latex en word, ecuaciones nativas word, unicodemath, convertir latex a word" name="keywords"/>
+<meta content="index,follow,max-image-preview:large" name="robots"/>
+<link href="https://www.ecuacionesaword.com/blog/pegar-latex-editor-ecuaciones-word" rel="canonical"/>
+<link href="/static/favicon.svg" rel="icon" type="image/svg+xml"/>
+<link href="/static/site.webmanifest" rel="manifest"/>
+<meta content="article" property="og:type"/>
+<meta content="Ecuaciones a Word" property="og:site_name"/>
+<meta content="Pegar LaTeX en Word (Alt+=): trucos para ecuaciones limpias" property="og:title"/>
+<meta content="Cómo pegar LaTeX en el editor de ecuaciones de Word (Alt+=), cuándo funciona bien y cuándo conviene convertir un documento completo a ecuaciones nativas (OMML)." property="og:description"/>
+<meta content="https://www.ecuacionesaword.com/blog/pegar-latex-editor-ecuaciones-word" property="og:url"/>
+<meta content="https://www.ecuacionesaword.com/static/og-image.svg" property="og:image"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="Pegar LaTeX en Word (Alt+=): trucos para ecuaciones limpias" name="twitter:title"/>
+<meta content="Cómo pegar LaTeX en el editor de ecuaciones de Word (Alt+=), cuándo funciona bien y cuándo conviene convertir un documento completo a ecuaciones nativas (OMML)." name="twitter:description"/>
+<meta content="https://www.ecuacionesaword.com/static/og-image.svg" name="twitter:image"/>
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Pegar LaTeX en Word (Alt+=): trucos para ecuaciones limpias",
+    "description": "Cómo pegar LaTeX en el editor de ecuaciones de Word (Alt+=), cuándo funciona bien y cuándo conviene convertir un documento completo a ecuaciones nativas (OMML).",
+    "author": { "@type": "Person", "name": "Ecuaciones a Word" },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Ecuaciones a Word",
+      "logo": { "@type": "ImageObject", "url": "https://www.ecuacionesaword.com/static/favicon.svg" }
+    },
+    "mainEntityOfPage": { "@type": "WebPage", "@id": "https://www.ecuacionesaword.com/blog/pegar-latex-editor-ecuaciones-word" },
+    "url": "https://www.ecuacionesaword.com/blog/pegar-latex-editor-ecuaciones-word",
+    "image": ["https://www.ecuacionesaword.com/static/og-image.svg"],
+    "datePublished": "2025-12-13",
+    "dateModified": "2025-12-13",
+    "inLanguage": "es"
+  }
+  </script>
+<link href="https://www.ecuacionesaword.com/blog/pegar-latex-editor-ecuaciones-word" hreflang="es" rel="alternate"/><link href="https://www.ecuacionesaword.com/en/blog/paste-latex-into-word-equation-editor" hreflang="en" rel="alternate"/><link href="/static/blog.css?v=1" rel="stylesheet"/></head>
+<body>
+<div class="page">
+<header><div class="topbar"><div class="brand"><div class="logo">∑</div><div>Ecuaciones a Word</div></div><nav class="nav"><a href="/">Conversor</a><a href="/blog">Blog</a><a class="lang" href="/en/blog/paste-latex-into-word-equation-editor">EN</a></nav></div><h1>Pegar LaTeX en Word (Alt+=): trucos para ecuaciones limpias</h1><div class="meta"><span>Actualizado: 13/12/2025</span><span>·</span><span>Lectura: 5–8 min</span></div><p class="intro">Cómo pegar LaTeX en el editor de ecuaciones de Word (Alt+=), cuándo funciona bien y cuándo conviene convertir un documento completo a ecuaciones nativas (OMML).</p></header><main>
+<h2>El problema: pegar LaTeX como texto no crea “ecuaciones de Word”</h2>
+<p>
+  Cuando copias una fórmula en LaTeX (por ejemplo <code>\frac{a}{b}</code> o <code>\int_0^1 x^2\,dx</code>) y la pegas en un párrafo normal,
+  Word lo interpreta como texto. Por eso se ve raro, no es editable como ecuación y a veces aparecen símbolos extraños.
+</p>
+<h2>Opción A: usar el editor de ecuaciones de Word (ideal para pocas fórmulas)</h2>
+<ol>
+<li>En Word, crea una ecuación con <code>Alt</code> + <code>=</code>.</li>
+<li>Dentro de la caja de ecuación, pega tu LaTeX.</li>
+<li>Si Word está en modo LaTeX, convertirá la fórmula a formato “profesional” (ecuación nativa).</li>
+</ol>
+<p>
+  Consejo: si Word no está en modo LaTeX, abre la cinta de <strong>Ecuación</strong> y cambia el formato de entrada a LaTeX.
+</p>
+<h2>Opción B: conversión automática de documentos (ideal para muchas fórmulas)</h2>
+<p>
+  Si tienes una respuesta larga (por ejemplo de ChatGPT, Gemini o Copilot) con decenas de ecuaciones, hacerlo a mano consume tiempo y es fácil equivocarse.
+</p>
+<ul>
+<li>Copia el texto con fórmulas a un archivo <strong>.docx</strong> o <strong>.txt</strong>.</li>
+<li>Sube el archivo al conversor.</li>
+<li>Descarga un <strong>.docx</strong> con ecuaciones nativas (OMML) listas para editar.</li>
+</ul>
+<h2>Errores típicos y cómo evitarlos</h2>
+<ul>
+<li><strong>Delimitadores inconsistentes:</strong> usa <code>$...$</code> para inline y <code>$$...$$</code> o <code>\[...\]</code> para bloque.</li>
+<li><strong>LaTeX muy complejo:</strong> prueba primero con una versión simplificada y luego incrementa complejidad.</li>
+<li><strong>Fórmulas mezcladas con tablas:</strong> si se complica, separa el contenido en pasos (primero ecuaciones, luego maquetación).</li>
+</ul>
+<blockquote>
+  Regla rápida: si son 1–3 fórmulas, usa el editor de ecuaciones de Word. Si son 10–100 fórmulas, automatiza.
+</blockquote>
+<hr/>
+<p class="cta">
+        Si necesitas convertir <strong>muchas fórmulas</strong> (por ejemplo, una respuesta larga de IA) o un documento completo,
+        la forma más rápida es: copiar el contenido a un <strong>.docx</strong> o <strong>.txt</strong> y usar
+        <a href="/">Ecuaciones a Word</a> para obtener un <strong>.docx con ecuaciones nativas (OMML)</strong>.
+      </p>
+</main><div class="footer"><a href="/blog">← Ver todas las guías</a><a href="/">Probar conversor →</a></div>
+</div>
+</body>
+</html>
