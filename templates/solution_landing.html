@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block content %}
 <header>
   <div class="topbar">
@@ -9,7 +9,11 @@
     <nav class="nav">
       <a href="{{ converter_href }}">{{ nav_converter }}</a>
       <a href="{{ blog_index_href }}">{{ nav_blog }}</a>
-      <a href="{{ lang_switch_href }}">{{ lang_switch_label }}</a>
+      <select id="lang-switch-nav" class="lang-select" aria-label="Language selector">
+        {% for opt in lang_options %}
+        <option value="{{ opt.href }}" {% if opt.code == lang %}selected{% endif %}>{{ opt.label }}</option>
+        {% endfor %}
+      </select>
     </nav>
   </div>
 
@@ -20,7 +24,7 @@
 
 <main>
   <section class="summary-box">
-    <div><strong>{{ "What this page solves" if lang == "en" else "Qué resuelve esta página" }}</strong></div>
+    <div><strong>{{ "Qué resuelve esta página" if lang == "es" else "What this page solves" }}</strong></div>
     <ul>
       {% for item in intent_items %}
         <li>{{ item }}</li>
@@ -30,7 +34,7 @@
 
   <section class="bottom-cta">
     <span>
-      <strong>{{ "Ready to convert your file?" if lang == "en" else "¿Listo para convertir tu archivo?" }}</strong>
+      <strong>{{ "¿Listo para convertir tu archivo?" if lang == "es" else "Ready to convert your file?" }}</strong>
       {{ "Sube .docx o .txt y descarga ecuaciones editables en Word." if lang == "es" else "Upload .docx or .txt and get editable Word equations." }}
     </span>
     <span>
@@ -43,8 +47,19 @@
 <div class="footer">
   © {{ year }} {{ site_name }} ·
   <a href="{{ legal_links.privacy }}">{{ "Privacidad" if lang=="es" else "Privacy" }}</a> ·
-  <a href="{{ legal_links.terms }}">{{ "Terms" if lang=="en" else "Términos" }}</a> ·
+  <a href="{{ legal_links.terms }}">{{ "Términos" if lang=="es" else "Terms" }}</a> ·
   <a href="{{ legal_links.contact }}">{{ "Contacto" if lang=="es" else "Contact" }}</a> ·
   <a href="https://github.com/jmaelectro/latex-word-equation-converter" rel="noopener">GitHub</a>
 </div>
+
+<script>
+(() => {
+  const langSelect = document.getElementById('lang-switch-nav');
+  if (langSelect) {
+    langSelect.addEventListener('change', () => {
+      if (langSelect.value) window.location.href = langSelect.value;
+    });
+  }
+})();
+</script>
 {% endblock %}

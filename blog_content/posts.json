@@ -1338,7 +1338,7 @@
       "slug": "question-marks-chatgpt-equations-word",
       "title": "Fragezeichen beim Einfügen von ChatGPT-Gleichungen in Word: Ursachen und Lösungen",
       "seo_title": "Fragezeichen in Wortgleichungen von ChatGPT: Ursachen und Lösungen",
-      "description": "Warum zeigt Word „?“ an? oder seltsame Symbole nach dem Einfügen von LaTeX. Korrigieren Sie Schriftarten und versteckte Zeichen und konvertieren Sie sie in natives OMML, um bearbeitbare Gleichungen zu erhalten.",
+      "description": "Warum zeigt Word \"?\" an? oder seltsame Symbole nach dem Einfügen von LaTeX. Korrigieren Sie Schriftarten und versteckte Zeichen und konvertieren Sie sie in natives OMML, um bearbeitbare Gleichungen zu erhalten.",
       "keywords": [],
       "canonical_path": "/de/blog/question-marks-chatgpt-equations-word",
       "date_published": "2025-12-14",
@@ -1355,7 +1355,7 @@
         "Wort"
       ],
       "intro_html": [
-        "<p class=\"intro\">Wenn Word beim Einfügen von LaTeX aus ChatGPT „??“, Rauten oder gebrochene Symbole anzeigt, erfahren Sie hier, warum das passiert und wie Sie es am zuverlässigsten beheben können.</p>\n"
+        "<p class=\"intro\">Wenn Word beim Einfügen von LaTeX aus ChatGPT \"??\", Rauten oder gebrochene Symbole anzeigt, erfahren Sie hier, warum das passiert und wie Sie es am zuverlässigsten beheben können.</p>\n"
       ],
       "translation_slug": ""
     },
@@ -1713,7 +1713,7 @@
         "OMML"
       ],
       "intro_html": [
-        "<p class=\"intro\">Wenn das Dokument viele Formeln enthält, ist der Ansatz „Gleichung für Gleichung kopieren/einfügen“ undurchführbar. Dieser Fluss ermöglicht es Ihnen, von zu gehen<strong>LaTeX zu Word</strong>Gleichungen bewahren<strong>editierbar</strong>(OMML).</p>"
+        "<p class=\"intro\">Wenn das Dokument viele Formeln enthält, ist der Ansatz \"Gleichung für Gleichung kopieren/einfügen\" undurchführbar. Dieser Fluss ermöglicht es Ihnen, von zu gehen<strong>LaTeX zu Word</strong>Gleichungen bewahren<strong>editierbar</strong>(OMML).</p>"
       ],
       "translation_slug": ""
     },
@@ -1980,7 +1980,7 @@
         "mot"
       ],
       "intro_html": [
-        "<p class=\"intro\">De nombreux étudiants résolvent des exercices avec l’IA et doivent ensuite les présenter dans Word. Le goulot d'étranglement réside dans les équations : elles sont souvent collées sous forme de texte brut ou de balisage brisé.</p>",
+        "<p class=\"intro\">De nombreux étudiants résolvent des exercices avec l'IA et doivent ensuite les présenter dans Word. Le goulot d'étranglement réside dans les équations : elles sont souvent collées sous forme de texte brut ou de balisage brisé.</p>",
         "<p class=\"intro\">Avec un flux de travail simple, vous pouvez fournir un produit propre<strong>.docx</strong>avec<strong>modifiable</strong>Équations de mots.</p>"
       ],
       "translation_slug": ""
@@ -2013,7 +2013,7 @@
         "mot"
       ],
       "intro_html": [
-        "<p class=\"intro\">L'éditeur d'équations de Word peut accepter les entrées de style LaTeX dans de nombreux cas. Si vous n’avez que quelques équations, cela peut être rapide.</p>",
+        "<p class=\"intro\">L'éditeur d'équations de Word peut accepter les entrées de style LaTeX dans de nombreux cas. Si vous n'avez que quelques équations, cela peut être rapide.</p>",
         "<p class=\"intro\">Si vous avez de nombreuses équations (par exemple, une solution ChatGPT complète), l'utilisation d'un convertisseur pour générer des équations Word natives (OMML) est généralement plus rapide et plus propre.</p>"
       ],
       "translation_slug": ""
@@ -2022,7 +2022,7 @@
       "lang": "fr",
       "slug": "what-is-omml-word-equations",
       "title": "Qu'est-ce que OMML (équations Word) et pourquoi les équations se cassent lorsque vous collez depuis ChatGPT",
-      "seo_title": "Qu’est-ce qu’OMML ? Format d'équation de Word (et comment convertir LaTeX)",
+      "seo_title": "Qu'est-ce qu'OMML ? Format d'équation de Word (et comment convertir LaTeX)",
       "description": "OMML est le format d'équation natif de Word. Découvrez en quoi il diffère de LaTeX, pourquoi c'est important et comment convertir LaTeX en équations Word modifiables.",
       "keywords": [
         "OMML",
@@ -2303,7 +2303,7 @@
       "canonical_path": "/fr/blog/word-equation-linear-format-vs-omml",
       "translation_slug": "",
       "title": "Format linéaire d'équation de mot vs OMML : que utiliser pour les mathématiques LaTeX",
-      "kicker": "Choisissez la bonne méthode de saisie d’équation.",
+      "kicker": "Choisissez la bonne méthode de saisie d'équation.",
       "description": "Word prend en charge la saisie d'équations linéaires, mais OMML est le format d'équation natif. Découvrez quand Alt+= est suffisant et quand vous devez convertir LaTeX en OMML.",
       "seo_title": "Équations linéaires Word vs OMML – quand convertir LaTeX",
       "keywords": [
@@ -2436,7 +2436,7 @@
         "OMML"
       ],
       "intro_html": [
-        "<p class=\"intro\">Si vous avez<strong>codeLaTeX</strong>(à partir de notes, Overleaf ou IA) et vous devez le transférer vers Word, il existe plusieurs itinéraires. L’essentiel est de choisir celui qui vous convient le mieux.<strong>combien d'équations</strong>tu l'as fait et s'ils doivent rester<strong>modifiable</strong>.</p>"
+        "<p class=\"intro\">Si vous avez<strong>codeLaTeX</strong>(à partir de notes, Overleaf ou IA) et vous devez le transférer vers Word, il existe plusieurs itinéraires. L'essentiel est de choisir celui qui vous convient le mieux.<strong>combien d'équations</strong>tu l'as fait et s'ils doivent rester<strong>modifiable</strong>.</p>"
       ],
       "translation_slug": ""
     },
@@ -3966,7 +3966,7 @@
         "OMML"
       ],
       "intro_html": [
-        "<p class=\"intro\">Quando o documento tem muitas fórmulas, a abordagem “copiar/colar equação por equação” torna-se inviável. Este fluxo permite que você vá de<strong>LaTeX para Word</strong>preservando equações<strong>editável</strong>(OMML).</p>"
+        "<p class=\"intro\">Quando o documento tem muitas fórmulas, a abordagem \"copiar/colar equação por equação\" torna-se inviável. Este fluxo permite que você vá de<strong>LaTeX para Word</strong>preservando equações<strong>editável</strong>(OMML).</p>"
       ],
       "translation_slug": ""
     },

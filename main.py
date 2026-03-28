@@ -262,7 +262,7 @@ UI_TEXT: Dict[str, Dict[str, str]] = {
         "cta_strong": "Besoin de convertir un fichier .docx ou .txt contenant du LaTeX ?",
         "cta_text": "Utilisez le convertisseur et téléchargez un fichier Word avec des équations OMML natives et modifiables.",
         "cta_primary": "Convertisseur LaTeX → OMML",
-        "cta_secondary": "Plus d’articles",
+        "cta_secondary": "Plus d'articles",
         "blog_intro": "Guides pratiques pour exporter des équations LaTeX/IA vers Word en OMML éditable.",
         "index_cta_primary": "Convertisseur LaTeX → OMML",
         "search_label": "Rechercher des articles",
@@ -271,14 +271,14 @@ UI_TEXT: Dict[str, Dict[str, str]] = {
         "filter_all": "Tous",
         "featured_title": "Articles",
         "legal_privacy": "Politique de confidentialité",
-        "legal_terms": "Conditions d’utilisation",
+        "legal_terms": "Conditions d'utilisation",
         "legal_contact": "Contact",
     },
     "it": {
         "nav_converter": "Convertitore",
         "related_title": "Articoli correlati",
         "summary_title": "Suggerimento rapido",
-        "summary_text": "Converti LaTeX (o matematica generata dall’IA) in equazioni Word native e modificabili (OMML).",
+        "summary_text": "Converti LaTeX (o matematica generata dall'IA) in equazioni Word native e modificabili (OMML).",
         "summary_link": "Convertitore LaTeX → OMML",
         "cta_strong": "Devi convertire un file .docx o .txt con LaTeX?",
         "cta_text": "Usa il convertitore e scarica un file Word con equazioni OMML native e modificabili.",
@@ -381,6 +381,53 @@ def _all_alternates(path_by_lang: Dict[str, str], default_lang: str = "es") -> L
     default_path = path_by_lang.get(default_lang) or path_by_lang.get("en") or "/"
     out.append({"hreflang": "x-default", "href": _abs_url(default_path)})
     return out
+
+
+def _lang_options(path_by_lang: Dict[str, str]) -> List[Dict[str, str]]:
+    options: List[Dict[str, str]] = []
+    for code in SUPPORTED_LANGS:
+        path = (path_by_lang.get(code) or "").strip()
+        if not path:
+            continue
+        options.append(
+            {
+                "code": code,
+                "label": LANGUAGE_LABELS.get(code, code.upper()),
+                "href": path,
+            }
+        )
+    return options
+
+
+def _format_reading_time(value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, (int, float)):
+        return f"{int(value)} min"
+    txt = str(value).strip()
+    if not txt:
+        return ""
+    if re.fullmatch(r"\d+", txt):
+        return f"{txt} min"
+    txt = txt.replace("–", "-").replace("—", "-")
+    txt = re.sub(r"(?<!\w)minutos?(?!\w)", "min", txt, flags=re.IGNORECASE)
+    if re.search(r"\bmin\b", txt, flags=re.IGNORECASE):
+        return txt
+    if re.fullmatch(r"\d+\s*-\s*\d+", txt):
+        return f"{txt} min"
+    return txt
+
+
+def _normalize_tag(tag: str) -> str:
+    t = (tag or "").strip()
+    if not t:
+        return ""
+    low = t.lower()
+    if low in {"omml", "docx", "ai", "ia"}:
+        return low.upper()
+    if low in {"chatgpt", "pandoc", "overleaf", "word", "latex"}:
+        return t[0].upper() + t[1:].lower()
+    return t[0].upper() + t[1:].lower()
 
 LANDING_PAGES: Dict[str, Dict[str, Dict[str, Any]]] = {
     "chatgpt-equations-to-word": {
@@ -1712,6 +1759,7 @@ def _solution_landing_context(lang: str, route_slug: str) -> Optional[Dict[str, 
         "nav_blog": "Blog",
         "lang_switch_href": _home_path("es" if lang != "es" else "en"),
         "lang_switch_label": "ES" if lang != "es" else "EN",
+        "lang_options": _lang_options(alt_paths),
         "page_kicker": current["kicker"],
         "page_title": current["h1"],
         "page_intro": current["intro"],
@@ -1811,137 +1859,84 @@ async def solutions_pt() -> RedirectResponse:
 # Legal / Trust pages
 # ================================================================
 def _legal_page_context(lang: str, page: str) -> Dict[str, Any]:
-    """
-    Build context for simple legal/trust pages.
-    page: 'privacy' | 'terms' | 'contact'
-    """
-    is_es = lang == "es"
-    source_lang = _content_lang(lang)
-    is_en = source_lang == "en"
-    site = SITE_NAME
+    """Build context for legal/trust pages."""
 
-    if page == "privacy":
-        title = "Privacy Policy" if is_en else "Política de privacidad"
-        description = (
-            "How we handle your uploaded files and data when converting LaTeX to Word."
-            if is_en
-            else "Cómo tratamos tus archivos y datos al convertir LaTeX a Word."
-        )
-        body_html = (
-            "<h2>File handling</h2>"
-            "<p>We process your uploaded file only to perform the conversion. We do not sell your data.</p>"
-            "<h2>Storage</h2>"
-            "<p>We do not permanently store your uploaded documents. Temporary processing may occur in memory during conversion.</p>"
-            "<h2>Analytics</h2>"
-            "<p>We use Google Analytics to understand aggregated usage and improve the product. No document contents are sent to Analytics.</p>"
-            "<p>For EU traffic, we are preparing a consent-management integration (Google Consent Mode v2 compatible) to provide clearer controls.</p>"
-            "<h2>Contact</h2>"
-            '<p>If you have questions, contact us at <a href="mailto:ecuacionesaword@gmail.com">ecuacionesaword@gmail.com</a>.</p>'
-            if is_en
-            else
-            "<h2>Tratamiento de archivos</h2>"
-            "<p>Procesamos tu archivo únicamente para realizar la conversión. No vendemos tus datos.</p>"
-            "<h2>Almacenamiento</h2>"
-            "<p>No almacenamos permanentemente tus documentos. Puede existir un procesamiento temporal en memoria durante la conversión.</p>"
-            "<h2>Analítica</h2>"
-            "<p>Usamos Google Analytics para entender el uso agregado y mejorar el producto. El contenido de tus documentos no se envía a Analytics.</p>"
-            "<p>Para tráfico UE, estamos preparando una integración de gestión de consentimiento (compatible con Google Consent Mode v2) para ofrecer controles más claros.</p>"
-            "<h2>Contacto</h2>"
-            '<p>Si tienes dudas, escríbenos a <a href="mailto:ecuacionesaword@gmail.com">ecuacionesaword@gmail.com</a>.</p>'
-        )
-    elif page == "terms":
-        title = "Terms of use" if is_en else "Términos de uso"
-        description = (
-            "Rules and limitations for using the converter."
-            if is_en
-            else "Normas y limitaciones de uso del conversor."
-        )
-        body_html = (
-            "<h2>Free tool</h2>"
-            "<p>This converter is provided free of charge. Limits may apply to file size.</p>"
-            "<h2>No warranties</h2>"
-            "<p>The service is provided as-is. We do our best, but we cannot guarantee perfect conversion for all documents.</p>"
-            "<h2>Acceptable use</h2>"
-            "<p>Do not upload illegal content, malware, or sensitive documents you are not allowed to share.</p>"
-            "<h2>Contact</h2>"
-            '<p>Questions: <a href="mailto:ecuacionesaword@gmail.com">ecuacionesaword@gmail.com</a>.</p>'
-            if is_en
-            else
-            "<h2>Herramienta gratuita</h2>"
-            "<p>Este conversor se ofrece de forma gratuita. Puede haber límites de tamaño de archivo.</p>"
-            "<h2>Sin garantías</h2>"
-            "<p>El servicio se ofrece tal cual. Hacemos lo posible, pero no garantizamos una conversión perfecta en todos los documentos.</p>"
-            "<h2>Uso aceptable</h2>"
-            "<p>No subas contenido ilegal, malware o documentos sensibles que no estés autorizado a compartir.</p>"
-            "<h2>Contacto</h2>"
-            '<p>Dudas: <a href="mailto:ecuacionesaword@gmail.com">ecuacionesaword@gmail.com</a>.</p>'
-        )
-    elif page == "contact":
-        title = "Contact" if is_en else "Contacto"
-        description = (
-            "Get in touch with the project."
-            if is_en
-            else "Contacta con el proyecto."
-        )
-        body_html = (
-            "<p>Email: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p>"
-            "<p>GitHub: <a href='https://github.com/jmaelectro/latex-word-equation-converter' rel='noopener'>Repository</a></p>"
-            if is_en
-            else
-            "<p>Email: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p>"
-            "<p>GitHub: <a href='https://github.com/jmaelectro/latex-word-equation-converter' rel='noopener'>Repositorio</a></p>"
-        )
-    else:
-        title = "Info" if is_en else "Información"
-        description = ""
-        body_html = "<p></p>"
-
-    localized_legal: Dict[str, Dict[str, Dict[str, str]]] = {
+    legal_copy: Dict[str, Dict[str, Dict[str, str]]] = {
+        "es": {
+            "privacy": {
+                "title": "Pol?tica de privacidad",
+                "description": "C?mo tratamos tus archivos y datos al convertir LaTeX a Word.",
+                "body": "<h2>Tratamiento de archivos</h2><p>Procesamos tu archivo ?nicamente para realizar la conversi?n. No vendemos tus datos.</p><h2>Almacenamiento</h2><p>No almacenamos permanentemente tus documentos. Puede existir procesamiento temporal en memoria durante la conversi?n.</p><h2>Anal?tica</h2><p>Usamos anal?tica agregada para mejorar el producto. El contenido de tus documentos no se env?a a herramientas de anal?tica.</p><h2>Contacto</h2><p>Si tienes dudas, escr?benos a <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a>.</p>",
+            },
+            "terms": {
+                "title": "T?rminos de uso",
+                "description": "Normas y limitaciones de uso del conversor.",
+                "body": "<h2>Herramienta gratuita</h2><p>Este conversor se ofrece de forma gratuita. Puede haber l?mites de tama?o de archivo.</p><h2>Sin garant?as</h2><p>El servicio se ofrece tal cual. Hacemos lo posible, pero no garantizamos una conversi?n perfecta en todos los documentos.</p><h2>Uso aceptable</h2><p>No subas contenido ilegal, malware o documentos sensibles que no est?s autorizado a compartir.</p>",
+            },
+            "contact": {
+                "title": "Contacto",
+                "description": "Contacta con el proyecto.",
+                "body": "<p>Email: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p><p>GitHub: <a href='https://github.com/jmaelectro/latex-word-equation-converter' rel='noopener'>Repositorio</a></p>",
+            },
+        },
+        "en": {
+            "privacy": {
+                "title": "Privacy Policy",
+                "description": "How we handle uploaded files and data during LaTeX to Word conversion.",
+                "body": "<h2>File handling</h2><p>We process uploaded files only to perform the conversion. We do not sell your data.</p><h2>Storage</h2><p>We do not permanently store documents. Temporary in-memory processing may occur during conversion.</p><h2>Analytics</h2><p>We use aggregated analytics to improve the product. Document content is not sent to analytics tools.</p><h2>Contact</h2><p>Questions: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a>.</p>",
+            },
+            "terms": {
+                "title": "Terms of use",
+                "description": "Rules and limitations for using the converter.",
+                "body": "<h2>Free tool</h2><p>This converter is provided free of charge. File-size limits may apply.</p><h2>No warranties</h2><p>The service is provided as-is. We do our best but cannot guarantee perfect conversion for every document.</p><h2>Acceptable use</h2><p>Do not upload illegal content, malware, or sensitive documents you are not allowed to share.</p>",
+            },
+            "contact": {
+                "title": "Contact",
+                "description": "Get in touch with the project.",
+                "body": "<p>Email: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p><p>GitHub: <a href='https://github.com/jmaelectro/latex-word-equation-converter' rel='noopener'>Repository</a></p>",
+            },
+        },
         "de": {
-            "privacy": {"title": "Datenschutzerkl?rung", "description": "Wie wir hochgeladene Dateien und Daten verarbeiten."},
-            "terms": {"title": "Nutzungsbedingungen", "description": "Regeln und Einschr?nkungen f?r den Konverter."},
-            "contact": {"title": "Kontakt", "description": "So erreichst du das Projekt."},
+            "privacy": {"title": "Datenschutzerkl?rung", "description": "Wie wir hochgeladene Dateien und Daten verarbeiten.", "body": "<h2>Dateiverarbeitung</h2><p>Wir verarbeiten hochgeladene Dateien nur f?r die Konvertierung und verkaufen keine Daten.</p><h2>Speicherung</h2><p>Dokumente werden nicht dauerhaft gespeichert. W?hrend der Konvertierung kann tempor?re Verarbeitung im Speicher stattfinden.</p><h2>Analyse</h2><p>Wir verwenden aggregierte Nutzungsdaten zur Produktverbesserung. Dokumentinhalte werden nicht an Analytics-Tools gesendet.</p><h2>Kontakt</h2><p>Fragen: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a>.</p>"},
+            "terms": {"title": "Nutzungsbedingungen", "description": "Regeln und Einschr?nkungen f?r den Konverter.", "body": "<h2>Kostenloses Tool</h2><p>Der Konverter ist kostenlos; Dateigr??enlimits k?nnen gelten.</p><h2>Keine Gew?hr</h2><p>Der Dienst wird ohne Gew?hr bereitgestellt.</p><h2>Zul?ssige Nutzung</h2><p>Bitte keine illegalen Inhalte oder Malware hochladen.</p>"},
+            "contact": {"title": "Kontakt", "description": "So erreichst du das Projekt.", "body": "<p>E-Mail: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p><p>GitHub: <a href='https://github.com/jmaelectro/latex-word-equation-converter' rel='noopener'>Repository</a></p>"},
         },
         "fr": {
-            "privacy": {"title": "Politique de confidentialit?", "description": "Comment nous traitons les fichiers et les donn?es envoy?s."},
-            "terms": {"title": "Conditions d?utilisation", "description": "R?gles et limites d?utilisation du convertisseur."},
-            "contact": {"title": "Contact", "description": "Contactez le projet."},
+            "privacy": {"title": "Politique de confidentialit?", "description": "Comment nous traitons les fichiers et donn?es envoy?s.", "body": "<h2>Traitement des fichiers</h2><p>Nous traitons les fichiers uniquement pour la conversion et ne vendons pas vos donn?es.</p><h2>Stockage</h2><p>Nous ne stockons pas durablement les documents. Un traitement temporaire en m?moire peut avoir lieu.</p><h2>Analytique</h2><p>Nous utilisons des statistiques agr?g?es pour am?liorer le produit. Le contenu des documents n'est pas envoy? aux outils d'analyse.</p><h2>Contact</h2><p>Questions : <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a>.</p>"},
+            "terms": {"title": "Conditions d'utilisation", "description": "R?gles et limites d'utilisation du convertisseur.", "body": "<h2>Outil gratuit</h2><p>Le convertisseur est gratuit, avec possibles limites de taille.</p><h2>Sans garantie</h2><p>Le service est fourni tel quel.</p><h2>Usage acceptable</h2><p>N'envoyez pas de contenu ill?gal ou malveillant.</p>"},
+            "contact": {"title": "Contact", "description": "Contactez le projet.", "body": "<p>Email : <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p><p>GitHub : <a href='https://github.com/jmaelectro/latex-word-equation-converter' rel='noopener'>D?p?t</a></p>"},
         },
         "it": {
-            "privacy": {"title": "Informativa sulla privacy", "description": "Come trattiamo file e dati caricati."},
-            "terms": {"title": "Termini di utilizzo", "description": "Regole e limiti d?uso del convertitore."},
-            "contact": {"title": "Contatto", "description": "Contatta il progetto."},
+            "privacy": {"title": "Informativa sulla privacy", "description": "Come trattiamo file e dati caricati.", "body": "<h2>Gestione dei file</h2><p>Elaboriamo i file caricati solo per la conversione e non vendiamo i dati.</p><h2>Archiviazione</h2><p>I documenti non sono conservati in modo permanente. Durante la conversione pu? esserci elaborazione temporanea in memoria.</p><h2>Analisi</h2><p>Usiamo dati aggregati per migliorare il prodotto. Il contenuto dei documenti non viene inviato agli strumenti di analytics.</p><h2>Contatto</h2><p>Domande: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a>.</p>"},
+            "terms": {"title": "Termini di utilizzo", "description": "Regole e limiti d'uso del convertitore.", "body": "<h2>Strumento gratuito</h2><p>Il convertitore ? gratuito, con possibili limiti di dimensione.</p><h2>Nessuna garanzia</h2><p>Il servizio ? fornito cos? com'?.</p><h2>Uso accettabile</h2><p>Non caricare contenuti illegali o malware.</p>"},
+            "contact": {"title": "Contatto", "description": "Contatta il progetto.", "body": "<p>Email: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p><p>GitHub: <a href='https://github.com/jmaelectro/latex-word-equation-converter' rel='noopener'>Repository</a></p>"},
         },
         "pt": {
-            "privacy": {"title": "Pol?tica de Privacidade", "description": "Como tratamos arquivos e dados enviados."},
-            "terms": {"title": "Termos de uso", "description": "Regras e limita??es para usar o conversor."},
-            "contact": {"title": "Contato", "description": "Fale com o projeto."},
+            "privacy": {"title": "Pol?tica de Privacidade", "description": "Como tratamos arquivos e dados enviados.", "body": "<h2>Tratamento de arquivos</h2><p>Processamos arquivos apenas para convers?o e n?o vendemos dados.</p><h2>Armazenamento</h2><p>N?o armazenamos documentos permanentemente. Pode haver processamento tempor?rio em mem?ria durante a convers?o.</p><h2>An?lises</h2><p>Usamos dados agregados para melhorar o produto. O conte?do dos documentos n?o ? enviado ?s ferramentas de analytics.</p><h2>Contato</h2><p>D?vidas: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a>.</p>"},
+            "terms": {"title": "Termos de uso", "description": "Regras e limita??es para usar o conversor.", "body": "<h2>Ferramenta gratuita</h2><p>O conversor ? gratuito, com poss?veis limites de tamanho.</p><h2>Sem garantias</h2><p>O servi?o ? fornecido no estado em que se encontra.</p><h2>Uso aceit?vel</h2><p>N?o envie conte?do ilegal ou malware.</p>"},
+            "contact": {"title": "Contato", "description": "Fale com o projeto.", "body": "<p>Email: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p><p>GitHub: <a href='https://github.com/jmaelectro/latex-word-equation-converter' rel='noopener'>Reposit?rio</a></p>"},
         },
     }
-    if lang in localized_legal and page in localized_legal[lang]:
-        title = localized_legal[lang][page]["title"]
-        description = localized_legal[lang][page]["description"]
 
-    # URLs
+    locale = lang if lang in legal_copy else ("es" if lang == "es" else "en")
+    page_data = legal_copy.get(locale, legal_copy["en"]).get(page, {"title": "Info", "description": "", "body": "<p></p>"})
+
+    title = page_data["title"]
+    description = page_data["description"]
+    body_html = page_data["body"]
+
     canonical_path = _legal_path(lang, page) if page in {"privacy", "terms", "contact"} else _home_path(lang)
     canonical_url = _abs_url(canonical_path)
-
     alt_paths = {code: _legal_path(code, page) for code in SUPPORTED_LANGS}
-    alternates = _all_alternates(alt_paths, default_lang="es")
-
-    nav_converter = _ui(lang, "nav_converter")
-    nav_blog = "Blog"
-    lang_switch_href = _legal_path("es" if lang != "es" else "en", page)
-    lang_switch_label = "ES" if lang != "es" else "EN"
 
     return {
         "lang": lang,
-        "site_name": site,
-        "seo_title": f"{title} | {site}",
+        "site_name": SITE_NAME,
+        "seo_title": f"{title} | {SITE_NAME}",
         "description": description,
         "keywords": [],
         "canonical_url": canonical_url,
-        "alternates": alternates,
+        "alternates": _all_alternates(alt_paths, default_lang="es"),
         "og_type": "website",
         "og_title": title,
         "og_description": description,
@@ -1949,10 +1944,11 @@ def _legal_page_context(lang: str, page: str) -> Dict[str, Any]:
         "schema_json": _build_schema_simple_page(title, canonical_url, lang),
         "converter_href": _home_path(lang),
         "blog_index_href": _blog_index_path(lang),
-        "nav_converter": nav_converter,
-        "nav_blog": nav_blog,
-        "lang_switch_href": lang_switch_href,
-        "lang_switch_label": lang_switch_label,
+        "nav_converter": _ui(lang, "nav_converter"),
+        "nav_blog": "Blog",
+        "lang_switch_href": _legal_path("es" if lang != "es" else "en", page),
+        "lang_switch_label": "ES" if lang != "es" else "EN",
+        "lang_options": _lang_options(alt_paths),
         "kicker": "",
         "title": title,
         "meta_line": "",
@@ -2087,15 +2083,16 @@ async def blog_index_es() -> HTMLResponse:
         for t in (p.get("tags") or []):
             if not isinstance(t, str) or not t.strip():
                 continue
-            tag_counts[t] = tag_counts.get(t, 0) + 1
+            nt = _normalize_tag(t)
+            tag_counts[nt] = tag_counts.get(nt, 0) + 1
         posts_view.append(
             {
                 "url": p.get("canonical_path") or f"/blog/{p.get('slug')}",
                 "title": p.get("title") or "",
                 "description": p.get("description") or "",
                 "kicker": p.get("kicker") or "",
-                "tags": p.get("tags") or [],
-                "meta": f"{_format_date(lang, p.get('date_published') or '')} · {p.get('reading_time') or ''}".strip(
+                "tags": [_normalize_tag(t) for t in (p.get("tags") or []) if isinstance(t, str)],
+                "meta": f"{_format_date(lang, p.get('date_published') or '')} · {_format_reading_time(p.get('reading_time'))}".strip(
                     " ·"
                 ),
             }
@@ -2129,6 +2126,7 @@ async def blog_index_es() -> HTMLResponse:
         "nav_blog": "Blog",
         "lang_switch_href": "/en/blog",
         "lang_switch_label": "EN",
+        "lang_options": _lang_options({code: _blog_index_path(code) for code in SUPPORTED_LANGS}),
         "h1": "Blog",
         "intro": "Guías prácticas para pasar ecuaciones de LaTeX e IA a Word con ecuaciones nativas (OMML), incluyendo flujos online y troubleshooting.",
         "index_cta_primary": "Conversor LaTeX → Word (OMML)",
@@ -2157,15 +2155,16 @@ async def blog_index_en() -> HTMLResponse:
         for t in (p.get("tags") or []):
             if not isinstance(t, str) or not t.strip():
                 continue
-            tag_counts[t] = tag_counts.get(t, 0) + 1
+            nt = _normalize_tag(t)
+            tag_counts[nt] = tag_counts.get(nt, 0) + 1
         posts_view.append(
             {
                 "url": p.get("canonical_path") or f"/en/blog/{p.get('slug')}",
                 "title": p.get("title") or "",
                 "description": p.get("description") or "",
                 "kicker": p.get("kicker") or "",
-                "tags": p.get("tags") or [],
-                "meta": f"{_format_date(lang, p.get('date_published') or '')} · {p.get('reading_time') or ''}".strip(
+                "tags": [_normalize_tag(t) for t in (p.get("tags") or []) if isinstance(t, str)],
+                "meta": f"{_format_date(lang, p.get('date_published') or '')} · {_format_reading_time(p.get('reading_time'))}".strip(
                     " ·"
                 ),
             }
@@ -2199,6 +2198,7 @@ async def blog_index_en() -> HTMLResponse:
         "nav_blog": "Blog",
         "lang_switch_href": "/blog",
         "lang_switch_label": "ES",
+        "lang_options": _lang_options({code: _blog_index_path(code) for code in SUPPORTED_LANGS}),
         "h1": "Blog",
         "intro": "Practical guides to export LaTeX/AI equations to Word as native editable OMML equations, including online workflows and troubleshooting.",
         "index_cta_primary": "LaTeX → OMML Converter",
@@ -2224,15 +2224,16 @@ def _build_blog_index_context_fallback_en(lang: str) -> Dict[str, Any]:
         for t in (p.get("tags") or []):
             if not isinstance(t, str) or not t.strip():
                 continue
-            tag_counts[t] = tag_counts.get(t, 0) + 1
+            nt = _normalize_tag(t)
+            tag_counts[nt] = tag_counts.get(nt, 0) + 1
         posts_view.append(
             {
                 "url": f"{_blog_index_path(lang)}/{p.get('slug')}",
                 "title": p.get("title") or "",
                 "description": p.get("description") or "",
                 "kicker": p.get("kicker") or "",
-                "tags": p.get("tags") or [],
-                "meta": f"{_format_date(lang, p.get('date_published') or '')} · {p.get('reading_time') or ''}".strip(
+                "tags": [_normalize_tag(t) for t in (p.get("tags") or []) if isinstance(t, str)],
+                "meta": f"{_format_date(lang, p.get('date_published') or '')} · {_format_reading_time(p.get('reading_time'))}".strip(
                     " ·"
                 ),
             }
@@ -2264,6 +2265,7 @@ def _build_blog_index_context_fallback_en(lang: str) -> Dict[str, Any]:
         "nav_blog": "Blog",
         "lang_switch_href": _blog_index_path("es"),
         "lang_switch_label": "ES",
+        "lang_options": _lang_options(alt_paths),
         "h1": "Blog",
         "intro": _ui(lang, "blog_intro"),
         "index_cta_primary": _ui(lang, "index_cta_primary"),
@@ -2357,31 +2359,31 @@ async def blog_post_es(slug: str) -> HTMLResponse:
     if not body_html.strip():
         raise HTTPException(status_code=404, detail="Blog post body not found")
 
-    canonical_url = _abs_url(post.get("canonical_path") or f"/blog/{post['slug']}")
+    canonical_path = post.get("canonical_path") or f"/blog/{post['slug']}"
+    canonical_url = _abs_url(canonical_path)
     translation_slug = (post.get("translation_slug") or "").strip()
-    has_translation = bool(
-        translation_slug and translation_slug in BLOG_POSTS.get("en", {})
-    )
 
-    alternates = [{"hreflang": "es", "href": canonical_url}]
-    lang_switch_href = "/en/blog"
-    if has_translation:
-        other = BLOG_POSTS["en"][translation_slug]
-        other_url = _abs_url(other.get("canonical_path") or f"/en/blog/{translation_slug}")
-        alternates.append({"hreflang": "en", "href": other_url})
-        alternates.append({"hreflang": "x-default", "href": canonical_url})
-        lang_switch_href = other.get("canonical_path") or f"/en/blog/{translation_slug}"
-    else:
-        alternates.append({"hreflang": "en", "href": _abs_url("/en/blog")})
-        alternates.append({"hreflang": "x-default", "href": canonical_url})
+    en_path = f"/en/blog/{post['slug']}"
+    if translation_slug and translation_slug in BLOG_POSTS.get("en", {}):
+        en_path = BLOG_POSTS["en"][translation_slug].get("canonical_path") or f"/en/blog/{translation_slug}"
+
+    alt_paths = {
+        "es": canonical_path,
+        "en": en_path,
+        "de": f"/de/blog/{post['slug']}",
+        "fr": f"/fr/blog/{post['slug']}",
+        "it": f"/it/blog/{post['slug']}",
+        "pt": f"/pt/blog/{post['slug']}",
+    }
 
     date_pub = post.get("date_published") or ""
     date_mod = post.get("date_modified") or ""
     meta_line = f"Publicado {_format_date(lang, date_pub)}"
-    if post.get("reading_time"):
-        meta_line += f" · {post['reading_time']}"
+    reading_time = _format_reading_time(post.get("reading_time"))
+    if reading_time:
+        meta_line += f" ?{reading_time}"
     if date_mod and date_mod != date_pub:
-        meta_line += f" · Actualizado {_format_date(lang, date_mod)}"
+        meta_line += f" ?Actualizado {_format_date(lang, date_mod)}"
 
     ctx = {
         "lang": lang,
@@ -2390,42 +2392,39 @@ async def blog_post_es(slug: str) -> HTMLResponse:
         "description": post.get("description") or "",
         "keywords": post.get("keywords") or [],
         "canonical_url": canonical_url,
-        "alternates": alternates,
+        "alternates": _all_alternates(alt_paths, default_lang="es"),
         "og_type": "article",
         "og_title": post.get("title") or "",
         "og_description": post.get("description") or "",
         "og_image": _abs_url("/static/og-image.svg"),
         "schema_json": _build_schema_article(post, canonical_url),
-"related_posts": _get_related_posts(lang, post, limit=4),
-"related_title": "Related articles" if lang == "en" else "Artículos relacionados",
-"summary_box_title": "Quick tip" if lang == "en" else "Consejo rápido",
-"summary_box_text": (
-    "Convert LaTeX (or AI-generated math) into native, editable Word equations (OMML)."
-    if lang == "en"
-    else "Convierte LaTeX (o ecuaciones generadas por IA) en ecuaciones nativas y editables de Word (OMML)."
-),
-"summary_box_link_text": "LaTeX → OMML converter" if lang == "en" else "Conversor LaTeX → Word (OMML)",
+        "related_posts": _get_related_posts(lang, post, limit=4),
+        "related_title": _ui(lang, "related_title"),
+        "summary_box_title": _ui(lang, "summary_title"),
+        "summary_box_text": _ui(lang, "summary_text"),
+        "summary_box_link_text": _ui(lang, "summary_link"),
         "converter_href": "/",
         "blog_index_href": "/blog",
-        "nav_converter": "Conversor",
+        "nav_converter": _ui(lang, "nav_converter"),
         "nav_blog": "Blog",
-        "lang_switch_href": lang_switch_href,
+        "lang_switch_href": en_path,
         "lang_switch_label": "EN",
+        "lang_options": _lang_options(alt_paths),
         "kicker": post.get("kicker") or "",
         "title": post.get("title") or "",
         "meta_line": meta_line,
-        "tags": post.get("tags") or [],
+        "tags": [_normalize_tag(t) for t in (post.get("tags") or []) if isinstance(t, str)],
         "intro_html": post.get("intro_html") or [],
         "breadcrumbs": [
             {"name": "Inicio", "url": "/"},
             {"name": "Blog", "url": "/blog"},
-            {"name": post.get("title") or "", "url": post.get("canonical_path") or f"/blog/{post['slug']}"},
+            {"name": post.get("title") or "", "url": canonical_path},
         ],
         "body_html": body_html,
-        "cta_strong": "¿Necesitas convertir un .docx o .txt con fórmulas LaTeX?",
-        "cta_text": "Usa el conversor y descarga un Word con ecuaciones nativas (OMML).",
-        "cta_primary": "Conversor LaTeX → Word (OMML)",
-        "cta_secondary": "Ver más artículos",
+        "cta_strong": _ui(lang, "cta_strong"),
+        "cta_text": _ui(lang, "cta_text"),
+        "cta_primary": _ui(lang, "cta_primary"),
+        "cta_secondary": _ui(lang, "cta_secondary"),
         "year": datetime.now().year,
         "legal_links": {"privacy": "/privacy", "terms": "/terms", "contact": "/contact"},
     }
@@ -2445,31 +2444,31 @@ async def blog_post_en(slug: str) -> HTMLResponse:
     if not body_html.strip():
         raise HTTPException(status_code=404, detail="Blog post body not found")
 
-    canonical_url = _abs_url(post.get("canonical_path") or f"/en/blog/{post['slug']}")
+    canonical_path = post.get("canonical_path") or f"/en/blog/{post['slug']}"
+    canonical_url = _abs_url(canonical_path)
     translation_slug = (post.get("translation_slug") or "").strip()
-    has_translation = bool(
-        translation_slug and translation_slug in BLOG_POSTS.get("es", {})
-    )
 
-    alternates = [{"hreflang": "en", "href": canonical_url}]
-    lang_switch_href = "/blog"
-    if has_translation:
-        other = BLOG_POSTS["es"][translation_slug]
-        other_url = _abs_url(other.get("canonical_path") or f"/blog/{translation_slug}")
-        alternates.append({"hreflang": "es", "href": other_url})
-        alternates.append({"hreflang": "x-default", "href": other_url})
-        lang_switch_href = other.get("canonical_path") or f"/blog/{translation_slug}"
-    else:
-        alternates.append({"hreflang": "es", "href": _abs_url("/blog")})
-        alternates.append({"hreflang": "x-default", "href": _abs_url("/blog")})
+    es_path = f"/blog/{post['slug']}"
+    if translation_slug and translation_slug in BLOG_POSTS.get("es", {}):
+        es_path = BLOG_POSTS["es"][translation_slug].get("canonical_path") or f"/blog/{translation_slug}"
+
+    alt_paths = {
+        "es": es_path,
+        "en": canonical_path,
+        "de": f"/de/blog/{post['slug']}",
+        "fr": f"/fr/blog/{post['slug']}",
+        "it": f"/it/blog/{post['slug']}",
+        "pt": f"/pt/blog/{post['slug']}",
+    }
 
     date_pub = post.get("date_published") or ""
     date_mod = post.get("date_modified") or ""
     meta_line = f"Published {_format_date(lang, date_pub)}"
-    if post.get("reading_time"):
-        meta_line += f" · {post['reading_time']}"
+    reading_time = _format_reading_time(post.get("reading_time"))
+    if reading_time:
+        meta_line += f" ?{reading_time}"
     if date_mod and date_mod != date_pub:
-        meta_line += f" · Updated {_format_date(lang, date_mod)}"
+        meta_line += f" ?Updated {_format_date(lang, date_mod)}"
 
     ctx = {
         "lang": lang,
@@ -2478,42 +2477,39 @@ async def blog_post_en(slug: str) -> HTMLResponse:
         "description": post.get("description") or "",
         "keywords": post.get("keywords") or [],
         "canonical_url": canonical_url,
-        "alternates": alternates,
+        "alternates": _all_alternates(alt_paths, default_lang="es"),
         "og_type": "article",
         "og_title": post.get("title") or "",
         "og_description": post.get("description") or "",
         "og_image": _abs_url("/static/og-image.svg"),
         "schema_json": _build_schema_article(post, canonical_url),
-"related_posts": _get_related_posts(lang, post, limit=4),
-"related_title": "Related articles" if lang == "en" else "Artículos relacionados",
-"summary_box_title": "Quick tip" if lang == "en" else "Consejo rápido",
-"summary_box_text": (
-    "Convert LaTeX (or AI-generated math) into native, editable Word equations (OMML)."
-    if lang == "en"
-    else "Convierte LaTeX (o ecuaciones generadas por IA) en ecuaciones nativas y editables de Word (OMML)."
-),
-"summary_box_link_text": "LaTeX → OMML converter" if lang == "en" else "Conversor LaTeX → Word (OMML)",
+        "related_posts": _get_related_posts(lang, post, limit=4),
+        "related_title": _ui(lang, "related_title"),
+        "summary_box_title": _ui(lang, "summary_title"),
+        "summary_box_text": _ui(lang, "summary_text"),
+        "summary_box_link_text": _ui(lang, "summary_link"),
         "converter_href": "/en",
         "blog_index_href": "/en/blog",
-        "nav_converter": "Converter",
+        "nav_converter": _ui(lang, "nav_converter"),
         "nav_blog": "Blog",
-        "lang_switch_href": lang_switch_href,
+        "lang_switch_href": es_path,
         "lang_switch_label": "ES",
+        "lang_options": _lang_options(alt_paths),
         "kicker": post.get("kicker") or "",
         "title": post.get("title") or "",
         "meta_line": meta_line,
-        "tags": post.get("tags") or [],
+        "tags": [_normalize_tag(t) for t in (post.get("tags") or []) if isinstance(t, str)],
         "intro_html": post.get("intro_html") or [],
         "breadcrumbs": [
             {"name": "Home", "url": "/en"},
             {"name": "Blog", "url": "/en/blog"},
-            {"name": post.get("title") or "", "url": post.get("canonical_path") or f"/en/blog/{post['slug']}"},
+            {"name": post.get("title") or "", "url": canonical_path},
         ],
         "body_html": body_html,
-        "cta_strong": "Need to convert a .docx or .txt containing LaTeX?",
-        "cta_text": "Use the converter and download a Word file with native editable OMML equations.",
-        "cta_primary": "LaTeX → OMML Converter",
-        "cta_secondary": "More articles",
+        "cta_strong": _ui(lang, "cta_strong"),
+        "cta_text": _ui(lang, "cta_text"),
+        "cta_primary": _ui(lang, "cta_primary"),
+        "cta_secondary": _ui(lang, "cta_secondary"),
         "year": datetime.now().year,
         "legal_links": {"privacy": "/en/privacy", "terms": "/en/terms", "contact": "/en/contact"},
     }
@@ -2528,23 +2524,24 @@ def _blog_post_context_fallback_en(lang: str, post: Dict[str, Any], body_html: s
     date_mod = post.get("date_modified") or ""
 
     meta_label = "Publicado" if lang == "es" else {
-        "de": "Veröffentlicht",
-        "fr": "Publié",
+        "de": "Ver?ffentlicht",
+        "fr": "Publi?",
         "it": "Pubblicato",
         "pt": "Publicado",
     }.get(lang, "Published")
     updated_label = "Actualizado" if lang == "es" else {
         "de": "Aktualisiert",
-        "fr": "Mis à jour",
+        "fr": "Mis ?jour",
         "it": "Aggiornato",
         "pt": "Atualizado",
     }.get(lang, "Updated")
 
     meta_line = f"{meta_label} {_format_date(lang, date_pub)}"
-    if post.get("reading_time"):
-        meta_line += f" · {post['reading_time']}"
+    reading_time = _format_reading_time(post.get("reading_time"))
+    if reading_time:
+        meta_line += f" ?{reading_time}"
     if date_mod and date_mod != date_pub:
-        meta_line += f" · {updated_label} {_format_date(lang, date_mod)}"
+        meta_line += f" ?{updated_label} {_format_date(lang, date_mod)}"
 
     alt_paths = {
         "es": (BLOG_POSTS.get("es", {}).get(slug, {}).get("canonical_path") or f"/blog/{slug}"),
@@ -2582,10 +2579,11 @@ def _blog_post_context_fallback_en(lang: str, post: Dict[str, Any], body_html: s
         "nav_blog": "Blog",
         "lang_switch_href": _blog_index_path("es"),
         "lang_switch_label": "ES",
+        "lang_options": _lang_options(alt_paths),
         "kicker": post.get("kicker") or "",
         "title": post.get("title") or "",
         "meta_line": meta_line,
-        "tags": post.get("tags") or [],
+        "tags": [_normalize_tag(t) for t in (post.get("tags") or []) if isinstance(t, str)],
         "intro_html": post.get("intro_html") or [],
         "breadcrumbs": [
             {"name": "Home", "url": _home_path(lang)},

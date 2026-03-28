@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block content %}
 <header>
   <div class="topbar">
@@ -9,7 +9,11 @@
     <nav class="nav">
       <a href="{{ converter_href }}">{{ nav_converter }}</a>
       <a href="{{ blog_index_href }}" aria-current="page">{{ nav_blog }}</a>
-      <a href="{{ lang_switch_href }}">{{ lang_switch_label }}</a>
+      <select id="lang-switch-nav" class="lang-select" aria-label="Language selector">
+        {% for opt in lang_options %}
+        <option value="{{ opt.href }}" {% if opt.code == lang %}selected{% endif %}>{{ opt.label }}</option>
+        {% endfor %}
+      </select>
     </nav>
   </div>
 
@@ -50,6 +54,7 @@
   </div>
   {{ body_html|safe }}
 
+  {% if checklist_items %}
   <section class="related" style="margin-top:1.2rem;">
     <h2>{{ checklist_title }}</h2>
     <ul>
@@ -58,7 +63,9 @@
       {% endfor %}
     </ul>
   </section>
+  {% endif %}
 
+  {% if faq_items %}
   <section class="related" style="margin-top:1.2rem;">
     <h2>{{ faq_title }}</h2>
     <ul>
@@ -70,6 +77,7 @@
       {% endfor %}
     </ul>
   </section>
+  {% endif %}
 
   {% if related_posts %}
   <section class="related">
@@ -94,8 +102,19 @@
 <div class="footer">
   © {{ year }} {{ site_name }} ·
   <a href="{{ legal_links.privacy }}">{{ "Privacidad" if lang=="es" else "Privacy" }}</a> ·
-  <a href="{{ legal_links.terms }}">{{ "Terms" if lang=="en" else "Términos" }}</a> ·
+  <a href="{{ legal_links.terms }}">{{ "Términos" if lang=="es" else "Terms" }}</a> ·
   <a href="{{ legal_links.contact }}">{{ "Contacto" if lang=="es" else "Contact" }}</a> ·
   <a href="https://github.com/jmaelectro/latex-word-equation-converter" rel="noopener">GitHub</a>
 </div>
+
+<script>
+(() => {
+  const langSelect = document.getElementById('lang-switch-nav');
+  if (langSelect) {
+    langSelect.addEventListener('change', () => {
+      if (langSelect.value) window.location.href = langSelect.value;
+    });
+  }
+})();
+</script>
 {% endblock %}

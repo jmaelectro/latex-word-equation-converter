@@ -1,6 +1,6 @@
 <h2>Was ist OMML (und warum es wichtig ist)</h2>
 <p>Microsoft Word speichert Gleichungen in einem nativen Format namens<strong>OMML</strong>(Office Math Markup Language). Wenn Ihre Gleichungen in OMML vorliegen, können Sie sie mit dem Gleichungseditor von Word bearbeiten, sie am Text ausrichten und sie auf allen Plattformen konsistent halten.</p>
-<p>Im Gegensatz dazu wird einfaches LaTeX, das in Word eingefügt wird, normalerweise als Text behandelt. In einigen Fällen versucht Word, es zu interpretieren, aber das Ergebnis ist inkonsistent: fehlende Symbole, unterbrochene Abstände oder „Fragezeichen“ für nicht unterstützte Glyphen.</p>
+<p>Im Gegensatz dazu wird einfaches LaTeX, das in Word eingefügt wird, normalerweise als Text behandelt. In einigen Fällen versucht Word, es zu interpretieren, aber das Ergebnis ist inkonsistent: fehlende Symbole, unterbrochene Abstände oder "Fragezeichen" für nicht unterstützte Glyphen.</p>
 <h2>Typische Szenarien: ChatGPT, Pandoc, Overleaf</h2>
 <ul>
 <li><strong>ChatGPT/Gemini/Copilot:</strong>gibt LaTeX schnell aus, aber das Kopieren/Einfügen in Word schlägt oft fehl oder ist nicht bearbeitbar.</li>
@@ -11,7 +11,7 @@
 <ol>
 <li>Behalten Sie Gleichungen in LaTeX mit konsistenten Trennzeichen bei (<code>$...$</code>, <code>$$...$$</code>, oder<code>\[...\]</code>).</li>
 <li>Exportieren Sie Ihre Inhalte in eine<code>.txt</code>(oder in einem aufbewahren<code>.docx</code>), wobei LaTeX als Text erscheint.</li>
-<li>Benutzen Sie die<a href="/en">LaTeX → OMML-Konverter</a>um ein DOCX zu generieren, in dem die Gleichungen nativ und bearbeitbar sind.</li>
+<li>Benutzen Sie die<a href="/de">LaTeX → OMML-Konverter</a>um ein DOCX zu generieren, in dem die Gleichungen nativ und bearbeitbar sind.</li>
 <li>Öffnen Sie das Ergebnis in Word und überprüfen Sie einige repräsentative Gleichungen (Brüche, Matrizen, ausgerichtete Gleichungen).</li>
 <li>Behalten Sie für die endgültige Formatierung einheitliche Schriftarten bei (Cambria Math ist eine sichere Standardeinstellung) und verwenden Sie Word-Stile für Überschriften und Bildunterschriften.</li>
 </ol>
@@ -36,10 +36,10 @@ A = \begin{pmatrix}
 $$</code></pre>
 <h2>Warum Word Fragezeichen oder seltsame Symbole anzeigt</h2>
 <p>Dies geschieht normalerweise, wenn die zum Rendern von Mathematik verwendete Schriftart nicht die erforderlichen Glyphen enthält oder wenn es sich bei der Gleichung nicht tatsächlich um ein Gleichungsobjekt (OMML), sondern um einfachen Text handelt. Eine weitere häufige Ursache ist das Kopieren aus einer Rich-Text-Quelle, die unsichtbare Zeichen einfügt.</p>
-<p>Sehen:<a href="/en/blog/question-marks-chatgpt-equations-word">Fragezeichen in Gleichungen von ChatGPT</a>.</p>
+<p>Sehen:<a href="/de/blog/question-marks-chatgpt-equations-word">Fragezeichen in Gleichungen von ChatGPT</a>.</p>
 <h2>Pandoc vs. OMML-Konvertierung</h2>
 <p>Pandoc eignet sich hervorragend für die Konvertierung von Dokumenten, allerdings kann die Konvertierung von Mathematik in bearbeitbare Word-Gleichungen je nach Vorlagen und Erweiterungen inkonsistent sein. Wenn Sie zuverlässig bearbeitbare Gleichungen für die wissenschaftliche Einreichung benötigen, ist die Verwendung eines OMML-fokussierten Konvertierungsschritts in der Regel der stabilste Ansatz.</p>
-<p>Sehen:<a href="/en/blog/pandoc-math-to-word-omml-troubleshooting">Pandoc-Fehlerbehebung für OMML</a>.</p>
+<p>Sehen:<a href="/de/blog/pandoc-math-to-word-omml-troubleshooting">Pandoc-Fehlerbehebung für OMML</a>.</p>
 <h2>FAQ</h2>
 <h3>Können meine Gleichungen in Word bearbeitet werden?</h3>
 <p>Ja – wenn die Ausgabe native Word-Gleichungsobjekte (OMML) verwendet, können Sie auf eine Gleichung klicken und sie mit dem Gleichungseditor bearbeiten.</p>
@@ -51,4 +51,4 @@ $$</code></pre>
 <p>Verwenden Sie konsistente Trennzeichen wie<code>$...$</code>für Inline- und<code>$$...$$</code>oder<code>\[...\]</code>für Anzeigemathematik.</p>
 <h3>Was ist, wenn ich bereits ein DOCX mit LaTeX als Text habe?</h3>
 <p>Das ist ein häufiger Fall. Laden Sie das DOCX hoch und der Konverter ersetzt LaTeX-Segmente durch bearbeitbare OMML-Gleichungen.</p>
-<p><strong>Nächste Schritte:</strong>Wenn Sie von Markdown kommen, lesen Sie<a href="/en/blog/markdown-latex-to-word-docx">Markdown + LaTeX zu DOCX</a>. Wenn Sie von ChatGPT kommen, lesen Sie<a href="/en/blog/copy-chatgpt-equations-word">KI-Gleichungen in Word kopieren</a>.</p>
+<p><strong>Nächste Schritte:</strong>Wenn Sie von Markdown kommen, lesen Sie<a href="/de/blog/markdown-latex-to-word-docx">Markdown + LaTeX zu DOCX</a>. Wenn Sie von ChatGPT kommen, lesen Sie<a href="/de/blog/copy-chatgpt-equations-word">KI-Gleichungen in Word kopieren</a>.</p>

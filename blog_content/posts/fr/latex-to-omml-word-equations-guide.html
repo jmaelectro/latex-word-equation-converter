@@ -11,7 +11,7 @@
 <ol>
 <li>Conservez les équations dans LaTeX avec des délimiteurs cohérents (<code>$...$</code>, <code>$$...$$</code>, ou<code>\[...\]</code>).</li>
 <li>Exportez votre contenu vers un<code>.txt</code>(ou conserver dans un<code>.docx</code>) où LaTeX apparaît sous forme de texte.</li>
-<li>Utilisez le<a href="/en">Convertisseur LaTeX → OMML</a>pour générer un DOCX où les équations sont natives et modifiables.</li>
+<li>Utilisez le<a href="/fr">Convertisseur LaTeX → OMML</a>pour générer un DOCX où les équations sont natives et modifiables.</li>
 <li>Ouvrez le résultat dans Word et vérifiez quelques équations représentatives (fractions, matrices, équations alignées).</li>
 <li>Pour le formatage final, gardez les polices cohérentes (Cambria Math est une valeur par défaut sûre) et utilisez les styles Word pour les titres et les légendes.</li>
 </ol>
@@ -36,10 +36,10 @@ A = \begin{pmatrix}
 $$</code></pre>
 <h2>Pourquoi Word affiche des points d'interrogation ou des symboles étranges</h2>
 <p>Cela se produit généralement lorsque la police utilisée pour le rendu mathématique n'inclut pas les glyphes requis, ou lorsque l'équation n'est pas réellement un objet d'équation (OMML) mais du texte brut. Une autre cause fréquente est la copie à partir d'une source de texte enrichi qui injecte des caractères invisibles.</p>
-<p>Voir:<a href="/en/blog/question-marks-chatgpt-equations-word">Points d'interrogation dans les équations de ChatGPT</a>.</p>
+<p>Voir:<a href="/fr/blog/question-marks-chatgpt-equations-word">Points d'interrogation dans les équations de ChatGPT</a>.</p>
 <h2>Conversion Pandoc vs OMML</h2>
 <p>Pandoc est excellent pour la conversion de documents, mais les mathématiques en équations Word modifiables peuvent être incohérentes selon les modèles et les extensions. Si vous avez besoin d'équations modifiables de manière fiable pour une soumission académique, l'utilisation d'une étape de conversion axée sur OMML est généralement l'approche la plus stable.</p>
-<p>Voir:<a href="/en/blog/pandoc-math-to-word-omml-troubleshooting">Dépannage Pandoc pour OMML</a>.</p>
+<p>Voir:<a href="/fr/blog/pandoc-math-to-word-omml-troubleshooting">Dépannage Pandoc pour OMML</a>.</p>
 <h2>FAQ</h2>
 <h3>Mes équations seront-elles modifiables dans Word ?</h3>
 <p>Oui : lorsque la sortie utilise des objets d'équation Word natifs (OMML), vous pouvez cliquer sur une équation et la modifier avec l'éditeur d'équation.</p>
@@ -51,4 +51,4 @@ $$</code></pre>
 <p>Utilisez des délimiteurs cohérents comme<code>$...$</code>pour en ligne et<code>$$...$$</code>ou<code>\[...\]</code>pour afficher les mathématiques.</p>
 <h3>Que se passe-t-il si j'ai déjà un DOCX avec LaTeX tapé sous forme de texte ?</h3>
 <p>C'est un cas courant. Téléchargez le DOCX et le convertisseur remplacera les segments LaTeX par des équations OMML modifiables.</p>
-<p><strong>Prochaines étapes :</strong>Si vous venez de Markdown, voir<a href="/en/blog/markdown-latex-to-word-docx">Markdown + LaTeX vers DOCX</a>. Si vous venez de ChatGPT, voir<a href="/en/blog/copy-chatgpt-equations-word">Copier des équations d'IA dans Word</a>.</p>
+<p><strong>Prochaines étapes :</strong>Si vous venez de Markdown, voir<a href="/fr/blog/markdown-latex-to-word-docx">Markdown + LaTeX vers DOCX</a>. Si vous venez de ChatGPT, voir<a href="/fr/blog/copy-chatgpt-equations-word">Copier des équations d'IA dans Word</a>.</p>

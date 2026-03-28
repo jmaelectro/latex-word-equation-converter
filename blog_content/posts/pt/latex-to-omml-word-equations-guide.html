@@ -1,6 +1,6 @@
 <h2>O que é OMML (e por que é importante)</h2>
 <p>O Microsoft Word armazena equações em um formato nativo chamado<strong>OMML</strong>(Linguagem de marcação do Office Math). Quando suas equações estão em OMML, você pode editá-las com o editor de equações do Word, alinhá-las com o texto e mantê-las consistentes em todas as plataformas.</p>
-<p>Por outro lado, o LaTeX simples colado no Word geralmente é tratado como texto. Em alguns casos, o Word tenta interpretá-lo, mas o resultado é inconsistente: símbolos ausentes, espaçamento quebrado ou “pontos de interrogação” para glifos não suportados.</p>
+<p>Por outro lado, o LaTeX simples colado no Word geralmente é tratado como texto. Em alguns casos, o Word tenta interpretá-lo, mas o resultado é inconsistente: símbolos ausentes, espaçamento quebrado ou "pontos de interrogação" para glifos não suportados.</p>
 <h2>Cenários típicos: ChatGPT, Pandoc, Overleaf</h2>
 <ul>
 <li><strong>ChatGPT/Gemini/Copiloto:</strong>gera LaTeX rapidamente, mas copiar/colar no Word geralmente falha ou não é editável.</li>
@@ -11,7 +11,7 @@
 <ol>
 <li>Mantenha as equações em LaTeX com delimitadores consistentes (<code>$...$</code>, <code>$$...$$</code>, ou<code>\[...\]</code>).</li>
 <li>Exporte seu conteúdo para um<code>.txt</code>(ou mantenha em um<code>.docx</code>) onde o LaTeX aparece como texto.</li>
-<li>Use o<a href="/en">Conversor LaTeX → OMML</a>para gerar um DOCX onde as equações são nativas e editáveis.</li>
+<li>Use o<a href="/pt">Conversor LaTeX → OMML</a>para gerar um DOCX onde as equações são nativas e editáveis.</li>
 <li>Abra o resultado no Word e verifique algumas equações representativas (frações, matrizes, equações alinhadas).</li>
 <li>Para a formatação final, mantenha as fontes consistentes (Cambria Math é um padrão seguro) e use estilos do Word para títulos e legendas.</li>
 </ol>
@@ -36,12 +36,12 @@ A = \begin{pmatrix}
 $$</code></pre>
 <h2>Por que o Word mostra pontos de interrogação ou símbolos estranhos</h2>
 <p>Isso geralmente acontece quando a fonte usada para renderizar matemática não inclui os glifos necessários ou quando a equação não é realmente um objeto de equação (OMML), mas texto simples. Outra causa comum é copiar de uma fonte rich text que injeta caracteres invisíveis.</p>
-<p>Ver:<a href="/en/blog/question-marks-chatgpt-equations-word">Pontos de interrogação em equações do ChatGPT</a>.</p>
+<p>Ver:<a href="/pt/blog/question-marks-chatgpt-equations-word">Pontos de interrogação em equações do ChatGPT</a>.</p>
 <h2>Conversão Pandoc vs OMML</h2>
-<p>Pandoc é excelente para conversão de documentos, mas equações matemáticas para Word editáveis ​​podem ser inconsistentes dependendo de modelos e extensões. Se você precisar de equações editáveis ​​de forma confiável para envio acadêmico, usar uma etapa de conversão focada em OMML normalmente é a abordagem mais estável.</p>
-<p>Ver:<a href="/en/blog/pandoc-math-to-word-omml-troubleshooting">Solução de problemas Pandoc para OMML</a>.</p>
+<p>Pandoc é excelente para conversão de documentos, mas equações matemáticas para Word editáveis podem ser inconsistentes dependendo de modelos e extensões. Se você precisar de equações editáveis de forma confiável para envio acadêmico, usar uma etapa de conversão focada em OMML normalmente é a abordagem mais estável.</p>
+<p>Ver:<a href="/pt/blog/pandoc-math-to-word-omml-troubleshooting">Solução de problemas Pandoc para OMML</a>.</p>
 <h2>Perguntas frequentes</h2>
-<h3>Minhas equações serão editáveis ​​no Word?</h3>
+<h3>Minhas equações serão editáveis no Word?</h3>
 <p>Sim — quando a saída usa objetos de equação nativos do Word (OMML), você pode clicar em uma equação e editá-la com o editor de equações.</p>
 <h3>Você armazena meus arquivos?</h3>
 <p>Não. A ferramenta processa seu upload para gerar um DOCX e não guarda o arquivo após a conversão.</p>
@@ -51,4 +51,4 @@ $$</code></pre>
 <p>Use delimitadores consistentes como<code>$...$</code>para linha e<code>$$...$$</code>ou<code>\[...\]</code>para exibir matemática.</p>
 <h3>E se eu já tiver um DOCX com LaTeX digitado como texto?</h3>
 <p>Esse é um caso comum. Carregue o DOCX e o conversor substituirá os segmentos LaTeX por equações OMML editáveis.</p>
-<p><strong>Próximas etapas:</strong>Se você vem do Markdown, veja<a href="/en/blog/markdown-latex-to-word-docx">Markdown + LaTeX para DOCX</a>. Se você vem do ChatGPT, consulte<a href="/en/blog/copy-chatgpt-equations-word">Copiando equações de IA para o Word</a>.</p>
+<p><strong>Próximas etapas:</strong>Se você vem do Markdown, veja<a href="/pt/blog/markdown-latex-to-word-docx">Markdown + LaTeX para DOCX</a>. Se você vem do ChatGPT, consulte<a href="/pt/blog/copy-chatgpt-equations-word">Copiando equações de IA para o Word</a>.</p>
