@@ -1,0 +1,36 @@
+<section>
+<h2>Risposta rapida</h2>
+<p>Se il tuo output AI include LaTeX (come<code>\frac{a}{b}</code>) e lo incolli in Word, di solito diventa testo normale o si interrompe. Utilizzare invece equazioni Word native (OMML). Il flusso di lavoro più veloce è: salvare l'output AI in un file<code>.docx</code>O<code>.txt</code>, convertilo, quindi scarica un file Word con equazioni modificabili.</p>
+<p><a href="/en">Apri il convertitore LaTeX → OMML</a>.</p>
+</section>
+<section>
+<h2>Perché incollare da Gemini si interrompe in Word</h2>
+<p>Gemini spesso restituisce LaTeX. Word non interpreta LaTeX grezzo come un'equazione nativa per impostazione predefinita, quindi diventa testo normale, perde l'allineamento o viene visualizzato come punti interrogativi per i simboli non supportati.</p>
+</section>
+<section>
+<h2>Il miglior suggerimento per chiedere a Gemini LaTeX pulito</h2>
+<p>Utilizza un prompt come:<em>"Formatta ogni equazione in LaTeX. Usa $...$ per la matematica in linea e \[...\] per la matematica visualizzata. Evita i simboli matematici Unicode; usa i comandi LaTeX."</em></p>
+</section>
+<section>
+<h2>Problemi comuni e soluzioni</h2>
+<ul><li><strong>Punti interrogativi (?)</strong>: caratteri o font solitamente non supportati: chiedi a Gemini di utilizzare i comandi LaTeX invece dei simboli Unicode.</li><li><strong>Matematica mista in linea/visualizzata</strong>: mantieni delimitatori coerenti ed evita i simboli del dollaro nidificati.</li><li><strong>Derivazioni lunghe</strong>: suddiviso in blocchi di visualizzazione con \[...\] per la leggibilità.</li></ul>
+</section>
+<section>
+<h2>Flusso di lavoro consigliato (passo dopo passo)</h2>
+<ol>
+<li>Chiedi alla tua IA (ChatGPT/Gemini/Copilot/Claude/Perplexity) di formattare la matematica come LaTeX utilizzando<code>$...$</code>per in linea e<code>\[...\]</code>per esposizione.</li>
+<li>Copia il risultato in a<code>.docx</code>O<code>.txt</code>.</li>
+<li>Caricalo sul convertitore e scarica il convertito<code>.docx</code>con equazioni Word native (OMML).</li>
+<li>In Word, fai clic su un'equazione per modificarla e conferma che si comporta come una vera equazione di Word.</li>
+</ol>
+<p><a href="/en">Converti un documento adesso</a>.</p>
+</section>
+<section>
+<h2>Domande frequenti</h2>
+<h3>Le mie equazioni rimarranno modificabili?</h3>
+<p>Sì: le equazioni OMML sono modificabili nell'editor di equazioni di Word (non sono immagini).</p>
+<h3>Archivi i miei file?</h3>
+<p>No. Il convertitore elabora il caricamento per generare l'output e non conserva i file a lungo termine.</p>
+<h3>Funziona con matrici e casi?</h3>
+<p>È supportata la matematica LaTeX più comune, incluse frazioni, radici, matrici ed equazioni allineate.</p>
+</section>

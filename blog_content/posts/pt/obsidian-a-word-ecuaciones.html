@@ -1,0 +1,19 @@
+<h2>O cenário típico (Obsidian)</h2>
+<p>Você tem notas em<strong>redução</strong>com LaTeX (inline e bloco). Ao mudar para o Word, o problema comum é que as equações
+  permanecem como texto (você vê o<code>$</code>) ou não são editáveis.</p>
+<h2>Rota recomendada</h2>
+<ol>
+<li><strong>Exporte sua nota</strong>como<code>.md</code>(Remarcação).</li>
+<li><strong>Converter para .docx</strong>(por exemplo, com Pandoc) para manter a estrutura básica.</li>
+<li><strong>Delimitadores seguros</strong>e converta o documento para OMML com<a href="/">Equações para Palavra</a>.</li>
+</ol>
+<h2>Lista de verificação rápida se algo der errado</h2>
+<ul>
+<li>Verifique se não há blocos de equações de encapsulamento de código.</li>
+<li>Evite macros LaTeX personalizadas.</li>
+<li>Se Pandoc sair<code>$...$</code>visível, aplique esta solução de problemas:<a href="/blog/pandoc-ecuaciones-word-no-editables-soluciones">Pandoc: equações não editáveis</a>.
+  </li>
+</ul>
+<hr class="sep"/>
+<p class="cta">Se você também quiser entender por que o Word precisa de OMML para equações editáveis, leia:<a href="/blog/que-es-omml-ecuaciones-word">O que é OML</a>.
+</p>

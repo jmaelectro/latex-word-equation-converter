@@ -177,9 +177,210 @@ JINJA_ENV = Environment(
     autoescape=select_autoescape(["html", "xml"]),
 )
 
-BLOG_POSTS: Dict[str, Dict[str, Dict[str, Any]]] = {"es": {}, "en": {}}
-BLOG_LIST: Dict[str, List[Dict[str, Any]]] = {"es": [], "en": []}
-BLOG_ALIASES: Dict[str, Dict[str, str]] = {"es": {}, "en": {}}
+SUPPORTED_LANGS: Tuple[str, ...] = ("es", "en", "de", "fr", "it", "pt")
+PRIMARY_CONTENT_LANGS: Tuple[str, ...] = ("es", "en")
+
+LANGUAGE_LABELS: Dict[str, str] = {
+    "es": "Español",
+    "en": "English",
+    "de": "Deutsch",
+    "fr": "Français",
+    "it": "Italiano",
+    "pt": "Português",
+}
+
+UI_TEXT: Dict[str, Dict[str, str]] = {
+    "es": {
+        "nav_converter": "Conversor",
+        "related_title": "Artículos relacionados",
+        "summary_title": "Consejo rápido",
+        "summary_text": "Convierte LaTeX (o ecuaciones generadas por IA) en ecuaciones nativas y editables de Word (OMML).",
+        "summary_link": "Conversor LaTeX → Word (OMML)",
+        "cta_strong": "¿Necesitas convertir un .docx o .txt con fórmulas LaTeX?",
+        "cta_text": "Usa el conversor y descarga un Word con ecuaciones nativas (OMML).",
+        "cta_primary": "Conversor LaTeX → Word (OMML)",
+        "cta_secondary": "Ver más artículos",
+        "blog_intro": "Guías prácticas para exportar ecuaciones de LaTeX/IA a Word como OMML editable, con flujos online y troubleshooting.",
+        "index_cta_primary": "Conversor LaTeX → Word (OMML)",
+        "search_label": "Buscar artículos",
+        "search_placeholder": "Buscar por tema, herramienta o problema (ej. pandoc, overleaf, OMML, ChatGPT)…",
+        "filter_label": "Filtrar por etiqueta",
+        "filter_all": "Todos",
+        "featured_title": "Artículos",
+        "legal_privacy": "Política de privacidad",
+        "legal_terms": "Términos de uso",
+        "legal_contact": "Contacto",
+    },
+    "en": {
+        "nav_converter": "Converter",
+        "related_title": "Related articles",
+        "summary_title": "Quick tip",
+        "summary_text": "Convert LaTeX (or AI-generated math) into native, editable Word equations (OMML).",
+        "summary_link": "LaTeX → OMML converter",
+        "cta_strong": "Need to convert a .docx or .txt containing LaTeX?",
+        "cta_text": "Use the converter and download a Word file with native editable OMML equations.",
+        "cta_primary": "LaTeX → OMML Converter",
+        "cta_secondary": "More articles",
+        "blog_intro": "Practical guides to export LaTeX/AI equations to Word as native editable OMML equations, including online workflows and troubleshooting.",
+        "index_cta_primary": "LaTeX → OMML Converter",
+        "search_label": "Search articles",
+        "search_placeholder": "Search by topic, tool or issue (e.g., pandoc, overleaf, OMML, ChatGPT)…",
+        "filter_label": "Filter by tag",
+        "filter_all": "All",
+        "featured_title": "Articles",
+        "legal_privacy": "Privacy Policy",
+        "legal_terms": "Terms of use",
+        "legal_contact": "Contact",
+    },
+    "de": {
+        "nav_converter": "Konverter",
+        "related_title": "Verwandte Artikel",
+        "summary_title": "Schneller Tipp",
+        "summary_text": "Konvertiere LaTeX (oder KI-generierte Mathematik) in native, bearbeitbare Word-Gleichungen (OMML).",
+        "summary_link": "LaTeX → OMML-Konverter",
+        "cta_strong": "Möchtest du eine .docx- oder .txt-Datei mit LaTeX konvertieren?",
+        "cta_text": "Nutze den Konverter und lade eine Word-Datei mit nativen, bearbeitbaren OMML-Gleichungen herunter.",
+        "cta_primary": "LaTeX → OMML-Konverter",
+        "cta_secondary": "Weitere Artikel",
+        "blog_intro": "Praktische Leitfäden, um LaTeX/KI-Gleichungen als bearbeitbares OMML nach Word zu exportieren.",
+        "index_cta_primary": "LaTeX → OMML-Konverter",
+        "search_label": "Artikel suchen",
+        "search_placeholder": "Suche nach Thema, Tool oder Problem (z. B. pandoc, overleaf, OMML, ChatGPT)…",
+        "filter_label": "Nach Tag filtern",
+        "filter_all": "Alle",
+        "featured_title": "Artikel",
+        "legal_privacy": "Datenschutzerklärung",
+        "legal_terms": "Nutzungsbedingungen",
+        "legal_contact": "Kontakt",
+    },
+    "fr": {
+        "nav_converter": "Convertisseur",
+        "related_title": "Articles associés",
+        "summary_title": "Conseil rapide",
+        "summary_text": "Convertissez le LaTeX (ou les maths générées par IA) en équations Word natives et modifiables (OMML).",
+        "summary_link": "Convertisseur LaTeX → OMML",
+        "cta_strong": "Besoin de convertir un fichier .docx ou .txt contenant du LaTeX ?",
+        "cta_text": "Utilisez le convertisseur et téléchargez un fichier Word avec des équations OMML natives et modifiables.",
+        "cta_primary": "Convertisseur LaTeX → OMML",
+        "cta_secondary": "Plus d’articles",
+        "blog_intro": "Guides pratiques pour exporter des équations LaTeX/IA vers Word en OMML éditable.",
+        "index_cta_primary": "Convertisseur LaTeX → OMML",
+        "search_label": "Rechercher des articles",
+        "search_placeholder": "Rechercher par sujet, outil ou problème (ex. pandoc, overleaf, OMML, ChatGPT)…",
+        "filter_label": "Filtrer par étiquette",
+        "filter_all": "Tous",
+        "featured_title": "Articles",
+        "legal_privacy": "Politique de confidentialité",
+        "legal_terms": "Conditions d’utilisation",
+        "legal_contact": "Contact",
+    },
+    "it": {
+        "nav_converter": "Convertitore",
+        "related_title": "Articoli correlati",
+        "summary_title": "Suggerimento rapido",
+        "summary_text": "Converti LaTeX (o matematica generata dall’IA) in equazioni Word native e modificabili (OMML).",
+        "summary_link": "Convertitore LaTeX → OMML",
+        "cta_strong": "Devi convertire un file .docx o .txt con LaTeX?",
+        "cta_text": "Usa il convertitore e scarica un file Word con equazioni OMML native e modificabili.",
+        "cta_primary": "Convertitore LaTeX → OMML",
+        "cta_secondary": "Altri articoli",
+        "blog_intro": "Guide pratiche per esportare equazioni LaTeX/IA in Word come OMML modificabile.",
+        "index_cta_primary": "Convertitore LaTeX → OMML",
+        "search_label": "Cerca articoli",
+        "search_placeholder": "Cerca per tema, strumento o problema (es. pandoc, overleaf, OMML, ChatGPT)…",
+        "filter_label": "Filtra per tag",
+        "filter_all": "Tutti",
+        "featured_title": "Articoli",
+        "legal_privacy": "Informativa sulla privacy",
+        "legal_terms": "Termini di utilizzo",
+        "legal_contact": "Contatto",
+    },
+    "pt": {
+        "nav_converter": "Conversor",
+        "related_title": "Artigos relacionados",
+        "summary_title": "Dica rápida",
+        "summary_text": "Converta LaTeX (ou matemática gerada por IA) em equações nativas e editáveis do Word (OMML).",
+        "summary_link": "Conversor LaTeX → OMML",
+        "cta_strong": "Precisa converter um arquivo .docx ou .txt com LaTeX?",
+        "cta_text": "Use o conversor e baixe um arquivo Word com equações OMML nativas e editáveis.",
+        "cta_primary": "Conversor LaTeX → OMML",
+        "cta_secondary": "Mais artigos",
+        "blog_intro": "Guias práticos para exportar equações LaTeX/IA para Word em OMML editável.",
+        "index_cta_primary": "Conversor LaTeX → OMML",
+        "search_label": "Pesquisar artigos",
+        "search_placeholder": "Pesquise por tema, ferramenta ou problema (ex.: pandoc, overleaf, OMML, ChatGPT)…",
+        "filter_label": "Filtrar por tag",
+        "filter_all": "Todos",
+        "featured_title": "Artigos",
+        "legal_privacy": "Política de Privacidade",
+        "legal_terms": "Termos de uso",
+        "legal_contact": "Contato",
+    },
+}
+
+
+def _ui(lang: str, key: str) -> str:
+    if lang in UI_TEXT and key in UI_TEXT[lang]:
+        return UI_TEXT[lang][key]
+    return UI_TEXT["en"].get(key, "")
+
+LANG_PREFIX: Dict[str, str] = {
+    "es": "",
+    "en": "/en",
+    "de": "/de",
+    "fr": "/fr",
+    "it": "/it",
+    "pt": "/pt",
+}
+
+BLOG_POSTS: Dict[str, Dict[str, Dict[str, Any]]] = {lang: {} for lang in SUPPORTED_LANGS}
+BLOG_LIST: Dict[str, List[Dict[str, Any]]] = {lang: [] for lang in SUPPORTED_LANGS}
+BLOG_ALIASES: Dict[str, Dict[str, str]] = {lang: {} for lang in SUPPORTED_LANGS}
+
+
+def _content_lang(lang: str) -> str:
+    if lang == "es":
+        return "es"
+    if lang in SUPPORTED_LANGS and lang in BLOG_POSTS and BLOG_POSTS.get(lang):
+        return lang
+    return "en"
+
+
+def _lang_prefix(lang: str) -> str:
+    return LANG_PREFIX.get(lang, "/en")
+
+
+def _home_path(lang: str) -> str:
+    prefix = _lang_prefix(lang)
+    return prefix or "/"
+
+
+def _blog_index_path(lang: str) -> str:
+    prefix = _lang_prefix(lang)
+    return f"{prefix}/blog" if prefix else "/blog"
+
+
+def _legal_path(lang: str, page: str) -> str:
+    prefix = _lang_prefix(lang)
+    return f"{prefix}/{page}" if prefix else f"/{page}"
+
+
+def _solutions_path(lang: str) -> str:
+    if lang == "es":
+        return "/soluciones"
+    return f"{_lang_prefix(lang)}/solutions"
+
+
+def _all_alternates(path_by_lang: Dict[str, str], default_lang: str = "es") -> List[Dict[str, str]]:
+    out: List[Dict[str, str]] = []
+    for code in SUPPORTED_LANGS:
+        p = (path_by_lang.get(code) or "").strip()
+        if not p:
+            continue
+        out.append({"hreflang": code, "href": _abs_url(p)})
+    default_path = path_by_lang.get(default_lang) or path_by_lang.get("en") or "/"
+    out.append({"hreflang": "x-default", "href": _abs_url(default_path)})
+    return out
 
 LANDING_PAGES: Dict[str, Dict[str, Dict[str, Any]]] = {
     "chatgpt-equations-to-word": {
@@ -376,7 +577,27 @@ def _load_blog_data() -> Dict[str, Any]:
     """
     try:
         with open(BLOG_DATA_PATH, "r", encoding="utf-8") as f:
-            data = json.load(f)
+            raw = f.read()
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            # Best-effort repair for accidental unescaped quotes in string lines.
+            repaired_lines: List[str] = []
+            for line in raw.splitlines():
+                m = re.match(r'^(\s*"[^"]+"\s*:\s*")(.*)("\s*,?\s*)$', line)
+                if m:
+                    prefix, body, suffix = m.groups()
+                    body = re.sub(r'(?<!\\)"', r'\\"', body)
+                    repaired_lines.append(prefix + body + suffix)
+                    continue
+                m2 = re.match(r'^(\s*")(.*)("\s*,?\s*)$', line)
+                if m2 and ("<p class=\\\"" in line or line.strip().startswith("\"<")):
+                    prefix, body, suffix = m2.groups()
+                    body = re.sub(r'(?<!\\)"', r'\\"', body)
+                    repaired_lines.append(prefix + body + suffix)
+                    continue
+                repaired_lines.append(line)
+            data = json.loads("\n".join(repaired_lines))
         if not isinstance(data, dict):
             raise ValueError("posts.json root is not a JSON object")
         data.setdefault("posts", [])
@@ -393,17 +614,15 @@ def _init_blog_cache() -> None:
     posts = data.get("posts", [])
     aliases = data.get("aliases", {})
 
-    BLOG_POSTS["es"].clear()
-    BLOG_POSTS["en"].clear()
-    BLOG_LIST["es"].clear()
-    BLOG_LIST["en"].clear()
-    BLOG_ALIASES["es"].clear()
-    BLOG_ALIASES["en"].clear()
+    for lang in SUPPORTED_LANGS:
+        BLOG_POSTS[lang].clear()
+        BLOG_LIST[lang].clear()
+        BLOG_ALIASES[lang].clear()
 
     # Aliases
     if isinstance(aliases, dict):
-        BLOG_ALIASES["es"].update((aliases.get("es") or {}))
-        BLOG_ALIASES["en"].update((aliases.get("en") or {}))
+        for lang in SUPPORTED_LANGS:
+            BLOG_ALIASES[lang].update((aliases.get(lang) or {}))
 
     # Posts
     for p in posts:
@@ -412,18 +631,27 @@ def _init_blog_cache() -> None:
         lang = (p.get("lang") or "").strip()
         slug = (p.get("slug") or "").strip()
         canonical_path = (p.get("canonical_path") or "").strip()
-        if lang not in ("es", "en") or not slug or not canonical_path:
+        if lang not in SUPPORTED_LANGS or not slug or not canonical_path:
             continue
         BLOG_POSTS[lang][slug] = p
 
     # Lists (sorted)
-    for lang in ("es", "en"):
+    for lang in SUPPORTED_LANGS:
         lst = list(BLOG_POSTS[lang].values())
         lst.sort(
             key=lambda d: (d.get("date_published") or "", d.get("slug") or ""),
             reverse=True,
         )
         BLOG_LIST[lang] = lst
+
+    # EN-based locales share EN content until translated metadata/files are added.
+    for lang in SUPPORTED_LANGS:
+        if BLOG_LIST[lang]:
+            continue
+        BLOG_POSTS[lang] = dict(BLOG_POSTS["en"])
+        BLOG_LIST[lang] = list(BLOG_LIST["en"])
+        if not BLOG_ALIASES.get(lang):
+            BLOG_ALIASES[lang] = dict(BLOG_ALIASES["en"])
 
 
 _init_blog_cache()
@@ -435,12 +663,23 @@ def _render_template(template_name: str, context: Dict[str, Any]) -> str:
 
 
 def _read_blog_body(lang: str, slug: str) -> str:
-    path = os.path.join(BLOG_POSTS_DIR, lang, f"{slug}.html")
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            return f.read()
-    except FileNotFoundError:
-        return ""
+    candidates = [lang]
+    content_lang = _content_lang(lang)
+    if content_lang not in candidates:
+        candidates.append(content_lang)
+    if "en" not in candidates:
+        candidates.append("en")
+    if "es" not in candidates:
+        candidates.append("es")
+
+    for cand in candidates:
+        path = os.path.join(BLOG_POSTS_DIR, cand, f"{slug}.html")
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return f.read()
+        except FileNotFoundError:
+            continue
+    return ""
 
 
 def _month_name_es(month: int) -> str:
@@ -462,6 +701,82 @@ def _month_name_es(month: int) -> str:
     return names[month] if 1 <= month <= 12 else ""
 
 
+def _month_name_de(month: int) -> str:
+    names = [
+        "",
+        "Januar",
+        "Februar",
+        "März",
+        "April",
+        "Mai",
+        "Juni",
+        "Juli",
+        "August",
+        "September",
+        "Oktober",
+        "November",
+        "Dezember",
+    ]
+    return names[month] if 1 <= month <= 12 else ""
+
+
+def _month_name_fr(month: int) -> str:
+    names = [
+        "",
+        "janvier",
+        "février",
+        "mars",
+        "avril",
+        "mai",
+        "juin",
+        "juillet",
+        "août",
+        "septembre",
+        "octobre",
+        "novembre",
+        "décembre",
+    ]
+    return names[month] if 1 <= month <= 12 else ""
+
+
+def _month_name_it(month: int) -> str:
+    names = [
+        "",
+        "gennaio",
+        "febbraio",
+        "marzo",
+        "aprile",
+        "maggio",
+        "giugno",
+        "luglio",
+        "agosto",
+        "settembre",
+        "ottobre",
+        "novembre",
+        "dicembre",
+    ]
+    return names[month] if 1 <= month <= 12 else ""
+
+
+def _month_name_pt(month: int) -> str:
+    names = [
+        "",
+        "janeiro",
+        "fevereiro",
+        "março",
+        "abril",
+        "maio",
+        "junho",
+        "julho",
+        "agosto",
+        "setembro",
+        "outubro",
+        "novembro",
+        "dezembro",
+    ]
+    return names[month] if 1 <= month <= 12 else ""
+
+
 def _format_date(lang: str, iso_date: str) -> str:
     """Format YYYY-MM-DD into a human-readable date."""
     try:
@@ -471,7 +786,15 @@ def _format_date(lang: str, iso_date: str) -> str:
 
     if lang == "es":
         return f"{dt.day} de {_month_name_es(dt.month)} de {dt.year}"
-    # en
+    if lang == "de":
+        return f"{dt.day}. {_month_name_de(dt.month)} {dt.year}"
+    if lang == "fr":
+        return f"{dt.day} {_month_name_fr(dt.month)} {dt.year}"
+    if lang == "it":
+        return f"{dt.day} {_month_name_it(dt.month)} {dt.year}"
+    if lang == "pt":
+        return f"{dt.day} de {_month_name_pt(dt.month)} de {dt.year}"
+    # en and fallback
     return dt.strftime("%b %d, %Y")
 
 
@@ -482,9 +805,9 @@ def _build_schema_article(post: Dict[str, Any], canonical_url: str) -> str:
     date_pub = post.get("date_published") or ""
     date_mod = post.get("date_modified") or date_pub
 
-    blog_path = "/en/blog" if lang == "en" else "/blog"
+    blog_path = _blog_index_path(lang)
     blog_url = f"{SITE_CANONICAL_ORIGIN}{blog_path}"
-    home_url = f"{SITE_CANONICAL_ORIGIN}/"
+    home_url = f"{SITE_CANONICAL_ORIGIN}{_home_path(lang)}"
 
     article = {
         "@type": "Article",
@@ -536,8 +859,8 @@ def _build_schema_solution_page(
     description: str,
     related_blog_url: str,
 ) -> str:
-    solutions_hub = _abs_url("/en/solutions") if lang == "en" else _abs_url("/soluciones")
-    solutions_name = "Solutions" if lang == "en" else "Soluciones"
+    solutions_hub = _abs_url(_solutions_path(lang))
+    solutions_name = "Soluciones" if lang == "es" else "Solutions"
     schema = {
         "@context": "https://schema.org",
         "@graph": [
@@ -551,7 +874,7 @@ def _build_schema_solution_page(
             {
                 "@type": "BreadcrumbList",
                 "itemListElement": [
-                    {"@type": "ListItem", "position": 1, "name": "Home", "item": _abs_url("/")},
+                    {"@type": "ListItem", "position": 1, "name": "Home", "item": _abs_url(_home_path(lang))},
                     {"@type": "ListItem", "position": 2, "name": solutions_name, "item": solutions_hub},
                     {"@type": "ListItem", "position": 3, "name": name, "item": canonical_url},
                 ],
@@ -561,7 +884,7 @@ def _build_schema_solution_page(
                 "name": "Ecuaciones a Word",
                 "applicationCategory": "UtilityApplication",
                 "operatingSystem": "Web",
-                "url": _abs_url("/"),
+                "url": _abs_url(_home_path(lang)),
                 "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
                 "featureList": [
                     "LaTeX to Word equation conversion",
@@ -606,11 +929,15 @@ def _build_schema_solution_page(
 def _build_schema_index(lang: str, canonical_url: str) -> str:
     items = []
     for idx, p in enumerate(BLOG_LIST.get(lang, []), start=1):
+        slug = p.get("slug") or ""
+        url_path = (p.get("canonical_path") or "").strip()
+        if lang not in PRIMARY_CONTENT_LANGS or not url_path:
+            url_path = f"{_blog_index_path(lang)}/{slug}"
         items.append(
             {
                 "@type": "ListItem",
                 "position": idx,
-                "url": f"{SITE_CANONICAL_ORIGIN}{p.get('canonical_path')}",
+                "url": f"{SITE_CANONICAL_ORIGIN}{url_path}",
                 "name": p.get("title") or "",
             }
         )
@@ -695,7 +1022,7 @@ def generate_sitemap_xml() -> str:
     """
     Sitemap XML generado desde las rutas reales del sitio y desde posts.json (cache BLOG_LIST/BLOG_POSTS).
 
-    Incluye alternates hreflang (xhtml:link) cuando existe traducción ES/EN.
+    Incluye alternates hreflang (xhtml:link) para todos los idiomas soportados.
     """
     urls: List[str] = []
 
@@ -705,105 +1032,99 @@ def generate_sitemap_xml() -> str:
             return d
         return _now_lastmod_iso()
 
-    def alts_home() -> List[Dict[str, str]]:
-        return [
-            {"hreflang": "es", "href": _abs_url("/")},
-            {"hreflang": "en", "href": _abs_url("/en")},
-            {"hreflang": "x-default", "href": _abs_url("/")},
-        ]
-
-    def alts_blog_index() -> List[Dict[str, str]]:
-        return [
-            {"hreflang": "es", "href": _abs_url("/blog")},
-            {"hreflang": "en", "href": _abs_url("/en/blog")},
-            {"hreflang": "x-default", "href": _abs_url("/blog")},
-        ]
-
-    def alts_pair(es_path: str, en_path: str, x_default_path: str) -> List[Dict[str, str]]:
-        return [
-            {"hreflang": "es", "href": _abs_url(es_path)},
-            {"hreflang": "en", "href": _abs_url(en_path)},
-            {"hreflang": "x-default", "href": _abs_url(x_default_path)},
-        ]
-
-    # Home (ES y EN)
-    urls.append(_sitemap_url_entry(_abs_url("/"), _now_lastmod_iso(), "weekly", "1.0", alternates=alts_home()))
-    urls.append(_sitemap_url_entry(_abs_url("/en"), _now_lastmod_iso(), "weekly", "0.8", alternates=alts_home()))
+    # Home
+    home_paths = {lang: _home_path(lang) for lang in SUPPORTED_LANGS}
+    home_alts = _all_alternates(home_paths, default_lang="es")
+    for lang in SUPPORTED_LANGS:
+        urls.append(
+            _sitemap_url_entry(
+                _abs_url(home_paths[lang]),
+                _now_lastmod_iso(),
+                "weekly",
+                "1.0" if lang == "es" else "0.8",
+                alternates=home_alts,
+            )
+        )
 
     # Blog index
-    urls.append(_sitemap_url_entry(_abs_url("/blog"), _now_lastmod_iso(), "weekly", "0.8", alternates=alts_blog_index()))
-    urls.append(_sitemap_url_entry(_abs_url("/en/blog"), _now_lastmod_iso(), "weekly", "0.7", alternates=alts_blog_index()))
+    blog_index_paths = {lang: _blog_index_path(lang) for lang in SUPPORTED_LANGS}
+    blog_index_alts = _all_alternates(blog_index_paths, default_lang="es")
+    for lang in SUPPORTED_LANGS:
+        urls.append(
+            _sitemap_url_entry(
+                _abs_url(blog_index_paths[lang]),
+                _now_lastmod_iso(),
+                "weekly",
+                "0.8" if lang == "es" else "0.7",
+                alternates=blog_index_alts,
+            )
+        )
 
-    # Legal pages (ES/EN)
-    legal_pairs = [
-        ("/privacy", "/en/privacy", "/privacy"),
-        ("/terms", "/en/terms", "/terms"),
-        ("/contact", "/en/contact", "/contact"),
-    ]
-    for es_path, en_path, xd in legal_pairs:
-        urls.append(_sitemap_url_entry(_abs_url(es_path), _now_lastmod_iso(), "monthly", "0.3", alternates=alts_pair(es_path, en_path, xd)))
-        urls.append(_sitemap_url_entry(_abs_url(en_path), _now_lastmod_iso(), "monthly", "0.3", alternates=alts_pair(es_path, en_path, xd)))
+    # Legal pages
+    for page in ("privacy", "terms", "contact"):
+        paths = {lang: _legal_path(lang, page) for lang in SUPPORTED_LANGS}
+        alts = _all_alternates(paths, default_lang="es")
+        for lang in SUPPORTED_LANGS:
+            urls.append(
+                _sitemap_url_entry(
+                    _abs_url(paths[lang]),
+                    _now_lastmod_iso(),
+                    "monthly",
+                    "0.3",
+                    alternates=alts,
+                )
+            )
 
-    # Transactional landings (ES/EN)
+    # Transactional landings
     for es_path, en_path in _all_landing_pairs():
-        urls.append(
-            _sitemap_url_entry(
-                _abs_url(es_path),
-                _now_lastmod_iso(),
-                "weekly",
-                "0.7",
-                alternates=alts_pair(es_path, en_path, es_path),
+        route_slug = en_path.rstrip("/").split("/")[-1]
+        landing_paths = {"es": es_path, "en": en_path}
+        for lang in SUPPORTED_LANGS:
+            if lang in ("es", "en"):
+                continue
+            landing_paths[lang] = f"{_solutions_path(lang)}/{route_slug}"
+        alts = _all_alternates(landing_paths, default_lang="es")
+        for lang in SUPPORTED_LANGS:
+            path = landing_paths.get(lang)
+            if not path:
+                continue
+            urls.append(
+                _sitemap_url_entry(
+                    _abs_url(path),
+                    _now_lastmod_iso(),
+                    "weekly",
+                    "0.7" if lang == "es" else "0.6",
+                    alternates=alts,
+                )
             )
-        )
-        urls.append(
-            _sitemap_url_entry(
-                _abs_url(en_path),
-                _now_lastmod_iso(),
-                "weekly",
-                "0.6",
-                alternates=alts_pair(es_path, en_path, es_path),
+
+    # Blog posts (all supported languages)
+    for lang in SUPPORTED_LANGS:
+        for p in BLOG_LIST.get(lang, []):
+            slug = (p.get("slug") or "").strip()
+            if not slug:
+                continue
+            canonical_path = (p.get("canonical_path") or "").strip()
+            if lang not in PRIMARY_CONTENT_LANGS or not canonical_path:
+                canonical_path = f"{_blog_index_path(lang)}/{slug}"
+            paths = {
+                "es": (BLOG_POSTS.get("es", {}).get(slug, {}).get("canonical_path") or f"/blog/{slug}"),
+                "en": (BLOG_POSTS.get("en", {}).get(slug, {}).get("canonical_path") or f"/en/blog/{slug}"),
+                "de": f"/de/blog/{slug}",
+                "fr": f"/fr/blog/{slug}",
+                "it": f"/it/blog/{slug}",
+                "pt": f"/pt/blog/{slug}",
+            }
+            alts = _all_alternates(paths, default_lang="es")
+            urls.append(
+                _sitemap_url_entry(
+                    _abs_url(canonical_path),
+                    post_lastmod(p),
+                    "monthly",
+                    "0.6" if lang == "es" else "0.5",
+                    alternates=alts,
+                )
             )
-        )
-
-    # Blog posts ES (desde cache BLOG_LIST['es'])
-    for p in BLOG_LIST.get("es", []):
-        slug = (p.get("slug") or "").strip()
-        canonical_path = (p.get("canonical_path") or f"/blog/{slug}").strip()
-        if not slug:
-            continue
-
-        alternates: Optional[List[Dict[str, str]]] = None
-        translation_slug = (p.get("translation_slug") or "").strip()
-        if translation_slug and translation_slug in BLOG_POSTS.get("en", {}):
-            other = BLOG_POSTS["en"][translation_slug]
-            other_path = (other.get("canonical_path") or f"/en/blog/{translation_slug}").strip()
-            alternates = [
-                {"hreflang": "es", "href": _abs_url(canonical_path)},
-                {"hreflang": "en", "href": _abs_url(other_path)},
-                {"hreflang": "x-default", "href": _abs_url(canonical_path)},
-            ]
-
-        urls.append(_sitemap_url_entry(_abs_url(canonical_path), post_lastmod(p), "monthly", "0.6", alternates=alternates))
-
-    # Blog posts EN (desde cache BLOG_LIST['en'])
-    for p in BLOG_LIST.get("en", []):
-        slug = (p.get("slug") or "").strip()
-        canonical_path = (p.get("canonical_path") or f"/en/blog/{slug}").strip()
-        if not slug:
-            continue
-
-        alternates: Optional[List[Dict[str, str]]] = None
-        translation_slug = (p.get("translation_slug") or "").strip()
-        if translation_slug and translation_slug in BLOG_POSTS.get("es", {}):
-            other = BLOG_POSTS["es"][translation_slug]
-            other_path = (other.get("canonical_path") or f"/blog/{translation_slug}").strip()
-            alternates = [
-                {"hreflang": "es", "href": _abs_url(other_path)},
-                {"hreflang": "en", "href": _abs_url(canonical_path)},
-                {"hreflang": "x-default", "href": _abs_url(other_path)},
-            ]
-
-        urls.append(_sitemap_url_entry(_abs_url(canonical_path), post_lastmod(p), "monthly", "0.5", alternates=alternates))
 
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -1276,19 +1597,52 @@ async def home_en() -> HTMLResponse:
         return HTMLResponse("<h1>index-en.html not found</h1>", status_code=404)
 
 
+@app.get("/de", response_class=HTMLResponse)
+async def home_de() -> HTMLResponse:
+    try:
+        return HTMLResponse(read_html_file("index-de.html"))
+    except FileNotFoundError:
+        return HTMLResponse(read_html_file("index-en.html"))
+
+
+@app.get("/fr", response_class=HTMLResponse)
+async def home_fr() -> HTMLResponse:
+    try:
+        return HTMLResponse(read_html_file("index-fr.html"))
+    except FileNotFoundError:
+        return HTMLResponse(read_html_file("index-en.html"))
+
+
+@app.get("/it", response_class=HTMLResponse)
+async def home_it() -> HTMLResponse:
+    try:
+        return HTMLResponse(read_html_file("index-it.html"))
+    except FileNotFoundError:
+        return HTMLResponse(read_html_file("index-en.html"))
+
+
+@app.get("/pt", response_class=HTMLResponse)
+async def home_pt() -> HTMLResponse:
+    try:
+        return HTMLResponse(read_html_file("index-pt.html"))
+    except FileNotFoundError:
+        return HTMLResponse(read_html_file("index-en.html"))
+
+
 def _landing_from_slug(lang: str, slug: str) -> Optional[Dict[str, Any]]:
     data = LANDING_PAGES.get(slug)
     if not data:
         return None
-    return data.get(lang)
+    return data.get(lang) or data.get(_content_lang(lang))
 
 
 def _landing_key_from_route_slug(lang: str, route_slug: str) -> Optional[str]:
     route_slug = (route_slug or "").strip().lower()
     if not route_slug:
         return None
+    source_lang = _content_lang(lang)
     for key, langs in LANDING_PAGES.items():
-        path = (langs.get(lang, {}).get("path") or "").strip()
+        path = (langs.get(source_lang, {}).get("path") or "").strip()
         if not path:
             continue
         if path.rstrip("/").split("/")[-1].lower() == route_slug:
@@ -1309,20 +1663,33 @@ def _all_landing_pairs() -> List[Tuple[str, str]]:
 
 
 def _solution_landing_context(lang: str, route_slug: str) -> Optional[Dict[str, Any]]:
-    is_en = lang == "en"
+    is_es = lang == "es"
+    source_lang = _content_lang(lang)
     landing_key = _landing_key_from_route_slug(lang, route_slug)
     if not landing_key:
         return None
-    current = _landing_from_slug(lang, landing_key)
-    other = _landing_from_slug("es" if is_en else "en", landing_key)
-    if not current or not other:
+    current = _landing_from_slug(source_lang, landing_key)
+    es_page = _landing_from_slug("es", landing_key)
+    en_page = _landing_from_slug("en", landing_key)
+    if not current or not es_page or not en_page:
         return None
 
-    canonical_path = current["path"]
-    other_path = other["path"]
+    route_slug = route_slug.strip().lower()
+    canonical_path = current["path"] if lang in PRIMARY_CONTENT_LANGS else f"{_solutions_path(lang)}/{route_slug}"
     canonical_url = _abs_url(canonical_path)
-    source_page = "/en" if is_en else "/"
+    source_page = _home_path(lang)
     related_blog_href = current["related_blog_href"]
+    if lang not in PRIMARY_CONTENT_LANGS:
+        related_blog_href = related_blog_href.replace("/en/blog/", f"/{lang}/blog/")
+
+    alt_paths = {
+        "es": es_page["path"],
+        "en": en_page["path"],
+        "de": f"/de/solutions/{route_slug}",
+        "fr": f"/fr/solutions/{route_slug}",
+        "it": f"/it/solutions/{route_slug}",
+        "pt": f"/pt/solutions/{route_slug}",
+    }
 
     return {
         "lang": lang,
@@ -1331,11 +1698,7 @@ def _solution_landing_context(lang: str, route_slug: str) -> Optional[Dict[str, 
         "description": current["description"],
         "keywords": [],
         "canonical_url": canonical_url,
-        "alternates": [
-            {"hreflang": "es", "href": _abs_url(_landing_from_slug("es", landing_key)["path"])},
-            {"hreflang": "en", "href": _abs_url(_landing_from_slug("en", landing_key)["path"])},
-            {"hreflang": "x-default", "href": _abs_url(_landing_from_slug("es", landing_key)["path"])},
-        ],
+        "alternates": _all_alternates(alt_paths, default_lang="es"),
         "og_type": "website",
         "og_title": current["title"],
         "og_description": current["description"],
@@ -1343,12 +1706,12 @@ def _solution_landing_context(lang: str, route_slug: str) -> Optional[Dict[str, 
         "schema_json": _build_schema_solution_page(
             current["title"], canonical_url, lang, current["description"], _abs_url(related_blog_href)
         ),
-        "converter_href": "/en" if is_en else "/",
-        "blog_index_href": "/en/blog" if is_en else "/blog",
-        "nav_converter": "Converter" if is_en else "Conversor",
+        "converter_href": _home_path(lang),
+        "blog_index_href": _blog_index_path(lang),
+        "nav_converter": _ui(lang, "nav_converter"),
         "nav_blog": "Blog",
-        "lang_switch_href": other_path,
-        "lang_switch_label": "ES" if is_en else "EN",
+        "lang_switch_href": _home_path("es" if lang != "es" else "en"),
+        "lang_switch_label": "ES" if lang != "es" else "EN",
         "page_kicker": current["kicker"],
         "page_title": current["h1"],
         "page_intro": current["intro"],
@@ -1359,9 +1722,9 @@ def _solution_landing_context(lang: str, route_slug: str) -> Optional[Dict[str, 
         "related_blog_label": current["related_blog_label"],
         "year": datetime.now().year,
         "legal_links": {
-            "privacy": "/en/privacy" if is_en else "/privacy",
-            "terms": "/en/terms" if is_en else "/terms",
-            "contact": "/en/contact" if is_en else "/contact",
+            "privacy": _legal_path(lang, "privacy"),
+            "terms": _legal_path(lang, "terms"),
+            "contact": _legal_path(lang, "contact"),
         },
     }
 
@@ -1382,6 +1745,38 @@ async def solution_landing_en(slug: str) -> HTMLResponse:
     return HTMLResponse(_render_template("solution_landing.html", ctx))
 
 
+@app.get("/de/solutions/{slug}", response_class=HTMLResponse)
+async def solution_landing_de(slug: str) -> HTMLResponse:
+    ctx = _solution_landing_context("de", slug)
+    if not ctx:
+        raise HTTPException(status_code=404, detail="Landing not found")
+    return HTMLResponse(_render_template("solution_landing.html", ctx))
+
+
+@app.get("/fr/solutions/{slug}", response_class=HTMLResponse)
+async def solution_landing_fr(slug: str) -> HTMLResponse:
+    ctx = _solution_landing_context("fr", slug)
+    if not ctx:
+        raise HTTPException(status_code=404, detail="Landing not found")
+    return HTMLResponse(_render_template("solution_landing.html", ctx))
+
+
+@app.get("/it/solutions/{slug}", response_class=HTMLResponse)
+async def solution_landing_it(slug: str) -> HTMLResponse:
+    ctx = _solution_landing_context("it", slug)
+    if not ctx:
+        raise HTTPException(status_code=404, detail="Landing not found")
+    return HTMLResponse(_render_template("solution_landing.html", ctx))
+
+
+@app.get("/pt/solutions/{slug}", response_class=HTMLResponse)
+async def solution_landing_pt(slug: str) -> HTMLResponse:
+    ctx = _solution_landing_context("pt", slug)
+    if not ctx:
+        raise HTTPException(status_code=404, detail="Landing not found")
+    return HTMLResponse(_render_template("solution_landing.html", ctx))
+
+
 @app.get("/soluciones", response_class=RedirectResponse)
 async def solutions_es() -> RedirectResponse:
     return RedirectResponse(url="/soluciones/conversor-omml", status_code=301)
@@ -1392,6 +1787,26 @@ async def solutions_en() -> RedirectResponse:
     return RedirectResponse(url="/en/solutions/omml-converter", status_code=301)
 
 
+@app.get("/de/solutions", response_class=RedirectResponse)
+async def solutions_de() -> RedirectResponse:
+    return RedirectResponse(url="/de/solutions/omml-converter", status_code=301)
+
+
+@app.get("/fr/solutions", response_class=RedirectResponse)
+async def solutions_fr() -> RedirectResponse:
+    return RedirectResponse(url="/fr/solutions/omml-converter", status_code=301)
+
+
+@app.get("/it/solutions", response_class=RedirectResponse)
+async def solutions_it() -> RedirectResponse:
+    return RedirectResponse(url="/it/solutions/omml-converter", status_code=301)
+
+
+@app.get("/pt/solutions", response_class=RedirectResponse)
+async def solutions_pt() -> RedirectResponse:
+    return RedirectResponse(url="/pt/solutions/omml-converter", status_code=301)
+
+
 # ================================================================
 # Legal / Trust pages
 # ================================================================
@@ -1400,7 +1815,9 @@ def _legal_page_context(lang: str, page: str) -> Dict[str, Any]:
     Build context for simple legal/trust pages.
     page: 'privacy' | 'terms' | 'contact'
     """
-    is_en = lang == "en"
+    is_es = lang == "es"
+    source_lang = _content_lang(lang)
+    is_en = source_lang == "en"
     site = SITE_NAME
 
     if page == "privacy":
@@ -1479,22 +1896,43 @@ def _legal_page_context(lang: str, page: str) -> Dict[str, Any]:
         description = ""
         body_html = "<p></p>"
 
+    localized_legal: Dict[str, Dict[str, Dict[str, str]]] = {
+        "de": {
+            "privacy": {"title": "Datenschutzerkl?rung", "description": "Wie wir hochgeladene Dateien und Daten verarbeiten."},
+            "terms": {"title": "Nutzungsbedingungen", "description": "Regeln und Einschr?nkungen f?r den Konverter."},
+            "contact": {"title": "Kontakt", "description": "So erreichst du das Projekt."},
+        },
+        "fr": {
+            "privacy": {"title": "Politique de confidentialit?", "description": "Comment nous traitons les fichiers et les donn?es envoy?s."},
+            "terms": {"title": "Conditions d?utilisation", "description": "R?gles et limites d?utilisation du convertisseur."},
+            "contact": {"title": "Contact", "description": "Contactez le projet."},
+        },
+        "it": {
+            "privacy": {"title": "Informativa sulla privacy", "description": "Come trattiamo file e dati caricati."},
+            "terms": {"title": "Termini di utilizzo", "description": "Regole e limiti d?uso del convertitore."},
+            "contact": {"title": "Contatto", "description": "Contatta il progetto."},
+        },
+        "pt": {
+            "privacy": {"title": "Pol?tica de Privacidade", "description": "Como tratamos arquivos e dados enviados."},
+            "terms": {"title": "Termos de uso", "description": "Regras e limita??es para usar o conversor."},
+            "contact": {"title": "Contato", "description": "Fale com o projeto."},
+        },
+    }
+    if lang in localized_legal and page in localized_legal[lang]:
+        title = localized_legal[lang][page]["title"]
+        description = localized_legal[lang][page]["description"]
+
     # URLs
-    es_path = f"/{page}" if page in {"privacy", "terms", "contact"} else "/"
-    en_path = f"/en/{page}" if page in {"privacy", "terms", "contact"} else "/en"
-    canonical_path = en_path if is_en else es_path
+    canonical_path = _legal_path(lang, page) if page in {"privacy", "terms", "contact"} else _home_path(lang)
     canonical_url = _abs_url(canonical_path)
 
-    alternates = [
-        {"hreflang": "es", "href": _abs_url(es_path)},
-        {"hreflang": "en", "href": _abs_url(en_path)},
-        {"hreflang": "x-default", "href": _abs_url(es_path)},
-    ]
+    alt_paths = {code: _legal_path(code, page) for code in SUPPORTED_LANGS}
+    alternates = _all_alternates(alt_paths, default_lang="es")
 
-    nav_converter = "Converter" if is_en else "Conversor"
+    nav_converter = _ui(lang, "nav_converter")
     nav_blog = "Blog"
-    lang_switch_href = en_path if not is_en else es_path
-    lang_switch_label = "EN" if not is_en else "ES"
+    lang_switch_href = _legal_path("es" if lang != "es" else "en", page)
+    lang_switch_label = "ES" if lang != "es" else "EN"
 
     return {
         "lang": lang,
@@ -1509,8 +1947,8 @@ def _legal_page_context(lang: str, page: str) -> Dict[str, Any]:
         "og_description": description,
         "og_image": _abs_url("/static/og-image.svg"),
         "schema_json": _build_schema_simple_page(title, canonical_url, lang),
-        "converter_href": "/" if not is_en else "/en",
-        "blog_index_href": "/blog" if not is_en else "/en/blog",
+        "converter_href": _home_path(lang),
+        "blog_index_href": _blog_index_path(lang),
         "nav_converter": nav_converter,
         "nav_blog": nav_blog,
         "lang_switch_href": lang_switch_href,
@@ -1528,9 +1966,9 @@ def _legal_page_context(lang: str, page: str) -> Dict[str, Any]:
         "year": datetime.now(timezone.utc).year,
         "footer_links": True,
         "legal_links": {
-            "privacy": "/privacy" if not is_en else "/en/privacy",
-            "terms": "/terms" if not is_en else "/en/terms",
-            "contact": "/contact" if not is_en else "/en/contact",
+            "privacy": _legal_path(lang, "privacy"),
+            "terms": _legal_path(lang, "terms"),
+            "contact": _legal_path(lang, "contact"),
         },
     }
 
@@ -1575,6 +2013,66 @@ async def contact_en() -> HTMLResponse:
     ctx = _legal_page_context("en", "contact")
     html = _render_template("legal_page.html", ctx)
     return HTMLResponse(html)
+
+
+@app.get("/de/privacy", response_class=HTMLResponse)
+async def privacy_de() -> HTMLResponse:
+    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("de", "privacy")))
+
+
+@app.get("/de/terms", response_class=HTMLResponse)
+async def terms_de() -> HTMLResponse:
+    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("de", "terms")))
+
+
+@app.get("/de/contact", response_class=HTMLResponse)
+async def contact_de() -> HTMLResponse:
+    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("de", "contact")))
+
+
+@app.get("/fr/privacy", response_class=HTMLResponse)
+async def privacy_fr() -> HTMLResponse:
+    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("fr", "privacy")))
+
+
+@app.get("/fr/terms", response_class=HTMLResponse)
+async def terms_fr() -> HTMLResponse:
+    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("fr", "terms")))
+
+
+@app.get("/fr/contact", response_class=HTMLResponse)
+async def contact_fr() -> HTMLResponse:
+    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("fr", "contact")))
+
+
+@app.get("/it/privacy", response_class=HTMLResponse)
+async def privacy_it() -> HTMLResponse:
+    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("it", "privacy")))
+
+
+@app.get("/it/terms", response_class=HTMLResponse)
+async def terms_it() -> HTMLResponse:
+    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("it", "terms")))
+
+
+@app.get("/it/contact", response_class=HTMLResponse)
+async def contact_it() -> HTMLResponse:
+    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("it", "contact")))
+
+
+@app.get("/pt/privacy", response_class=HTMLResponse)
+async def privacy_pt() -> HTMLResponse:
+    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("pt", "privacy")))
+
+
+@app.get("/pt/terms", response_class=HTMLResponse)
+async def terms_pt() -> HTMLResponse:
+    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("pt", "terms")))
+
+
+@app.get("/pt/contact", response_class=HTMLResponse)
+async def contact_pt() -> HTMLResponse:
+    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("pt", "contact")))
 
 
 @app.get("/blog", response_class=HTMLResponse)
@@ -1717,6 +2215,94 @@ async def blog_index_en() -> HTMLResponse:
     return HTMLResponse(_render_template("blog_index.html", ctx))
 
 
+def _build_blog_index_context_fallback_en(lang: str) -> Dict[str, Any]:
+    canonical_url = _abs_url(_blog_index_path(lang))
+
+    posts_view: List[Dict[str, Any]] = []
+    tag_counts: Dict[str, int] = {}
+    for p in BLOG_LIST.get(lang, []):
+        for t in (p.get("tags") or []):
+            if not isinstance(t, str) or not t.strip():
+                continue
+            tag_counts[t] = tag_counts.get(t, 0) + 1
+        posts_view.append(
+            {
+                "url": f"{_blog_index_path(lang)}/{p.get('slug')}",
+                "title": p.get("title") or "",
+                "description": p.get("description") or "",
+                "kicker": p.get("kicker") or "",
+                "tags": p.get("tags") or [],
+                "meta": f"{_format_date(lang, p.get('date_published') or '')} · {p.get('reading_time') or ''}".strip(
+                    " ·"
+                ),
+            }
+        )
+
+    top_tags = [
+        k
+        for k, _ in sorted(tag_counts.items(), key=lambda kv: (-kv[1], kv[0].lower()))
+    ][:8]
+
+    alt_paths = {code: _blog_index_path(code) for code in SUPPORTED_LANGS}
+
+    return {
+        "lang": lang,
+        "site_name": SITE_NAME,
+        "seo_title": "Blog | Ecuaciones a Word",
+        "description": "Practical guides to convert LaTeX/AI content to Word with native (OMML) editable equations.",
+        "keywords": ["LaTeX to Word", "LaTeX to Word online", "OMML", "Word equations", "ChatGPT", "Pandoc"],
+        "canonical_url": canonical_url,
+        "alternates": _all_alternates(alt_paths, default_lang="es"),
+        "og_type": "website",
+        "og_title": "Blog | Ecuaciones a Word",
+        "og_description": "Practical guides for converting LaTeX equations to native Word (OMML) cleanly and reliably.",
+        "og_image": _abs_url("/static/og-image.svg"),
+        "schema_json": _build_schema_index(lang, canonical_url),
+        "converter_href": _home_path(lang),
+        "blog_index_href": _blog_index_path(lang),
+        "nav_converter": _ui(lang, "nav_converter"),
+        "nav_blog": "Blog",
+        "lang_switch_href": _blog_index_path("es"),
+        "lang_switch_label": "ES",
+        "h1": "Blog",
+        "intro": _ui(lang, "blog_intro"),
+        "index_cta_primary": _ui(lang, "index_cta_primary"),
+        "search_label": _ui(lang, "search_label"),
+        "search_placeholder": _ui(lang, "search_placeholder"),
+        "filter_label": _ui(lang, "filter_label"),
+        "filter_all": _ui(lang, "filter_all"),
+        "top_tags": top_tags,
+        "featured_title": _ui(lang, "featured_title"),
+        "posts": posts_view,
+        "year": datetime.now().year,
+        "legal_links": {
+            "privacy": _legal_path(lang, "privacy"),
+            "terms": _legal_path(lang, "terms"),
+            "contact": _legal_path(lang, "contact"),
+        },
+    }
+
+
+@app.get("/de/blog", response_class=HTMLResponse)
+async def blog_index_de() -> HTMLResponse:
+    return HTMLResponse(_render_template("blog_index.html", _build_blog_index_context_fallback_en("de")))
+
+
+@app.get("/fr/blog", response_class=HTMLResponse)
+async def blog_index_fr() -> HTMLResponse:
+    return HTMLResponse(_render_template("blog_index.html", _build_blog_index_context_fallback_en("fr")))
+
+
+@app.get("/it/blog", response_class=HTMLResponse)
+async def blog_index_it() -> HTMLResponse:
+    return HTMLResponse(_render_template("blog_index.html", _build_blog_index_context_fallback_en("it")))
+
+
+@app.get("/pt/blog", response_class=HTMLResponse)
+async def blog_index_pt() -> HTMLResponse:
+    return HTMLResponse(_render_template("blog_index.html", _build_blog_index_context_fallback_en("pt")))
+
+
 # Redirects legacy numeric
 @app.get("/blog2")
 async def blog2_redirect() -> RedirectResponse:
@@ -1751,7 +2337,7 @@ def _resolve_blog_slug(lang: str, slug: str) -> Tuple[Optional[str], Optional[Di
         post = BLOG_POSTS.get(lang, {}).get(canonical_slug)
         if post and post.get("canonical_path"):
             return post["canonical_path"], None
-        prefix = "/blog/" if lang == "es" else "/en/blog/"
+        prefix = f"{_blog_index_path(lang)}/"
         return f"{prefix}{canonical_slug}", None
 
     post = BLOG_POSTS.get(lang, {}).get(slug)
@@ -1932,6 +2518,144 @@ async def blog_post_en(slug: str) -> HTMLResponse:
         "legal_links": {"privacy": "/en/privacy", "terms": "/en/terms", "contact": "/en/contact"},
     }
     return HTMLResponse(_render_template("blog_post.html", ctx))
+
+
+def _blog_post_context_fallback_en(lang: str, post: Dict[str, Any], body_html: str) -> Dict[str, Any]:
+    slug = post.get("slug") or ""
+    canonical_path = f"{_blog_index_path(lang)}/{slug}"
+    canonical_url = _abs_url(canonical_path)
+    date_pub = post.get("date_published") or ""
+    date_mod = post.get("date_modified") or ""
+
+    meta_label = "Publicado" if lang == "es" else {
+        "de": "Veröffentlicht",
+        "fr": "Publié",
+        "it": "Pubblicato",
+        "pt": "Publicado",
+    }.get(lang, "Published")
+    updated_label = "Actualizado" if lang == "es" else {
+        "de": "Aktualisiert",
+        "fr": "Mis à jour",
+        "it": "Aggiornato",
+        "pt": "Atualizado",
+    }.get(lang, "Updated")
+
+    meta_line = f"{meta_label} {_format_date(lang, date_pub)}"
+    if post.get("reading_time"):
+        meta_line += f" · {post['reading_time']}"
+    if date_mod and date_mod != date_pub:
+        meta_line += f" · {updated_label} {_format_date(lang, date_mod)}"
+
+    alt_paths = {
+        "es": (BLOG_POSTS.get("es", {}).get(slug, {}).get("canonical_path") or f"/blog/{slug}"),
+        "en": (BLOG_POSTS.get("en", {}).get(slug, {}).get("canonical_path") or f"/en/blog/{slug}"),
+        "de": f"/de/blog/{slug}",
+        "fr": f"/fr/blog/{slug}",
+        "it": f"/it/blog/{slug}",
+        "pt": f"/pt/blog/{slug}",
+    }
+
+    post_schema = dict(post)
+    post_schema["lang"] = lang
+
+    return {
+        "lang": lang,
+        "site_name": SITE_NAME,
+        "seo_title": post.get("seo_title") or (post.get("title") or ""),
+        "description": post.get("description") or "",
+        "keywords": post.get("keywords") or [],
+        "canonical_url": canonical_url,
+        "alternates": _all_alternates(alt_paths, default_lang="es"),
+        "og_type": "article",
+        "og_title": post.get("title") or "",
+        "og_description": post.get("description") or "",
+        "og_image": _abs_url("/static/og-image.svg"),
+        "schema_json": _build_schema_article(post_schema, canonical_url),
+        "related_posts": _get_related_posts(lang, post, limit=4),
+        "related_title": _ui(lang, "related_title"),
+        "summary_box_title": _ui(lang, "summary_title"),
+        "summary_box_text": _ui(lang, "summary_text"),
+        "summary_box_link_text": _ui(lang, "summary_link"),
+        "converter_href": _home_path(lang),
+        "blog_index_href": _blog_index_path(lang),
+        "nav_converter": _ui(lang, "nav_converter"),
+        "nav_blog": "Blog",
+        "lang_switch_href": _blog_index_path("es"),
+        "lang_switch_label": "ES",
+        "kicker": post.get("kicker") or "",
+        "title": post.get("title") or "",
+        "meta_line": meta_line,
+        "tags": post.get("tags") or [],
+        "intro_html": post.get("intro_html") or [],
+        "breadcrumbs": [
+            {"name": "Home", "url": _home_path(lang)},
+            {"name": "Blog", "url": _blog_index_path(lang)},
+            {"name": post.get("title") or "", "url": canonical_path},
+        ],
+        "body_html": body_html,
+        "cta_strong": _ui(lang, "cta_strong"),
+        "cta_text": _ui(lang, "cta_text"),
+        "cta_primary": _ui(lang, "cta_primary"),
+        "cta_secondary": _ui(lang, "cta_secondary"),
+        "year": datetime.now().year,
+        "legal_links": {
+            "privacy": _legal_path(lang, "privacy"),
+            "terms": _legal_path(lang, "terms"),
+            "contact": _legal_path(lang, "contact"),
+        },
+    }
+
+
+@app.get("/de/blog/{slug}", response_class=HTMLResponse)
+async def blog_post_de(slug: str) -> HTMLResponse:
+    redirect_url, post = _resolve_blog_slug("de", slug)
+    if redirect_url:
+        return RedirectResponse(url=redirect_url, status_code=301)
+    if not post:
+        raise HTTPException(status_code=404, detail="Blog post not found")
+    body_html = _read_blog_body("de", post["slug"])
+    if not body_html.strip():
+        raise HTTPException(status_code=404, detail="Blog post body not found")
+    return HTMLResponse(_render_template("blog_post.html", _blog_post_context_fallback_en("de", post, body_html)))
+
+
+@app.get("/fr/blog/{slug}", response_class=HTMLResponse)
+async def blog_post_fr(slug: str) -> HTMLResponse:
+    redirect_url, post = _resolve_blog_slug("fr", slug)
+    if redirect_url:
+        return RedirectResponse(url=redirect_url, status_code=301)
+    if not post:
+        raise HTTPException(status_code=404, detail="Blog post not found")
+    body_html = _read_blog_body("fr", post["slug"])
+    if not body_html.strip():
+        raise HTTPException(status_code=404, detail="Blog post body not found")
+    return HTMLResponse(_render_template("blog_post.html", _blog_post_context_fallback_en("fr", post, body_html)))
+
+
+@app.get("/it/blog/{slug}", response_class=HTMLResponse)
+async def blog_post_it(slug: str) -> HTMLResponse:
+    redirect_url, post = _resolve_blog_slug("it", slug)
+    if redirect_url:
+        return RedirectResponse(url=redirect_url, status_code=301)
+    if not post:
+        raise HTTPException(status_code=404, detail="Blog post not found")
+    body_html = _read_blog_body("it", post["slug"])
+    if not body_html.strip():
+        raise HTTPException(status_code=404, detail="Blog post body not found")
+    return HTMLResponse(_render_template("blog_post.html", _blog_post_context_fallback_en("it", post, body_html)))
+
+
+@app.get("/pt/blog/{slug}", response_class=HTMLResponse)
+async def blog_post_pt(slug: str) -> HTMLResponse:
+    redirect_url, post = _resolve_blog_slug("pt", slug)
+    if redirect_url:
+        return RedirectResponse(url=redirect_url, status_code=301)
+    if not post:
+        raise HTTPException(status_code=404, detail="Blog post not found")
+    body_html = _read_blog_body("pt", post["slug"])
+    if not body_html.strip():
+        raise HTTPException(status_code=404, detail="Blog post body not found")
+    return HTMLResponse(_render_template("blog_post.html", _blog_post_context_fallback_en("pt", post, body_html)))
 
 
 @app.get("/robots.txt")
@@ -2969,7 +3693,10 @@ def _get_related_posts(lang: str, current_post: Dict[str, Any], limit: int = 4) 
 
     out: List[Dict[str, str]] = []
     for _, __, p in candidates[:limit]:
-        out.append({"url": p.get("canonical_path") or "", "title": p.get("title") or ""})
+        url = p.get("canonical_path") or ""
+        if lang not in PRIMARY_CONTENT_LANGS:
+            url = f"{_blog_index_path(lang)}/{p.get('slug') or ''}"
+        out.append({"url": url, "title": p.get("title") or ""})
 
     if len(out) >= limit:
         return out
@@ -2980,6 +3707,8 @@ def _get_related_posts(lang: str, current_post: Dict[str, Any], limit: int = 4) 
         if (p.get("slug") or "") == cur_slug:
             continue
         url = p.get("canonical_path") or ""
+        if lang not in PRIMARY_CONTENT_LANGS:
+            url = f"{_blog_index_path(lang)}/{p.get('slug') or ''}"
         if not url or url in used_urls:
             continue
         out.append({"url": url, "title": p.get("title") or ""})

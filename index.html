@@ -810,7 +810,7 @@
     ]
   }
   </script>
-<link href="https://www.ecuacionesaword.com/" hreflang="es" rel="alternate"/><link href="https://www.ecuacionesaword.com/en" hreflang="en" rel="alternate"/>
+<link href="https://www.ecuacionesaword.com/" hreflang="es" rel="alternate"/><link href="https://www.ecuacionesaword.com/en" hreflang="en" rel="alternate"/><link href="https://www.ecuacionesaword.com/de" hreflang="de" rel="alternate"/><link href="https://www.ecuacionesaword.com/fr" hreflang="fr" rel="alternate"/><link href="https://www.ecuacionesaword.com/it" hreflang="it" rel="alternate"/><link href="https://www.ecuacionesaword.com/pt" hreflang="pt" rel="alternate"/>
 <link href="https://www.ecuacionesaword.com/" hreflang="x-default" rel="alternate"/></head>
 <body>
 <div class="page">
@@ -828,8 +828,12 @@
 <div class="nav-right">
 <div class="lang-switch">
 <select class="lang-select" id="lang-select">
-<option value="es">Español</option>
+<option value="es">Espa?ol</option>
 <option value="en">English</option>
+<option value="de">Deutsch</option>
+<option value="fr">Fran?ais</option>
+<option value="it">Italiano</option>
+<option value="pt">Portugu?s</option>
 </select>
 </div>
 </div>
@@ -1215,11 +1219,14 @@
 <script>
 (() => {
   const endpoint = "/convert";
-  const isEnglish = window.location.pathname.startsWith("/en");
+  const supportedLangs = ["es", "en", "de", "fr", "it", "pt"];
+  const firstSegment = (window.location.pathname.split("/").filter(Boolean)[0] || "es").toLowerCase();
+  const currentLang = supportedLangs.includes(firstSegment) ? firstSegment : "es";
+  const isEnglish = currentLang !== "es";
   const baseParams = {
-    lang: isEnglish ? "en" : "es",
+    lang: currentLang,
     page_type: "home",
-    source_page: window.location.pathname || (isEnglish ? "/en" : "/"),
+    source_page: window.location.pathname || (currentLang === "es" ? "/" : `/${currentLang}`),
   };
 
   function track(name, params = {}) {
@@ -1239,25 +1246,18 @@
   function getFileExt(name) {
     const idx = (name || "").lastIndexOf(".");
     return idx > -1 ? name.slice(idx + 1).toLowerCase() : "unknown";
-  }
-
-  // Language switcher (home)
+  }  // Language switcher (home)
   const langSelect = document.getElementById("lang-select");
   if (langSelect) {
-    // Set initial state based on current URL
-    langSelect.value = isEnglish ? "en" : "es";
+    langSelect.value = currentLang;
 
     langSelect.addEventListener("change", () => {
-      const target = langSelect.value === "en" ? "en" : "es";
+      const target = supportedLangs.includes(langSelect.value) ? langSelect.value : "es";
 
-      // Persist preference (best-effort)
       try { localStorage.setItem("preferredLang", target); } catch {}
 
-      // Home routes: "/" <-> "/en"
-      if (target === "en" && !isEnglish) {
-        window.location.href = "/en";
-      } else if (target === "es" && isEnglish) {
-        window.location.href = "/";
+      if (target !== currentLang) {
+        window.location.href = target === "es" ? "/" : `/${target}`;
       }
     });
   }

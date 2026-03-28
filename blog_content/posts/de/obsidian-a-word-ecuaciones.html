@@ -1,0 +1,19 @@
+<h2>Das typische Szenario (Obsidian)</h2>
+<p>Sie haben Notizen<strong>Abschlag</strong>mit LaTeX (inline und block). Beim Wechsel zu Word besteht das häufige Problem darin, dass die Gleichungen
+  bleiben als Text (Sie sehen die<code>$</code>) oder nicht editierbar sind.</p>
+<h2>Empfohlene Route</h2>
+<ol>
+<li><strong>Exportieren Sie Ihre Notiz</strong>als<code>.md</code>(Abschlag).</li>
+<li><strong>In .docx konvertieren</strong>(z. B. mit Pandoc), um die Grundstruktur beizubehalten.</li>
+<li><strong>Sichere Trennzeichen</strong>und konvertieren Sie das Dokument mit in OMML<a href="/">Gleichungen zu Word</a>.</li>
+</ol>
+<h2>Schnelle Checkliste, falls etwas schief geht</h2>
+<ul>
+<li>Stellen Sie sicher, dass keine Blöcke mit Code-Wrapping-Gleichungen vorhanden sind.</li>
+<li>Vermeiden Sie benutzerdefinierte LaTeX-Makros.</li>
+<li>Wenn Pandoc geht<code>$...$</code>sichtbar ist, wenden Sie diese Fehlerbehebung an:<a href="/blog/pandoc-ecuaciones-word-no-editables-soluciones">Pandoc: nicht editierbare Gleichungen</a>.
+  </li>
+</ul>
+<hr class="sep"/>
+<p class="cta">Wenn Sie auch verstehen möchten, warum Word OMML für bearbeitbare Gleichungen benötigt, lesen Sie:<a href="/blog/que-es-omml-ecuaciones-word">Was ist OMML?</a>.
+</p>

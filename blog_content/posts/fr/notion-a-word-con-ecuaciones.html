@@ -1,0 +1,16 @@
+<h2>Pourquoi Notion → Word échoue souvent en mathématiques</h2>
+<p>Notion affiche parfaitement les équations, mais lors de l'exportation vers Word, il est courant que les formules perdent leur éditabilité
+  ou devenir « aplati ». Le moyen le plus stable consiste à conserver le contenu délimité par LaTeX et à le convertir en OMML à la fin.</p>
+<h2>Déroulement pratique en 3 étapes</h2>
+<ol>
+<li><strong>Exporter depuis Notion</strong>(Markdown ou HTML, selon votre cas) et copiez le contenu mathématique.</li>
+<li><strong>Normaliser les équations</strong>avec délimiteurs<code>$...$</code>et<code>$$...$$</code>(soit<code>\[...\]</code>).</li>
+<li><strong>Coller dans .docx/.txt</strong>et convertissez-le avec<a href="/">Équations à Word</a>pour obtenir des équations OMML modifiables.</li>
+</ol>
+<h2>Exemple</h2>
+<pre><code>Texto con inline: $E=mc^2$
+Bloque:
+\[ \sum_{k=1}^n k = \frac{n(n+1)}{2} \]</code></pre>
+<hr class="sep"/>
+<p class="cta">Si votre contenu provient initialement de Markdown avec des mathématiques, ce guide peut vous aider :<a href="/blog/markdown-con-latex-a-word-docx">Markdown avec LaTeX vers Word (.docx)</a>.
+</p>

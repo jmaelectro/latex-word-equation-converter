@@ -31,7 +31,7 @@
   <section class="bottom-cta">
     <span>
       <strong>{{ "Ready to convert your file?" if lang == "en" else "¿Listo para convertir tu archivo?" }}</strong>
-      {{ "Upload .docx or .txt and get editable Word equations." if lang == "en" else "Sube .docx o .txt y descarga ecuaciones editables en Word." }}
+      {{ "Sube .docx o .txt y descarga ecuaciones editables en Word." if lang == "es" else "Upload .docx or .txt and get editable Word equations." }}
     </span>
     <span>
       <a class="button" href="{{ converter_href }}#converter">{{ cta_label }}</a>
@@ -42,9 +42,9 @@
 
 <div class="footer">
   © {{ year }} {{ site_name }} ·
-  <a href="{{ legal_links.privacy }}">{{ "Privacy" if lang=="en" else "Privacidad" }}</a> ·
+  <a href="{{ legal_links.privacy }}">{{ "Privacidad" if lang=="es" else "Privacy" }}</a> ·
   <a href="{{ legal_links.terms }}">{{ "Terms" if lang=="en" else "Términos" }}</a> ·
-  <a href="{{ legal_links.contact }}">{{ "Contact" if lang=="en" else "Contacto" }}</a> ·
+  <a href="{{ legal_links.contact }}">{{ "Contacto" if lang=="es" else "Contact" }}</a> ·
   <a href="https://github.com/jmaelectro/latex-word-equation-converter" rel="noopener">GitHub</a>
 </div>
 {% endblock %}

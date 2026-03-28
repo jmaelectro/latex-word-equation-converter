@@ -1,13 +1,11 @@
-<!DOCTYPE html>
-
-<html lang="en">
+HTML<html lang="pt">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>LaTeX to Word online (native Word equations / OMML) | Equations to Word</title>
+<title>LaTeX para Word online (equações nativas do Word / OMML) | Equações para Palavra</title>
 <meta content="Convert LaTeX equations to native Word equations (OMML) inside a .docx. Fix ChatGPT→Word copy/paste issues and keep equations fully editable." name="description"/>
 <meta content="latex to word, latex to word converter, convert latex to word, chatgpt equations to word, OMML, Word equation editor, LaTeX to OMML" name="keywords"/>
-<link href="https://www.ecuacionesaword.com/en" rel="canonical"/>
+<link href="https://www.ecuacionesaword.com/pt" rel="canonical"/>
 <meta content="index,follow,max-image-preview:large" name="robots"/>
 <meta content="#020617" name="theme-color"/>
 <link href="/static/favicon.svg" rel="icon" type="image/svg+xml"/>
@@ -19,7 +17,7 @@
 <meta content="en_US" property="og:locale:alternate"/>
 <meta content="LaTeX to Word converter (native Word equations / OMML)" property="og:title"/>
 <meta content="Convert LaTeX equations to native Word equations (OMML) inside a .docx. Fix ChatGPT→Word copy/paste issues and keep equations fully editable." property="og:description"/>
-<meta content="https://www.ecuacionesaword.com/en" property="og:url"/>
+<meta content="https://www.ecuacionesaword.com/pt" property="og:url"/>
 <meta content="https://www.ecuacionesaword.com/static/og-image.svg" property="og:image"/>
 <meta content="summary_large_image" name="twitter:card"/>
 <meta content="LaTeX to Word converter (native Word equations / OMML)" name="twitter:title"/>
@@ -27,7 +25,7 @@
 <meta content="https://www.ecuacionesaword.com/static/og-image.svg" name="twitter:image"/>
 <link href="https://www.googletagmanager.com" rel="preconnect"/>
 <link href="https://www.googletagmanager.com" rel="dns-prefetch"/>
-<!-- Google Analytics -->
+Google Analytics
 <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-GS589S9BG4"></script>
 <script>
     window.dataLayer = window.dataLayer || [];
@@ -39,7 +37,7 @@
       gtag('consent', 'update', { analytics_storage: granted ? 'granted' : 'denied' });
     };
   </script>
-<!-- Fin Google Analytics -->
+Fin Google Analytics
 <style>
     :root {
       --bg: #050816;
@@ -819,21 +817,19 @@
 <div class="brand">
 <div class="brand-logo">∑</div>
 <div class="brand-text">
-<div class="brand-title">Ecuaciones a Word</div>
-<div class="brand-sub">
-            Convert LaTeX formulas (also from AI) into Word equations
-          </div>
+<div class="brand-title">Equações a Word</div>
+<div class="brand-sub">Converta fórmulas LaTeX (também de IA) em equações do Word</div>
 </div>
 </div>
 <div class="nav-right">
 <div class="lang-switch">
 <select class="lang-select" id="lang-select">
-<option value="es">Espa?ol</option>
-<option value="en">English</option>
-<option value="de">Deutsch</option>
-<option value="fr">Fran?ais</option>
+<option value="es">Español</option>
+<option value="en">Inglês</option>
+<option value="de">Alemão</option>
+<option value="fr">Français</option>
 <option value="it">Italiano</option>
-<option value="pt">Portugu?s</option>
+<option value="pt">Português</option>
 </select>
 </div>
 </div>
@@ -842,300 +838,247 @@
 <section class="hero-card">
 <div class="hero-pill">
 <span>?</span>
-<span>
-            Perfect for turning math solutions from ChatGPT or other AIs into Word
-          </span>
+<span>Perfeito para transformar soluções matemáticas do ChatGPT ou outras IAs em Word</span>
 </div>
-<p class="hero-title">
-          Convert LaTeX to editable Word equations (OMML) in under a minute
-        </p>
-<p class="hero-subtitle">
-          Upload a <strong>.docx</strong> or <strong>.txt</strong> with <strong>LaTeX</strong> formulas (ChatGPT, Gemini, Copilot, Overleaf or Pandoc) and download a Word file with <strong>native OMML equations</strong>. No manual formula retyping.
-        </p>
+<p class="hero-title">Converta LaTeX em equações editáveis ​​do Word (OMML) em menos de um minuto</p>
+<p class="hero-subtitle">Carregar um<strong>.docx</strong>ou<strong>.TXT</strong>com<strong>Látex</strong>fórmulas (ChatGPT, Gemini, Copilot, Overleaf ou Pandoc) e baixe um arquivo Word com<strong>equações OMML nativas</strong>. Nenhuma redigitação manual de fórmulas.</p>
 <div class="hero-grid">
-<!-- FORMULARIO PRINCIPAL -->
+FORMULÁRIO PRINCIPAL
 <div class="upload-card" id="converter">
 <div class="upload-header">
-<div class="upload-title">
-                1. Choose a .docx or .txt file
-              </div>
-<div class="upload-hint">
-                Supports formulas delimited by <code>$...$</code>, <code>$$...$$</code> or <code>\[...\]</code>.
+<div class="upload-title">1. Escolha um arquivo .docx ou .txt</div>
+<div class="upload-hint">Suporta fórmulas delimitadas por<code>$...$</code>, <code>$$...$$</code>ou<code>\[...\]</code>.
               </div>
 </div>
-<form enctype="multipart/form-data" id="upload-form" method="post" action="/convert">
+<form action="/convert" enctype="multipart/form-data" id="upload-form" method="post">
 <div class="upload-body">
 <div class="file-row">
 <label class="file-label" for="file-input">
-<span>
-                      Select file (.docx or .txt)
-                    </span>
+<span>Selecione o arquivo (.docx ou .txt)</span>
 <span class="filename" id="file-name-display"></span>
 </label>
 <input accept=".docx,.txt" class="file-input" id="file-input" name="file" required="" type="file"/>
 <button class="convert-btn" id="convert-btn" type="submit">
-<span>Convert and download</span>
+<span>Converter e baixar</span>
 <span>⬇</span>
 </button>
 </div>
 <div class="status-row">
-<span id="status-text-en">
-                    Status: ready to convert.
-                  </span>
+<span id="status-text-en">Status: pronto para converter.</span>
 <span class="status-pill">
 <span class="status-dot" id="status-dot"></span>
-<span>
-                      Direct conversion to Word
-                    </span>
+<span>Conversão direta para Word</span>
 </span>
 </div>
-<p class="mini-note">Instant online conversion. Max file size: 5MB.</p>
+<p class="mini-note">Conversão on-line instantânea. Tamanho máximo do arquivo: 5 MB.</p>
 </div>
 </form>
 </div>
-<!-- LADO IA / BENEFICIOS -->
+LADO IA / BENEFÍCIOS
 <div class="side-card">
-<h2>
-              Designed for AI-generated results
-            </h2>
-<p>
-              Copy the solutions that ChatGPT, Gemini, Copilot or any other AI
-              gives you (in LaTeX) into a .docx or .txt file and let this tool
-              turn them into real Word equations.
-            </p>
-<p>
-              Perfect for theses, assignments, exercises or notes that must be
-              delivered in Word.
-            </p>
+<h2>Projetado para resultados gerados por IA</h2>
+<p>Copie as soluções que ChatGPT, Gemini, Copilot ou qualquer outra IA
+              fornece (em LaTeX) um arquivo .docx ou .txt e deixa esta ferramenta
+              transforme-os em equações reais do Word.</p>
+<p>Perfeito para teses, trabalhos, exercícios ou anotações que devem ser
+              entregue em Word.</p>
 <div class="trust-list">
-<span>• Native Word equation output (OMML).</span>
-<span>• Uploaded content is not sold or reused for ads.</span>
-<span>• Built for academic and technical workflows.</span>
+<span>• Saída de equação de palavra nativa (OMML).</span>
+<span>• O conteúdo enviado não é vendido ou reutilizado para anúncios.</span>
+<span>• Criado para fluxos de trabalho acadêmicos e técnicos.</span>
 </div>
 <div class="side-tag">
 <span>✅</span>
-<span>
-                Turns AI-generated LaTeX into editable Word equations
-              </span>
+<span>Transforma LaTeX gerado por IA em equações Word editáveis</span>
 </div>
-<div class="badge-ia">
-              IA-friendly · ChatGPT · Gemini · Copilot · etc.
-            </div>
+<div class="badge-ia">Compatível com IA · ChatGPT · Gêmeos · Copiloto · etc.</div>
 </div>
 </div>
-<!-- CÓMO FUNCIONA + DETALLES -->
+COMO FUNCIONA + DETALHES
 <section class="how-section">
 <div class="how-card">
-<h2>How it works</h2>
+<h2>Como funciona</h2>
 <ul class="how-steps">
 <li class="how-step">
 <div class="how-step-number">1</div>
-<div class="how-step-text">
-                  Copy the text (with LaTeX formulas) from ChatGPT, any other AI
-                  or LaTeX source, and save it as <strong>.docx</strong> or
-                  <strong>.txt</strong>.
+<div class="how-step-text">Copie o texto (com fórmulas LaTeX) do ChatGPT, qualquer outra IA
+                  ou fonte LaTeX e salve-o como<strong>.docx</strong>ou<strong>.TXT</strong>.
                 </div>
 </li>
 <li class="how-step">
 <div class="how-step-number">2</div>
-<div class="how-step-text">
-                  Upload the file to this page and click
-                  <strong>"Convert document"</strong>.
+<div class="how-step-text">Carregue o arquivo nesta página e clique em<strong>"Converter documento"</strong>.
                 </div>
 </li>
 <li class="how-step">
 <div class="how-step-number">3</div>
-<div class="how-step-text">
-                  Download the new <strong>.docx</strong> with native Word
-                  equations, ready to edit or submit.
-                </div>
+<div class="how-step-text">Baixe o novo<strong>.docx</strong>com Word nativo
+                  equações, prontas para editar ou enviar.</div>
 </li>
 </ul>
-<p class="mini-note">
-              The tool handles simple LaTeX: powers, subscripts, matrices,
-              products, determinants, etc.
-            </p>
+<p class="mini-note">A ferramenta lida com LaTeX simples: potências, subscritos, matrizes,
+              produtos, determinantes, etc.</p>
 </div>
 <div class="how-card">
-<h2>
-              Convert LaTeX to Word without rewriting equations
-            </h2>
-<p>
-              Microsoft Word does not directly understand the LaTeX code that
-              many AIs produce. Ecuaciones a Word acts as a bridge: it reads the
-              LaTeX and generates OMML equations, Word's internal format.
-            </p>
-<p>
-              This saves time, avoids copy mistakes and keeps your documents
-              clean and fully editable.
-            </p>
+<h2>Converta LaTeX para Word sem reescrever equações</h2>
+<p>O Microsoft Word não entende diretamente o código LaTeX que
+              muitas IAs produzem. Ecuaciones a Word funciona como uma ponte: lê o
+              LaTeX e gera equações OMML, formato interno do Word.</p>
+<p>Isto poupa tempo, evita erros de cópia e mantém os seus documentos
+              limpo e totalmente editável.</p>
 </div>
 </section>
 <section class="how-section">
 <div class="how-card">
-<h2>What it supports</h2>
+<h2>O que ele suporta</h2>
 <div class="support-grid">
 <div class="support-card">
-<h3>Supported input</h3>
+<h3>Entrada suportada</h3>
 <ul>
-<li><strong>.docx</strong> and <strong>.txt</strong> files.</li>
-<li>Inline LaTeX: <code>$...$</code>.</li>
-<li>Block LaTeX: <code>$$...$$</code> and <code>\[...\]</code>.</li>
+<li><strong>.docx</strong>e<strong>.TXT</strong>arquivos.</li>
+<li>LaTeX embutido:<code>$...$</code>.</li>
+<li>Bloquear LaTeX:<code>$$...$$</code>e<code>\[...\]</code>.</li>
 </ul>
 </div>
 <div class="support-card">
-<h3>Typical use cases</h3>
+<h3>Casos de uso típicos</h3>
 <ul>
-<li>ChatGPT/Gemini/Copilot to Word.</li>
-<li>Overleaf/LaTeX to Word deliverables.</li>
-<li>Pandoc output with non-editable equations.</li>
+<li>ChatGPT/Gemini/Copiloto para Word.</li>
+<li>Entregáveis ​​Overleaf/LaTeX para Word.</li>
+<li>Saída Pandoc com equações não editáveis.</li>
 </ul>
 </div>
 </div>
 </div>
 <div class="how-card">
-<h2>Common errors and fixes</h2>
+<h2>Erros e correções comuns</h2>
 <ul class="how-steps">
-<li class="how-step"><div class="how-step-number">1</div><div class="how-step-text"><strong>No file selected.</strong> Choose a .docx/.txt before converting.</div></li>
-<li class="how-step"><div class="how-step-number">2</div><div class="how-step-text"><strong>Invalid document format.</strong> Re-export your file as standard .docx and upload again.</div></li>
-<li class="how-step"><div class="how-step-number">3</div><div class="how-step-text"><strong>Equation not parsed.</strong> Check delimiters: <code>$...$</code>, <code>$$...$$</code>, <code>\[...\]</code>.</div></li>
+<li class="how-step"><div class="how-step-number">1</div><div class="how-step-text"><strong>Nenhum arquivo selecionado.</strong>Escolha um .docx/.txt antes de converter.</div></li>
+<li class="how-step"><div class="how-step-number">2</div><div class="how-step-text"><strong>Formato de documento inválido.</strong>Exporte novamente seu arquivo como .docx padrão e faça upload novamente.</div></li>
+<li class="how-step"><div class="how-step-number">3</div><div class="how-step-text"><strong>Equação não analisada.</strong>Verifique os delimitadores:<code>$...$</code>, <code>$$...$$</code>, <code>\[...\]</code>.</div></li>
 </ul>
 <div class="example-box">
-<strong>Quick input/output example</strong>
+<strong>Exemplo de entrada/saída rápida</strong>
 <code>Input (.txt): Energy: $E=mc^2$</code>
 <code>Output (.docx): native editable OMML equation in Word</code>
 </div>
 </div>
 </section>
-
 <section class="how-section">
 <div class="how-card">
-<h2>Privacy and security (summary)</h2>
-<p>Your uploaded file is processed only to generate the converted document. Formula contents are not sent to Google Analytics.</p>
-<p>Read full details in <a href="/en/privacy">Privacy</a>, <a href="/en/terms">Terms</a> and <a href="/en/contact">Contact</a>.</p>
+<h2>Privacidade e segurança (resumo)</h2>
+<p>O arquivo carregado é processado apenas para gerar o documento convertido. O conteúdo das fórmulas não é enviado ao Google Analytics.</p>
+<p>Leia detalhes completos em<a href="/pt/privacy">Privacidade</a>, <a href="/pt/terms">Termos</a>e<a href="/pt/contact">Contato</a>.</p>
 </div>
 <div class="how-card">
-<h2>Solution pages</h2>
-<p>You can also use dedicated pages based on your intent:</p>
+<h2>Páginas de solução</h2>
+<p>Você também pode usar páginas dedicadas com base na sua intenção:</p>
 <div class="landing-links">
-<a href="/en/solutions/chatgpt-equations-to-word">ChatGPT equations to Word</a>
-<a href="/en/solutions/gemini-equations-to-word">Gemini equations to Word</a>
-<a href="/en/solutions/pandoc-to-word-omml">Pandoc to Word OMML</a>
-<a href="/en/solutions/overleaf-latex-document-to-word">Overleaf / LaTeX document to Word</a>
-<a href="/en/solutions/omml-converter">OMML converter</a>
+<a href="/pt/solutions/chatgpt-equations-to-word">Equações ChatGPT para Word</a>
+<a href="/pt/solutions/gemini-equations-to-word">Equações de Gêmeos para Word</a>
+<a href="/pt/solutions/pandoc-to-word-omml">Pandoc para Word OMML</a>
+<a href="/pt/solutions/overleaf-latex-document-to-word">Documento Overleaf / LaTeX para Word</a>
+<a href="/pt/solutions/omml-converter">Conversor OML</a>
 </div>
 </div>
 </section>
 </section>
-<!-- BLOG / RECURSOS -->
+BLOG / RECURSOS
 <section class="blog-section" id="guides">
-  <div class="blog-header">
-    <h2>Guides and resources</h2>
-    <p class="blog-intro">Quick guides to turn LaTeX formulas (for example from ChatGPT) into native, editable Word equations (OMML) without copy‑paste issues.</p>
-  </div>
-    <h3 class="blog-header h2" style="margin: 0 0 12px; font-size: 1.12rem;">Popular now</h3>
-  <section class="grid" aria-label="Popular guides">
-    <article class="card half guide-card" data-href="/en/blog/latex-to-word-online-free-editable-equations" tabindex="0" role="link" aria-label="LaTeX to Word online for free: get editable equations (OMML) fast">
-      <div class="kicker">Trending SEO · LaTeX to Word online</div>
-      <h3 class="title"><a href="/en/blog/latex-to-word-online-free-editable-equations">LaTeX to Word online for free: get editable equations (OMML) fast</a></h3>
-      <p class="desc">Focused guide for the highest-demand query: convert LaTeX to Word online and keep equations editable in your final .docx.</p>
-      <div class="meta"><span class="pill">LaTeX to Word online</span><span class="pill">OMML</span><span class="pill">free</span></div>
-    </article>
-    <article class="card half guide-card" data-href="/en/blog/latex-to-word-quick-guide-no-broken-equations" tabindex="0" role="link" aria-label="LaTeX to Word quick guide: convert documents without breaking equations">
-      <div class="kicker">Quick checklist · Full document</div>
-      <h3 class="title"><a href="/en/blog/latex-to-word-quick-guide-no-broken-equations">LaTeX to Word quick guide: convert documents without breaking equations</a></h3>
-      <p class="desc">A 7-step checklist to move from LaTeX to Word with native editable equations for assignments and technical docs.</p>
-      <div class="meta"><span class="pill">LaTeX → Word</span><span class="pill">DOCX</span><span class="pill">quick guide</span></div>
-    </article>
-    <article class="card half guide-card" data-href="/en/blog/weird-symbols-word-equations-cambria-math-fix" tabindex="0" role="link" aria-label="Weird symbols in Word equations: Cambria Math and square boxes fixed">
-      <div class="kicker">Troubleshooting · Word</div>
-      <h3 class="title"><a href="/en/blog/weird-symbols-word-equations-cambria-math-fix">Weird symbols in Word equations: Cambria Math and square boxes fixed</a></h3>
-      <p class="desc">Fast fixes for square boxes, broken symbols, and font compatibility issues across Word versions and devices.</p>
-      <div class="meta"><span class="pill">Cambria Math</span><span class="pill">compatibility</span><span class="pill">fonts</span></div>
-    </article>
-  </section>
-  <h3 class="blog-header h2" style="margin: 14px 0 12px; font-size: 1.12rem;">More recommended guides</h3>  <section class="grid">
-    <article class="card half guide-card" data-href="/en/blog/copy-chatgpt-equations-to-word" tabindex="0" role="link" aria-label="Copy ChatGPT equations into Word (editable equations)">
-  <div class="kicker">AI → Word · Common issue</div>
-  <h3 class="title"><a href="/en/blog/copy-chatgpt-equations-to-word">Copy ChatGPT equations into Word (editable equations)</a></h3>
-  <p class="desc">Recommended workflow: ChatGPT → LaTeX → .docx/.txt → convert to native Word equations (OMML) you can edit.</p>
-  <div class="meta"><span class="pill">ChatGPT equations to Word</span><span class="pill">LaTeX</span><span class="pill">OMML</span></div>
+<div class="blog-header">
+<h2>Guias e recursos</h2>
+<p class="blog-intro">Guias rápidos para transformar fórmulas LaTeX (por exemplo, do ChatGPT) em equações nativas e editáveis ​​do Word (OMML) sem problemas de copiar e colar.</p>
+</div>
+<h3 class="blog-header h2" style="margin: 0 0 12px; font-size: 1.12rem;">Popular agora</h3>
+<section aria-label="Popular guides" class="grid">
+<article aria-label="LaTeX to Word online for free: get editable equations (OMML) fast" class="card half guide-card" data-href="/pt/blog/latex-to-word-online-free-editable-equations" role="link" tabindex="0">
+<div class="kicker">Tendências de SEO · LaTeX para Word on-line</div>
+<h3 class="title"><a href="/pt/blog/latex-to-word-online-free-editable-equations">LaTeX para Word online gratuitamente: obtenha equações editáveis ​​(OMML) rapidamente</a></h3>
+<p class="desc">Guia focado para a consulta de maior demanda: converta LaTeX para Word online e mantenha as equações editáveis ​​em seu .docx final.</p>
+<div class="meta"><span class="pill">LaTeX para Word on-line</span><span class="pill">OMML</span><span class="pill">livre</span></div>
 </article>
-<article class="card half guide-card" data-href="/en/blog/convert-latex-document-to-word" tabindex="0" role="link" aria-label="Convert a LaTeX document to Word with editable equations (OMML)">
-  <div class="kicker">Thesis / Assignments · Word submissions</div>
-  <h3 class="title"><a href="/en/blog/convert-latex-document-to-word">Convert a LaTeX document to Word with editable equations (OMML)</a></h3>
-  <p class="desc">How to prepare math-heavy documents to submit in Word: editable, consistent equations without screenshots.</p>
-  <div class="meta"><span class="pill">LaTeX to Word</span><span class="pill">Word equations</span><span class="pill">docx</span></div>
+<article aria-label="LaTeX to Word quick guide: convert documents without breaking equations" class="card half guide-card" data-href="/pt/blog/latex-to-word-quick-guide-no-broken-equations" role="link" tabindex="0">
+<div class="kicker">Lista de verificação rápida · Documento completo</div>
+<h3 class="title"><a href="/pt/blog/latex-to-word-quick-guide-no-broken-equations">Guia rápido de LaTeX para Word: converta documentos sem quebrar equações</a></h3>
+<p class="desc">Uma lista de verificação de 7 etapas para passar do LaTeX para o Word com equações nativas editáveis ​​para tarefas e documentos técnicos.</p>
+<div class="meta"><span class="pill">LaTeX → Palavra</span><span class="pill">DOCX</span><span class="pill">guia rápido</span></div>
 </article>
-<article class="card half guide-card" data-href="/en/blog/use-ai-equations-to-word-exercises" tabindex="0" role="link" aria-label="Use AI + Equations to Word to submit exercises in Word">
-  <div class="kicker">AI + productivity · Studying</div>
-  <h3 class="title"><a href="/en/blog/use-ai-equations-to-word-exercises">Use AI + Equations to Word to submit exercises in Word</a></h3>
-  <p class="desc">A practical method to solve problems with AI, structure your answer, and export formulas to Word as native equations.</p>
-  <div class="meta"><span class="pill">exercises in Word</span><span class="pill">AI</span><span class="pill">formulas</span></div>
+<article aria-label="Weird symbols in Word equations: Cambria Math and square boxes fixed" class="card half guide-card" data-href="/pt/blog/weird-symbols-word-equations-cambria-math-fix" role="link" tabindex="0">
+<div class="kicker">Solução de problemas · Word</div>
+<h3 class="title"><a href="/pt/blog/weird-symbols-word-equations-cambria-math-fix">Símbolos estranhos em equações do Word: Cambria Math e caixas quadradas corrigidas</a></h3>
+<p class="desc">Correções rápidas para caixas quadradas, símbolos quebrados e problemas de compatibilidade de fontes em versões e dispositivos do Word.</p>
+<div class="meta"><span class="pill">Cambria Matemática</span><span class="pill">compatibilidade</span><span class="pill">fontes</span></div>
 </article>
-<article class="card half guide-card" data-href="/en/blog/paste-latex-into-word-alt-eq" tabindex="0" role="link" aria-label="Paste LaTeX into Word (Alt+=): clean equation tips">
-  <div class="kicker">Word · Equation editor</div>
-  <h3 class="title"><a href="/en/blog/paste-latex-into-word-alt-eq">Paste LaTeX into Word (Alt+=): clean equation tips</a></h3>
-  <p class="desc">How to use Word's equation editor with LaTeX and when it's better to convert a full document automatically.</p>
-  <div class="meta"><span class="pill">paste LaTeX into Word</span><span class="pill">Alt+=</span><span class="pill">UnicodeMath</span></div>
+</section>
+<h3 class="blog-header h2" style="margin: 14px 0 12px; font-size: 1.12rem;">Guias mais recomendados</h3> <section class="grid">
+<article aria-label="Copy ChatGPT equations into Word (editable equations)" class="card half guide-card" data-href="/pt/blog/copy-chatgpt-equations-to-word" role="link" tabindex="0">
+<div class="kicker">AI → Word · Problema comum</div>
+<h3 class="title"><a href="/pt/blog/copy-chatgpt-equations-to-word">Copie as equações do ChatGPT para o Word (equações editáveis)</a></h3>
+<p class="desc">Fluxo de trabalho recomendado: ChatGPT → LaTeX → .docx/.txt → converter para equações nativas do Word (OMML) que você pode editar.</p>
+<div class="meta"><span class="pill">Equações ChatGPT para Word</span><span class="pill">Látex</span><span class="pill">OMML</span></div>
 </article>
-<article class="card half guide-card" data-href="/en/blog/what-is-omml-word-equations" tabindex="0" role="link" aria-label="What is OMML and why equations break when you paste into Word">
-  <div class="kicker">Formatting · Concepts</div>
-  <h3 class="title"><a href="/en/blog/what-is-omml-word-equations">What is OMML and why equations break when you paste into Word</a></h3>
-  <p class="desc">A clear explanation of OMML (Office Math Markup Language) and why Word doesn't understand raw LaTeX pasted as text.</p>
-  <div class="meta"><span class="pill">OMML</span><span class="pill">Office Math</span><span class="pill">native equations</span></div>
+<article aria-label="Convert a LaTeX document to Word with editable equations (OMML)" class="card half guide-card" data-href="/pt/blog/convert-latex-document-to-word" role="link" tabindex="0">
+<div class="kicker">Tese / Trabalhos · Envios de palavras</div>
+<h3 class="title"><a href="/pt/blog/convert-latex-document-to-word">Converta um documento LaTeX em Word com equações editáveis ​​(OMML)</a></h3>
+<p class="desc">Como preparar documentos com muita matemática para enviar no Word: equações editáveis ​​e consistentes sem capturas de tela.</p>
+<div class="meta"><span class="pill">LaTeX para Word</span><span class="pill">Equações de palavras</span><span class="pill">docx</span></div>
 </article>
-<article class="card half guide-card" data-href="/en/blog/markdown-latex-to-word-docx" tabindex="0" role="link" aria-label="Markdown + LaTeX to Word (.docx): options and common issues">
-  <div class="kicker">Pandoc · Markdown</div>
-  <h3 class="title"><a href="/en/blog/markdown-latex-to-word-docx">Markdown + LaTeX to Word (.docx): options and common issues</a></h3>
-  <p class="desc">How to prevent equations from disappearing or becoming plain text when converting Markdown/MathJax to Word.</p>
-  <div class="meta"><span class="pill">pandoc</span><span class="pill">markdown</span><span class="pill">LaTeX to docx</span></div>
+<article aria-label="Use AI + Equations to Word to submit exercises in Word" class="card half guide-card" data-href="/pt/blog/use-ai-equations-to-word-exercises" role="link" tabindex="0">
+<div class="kicker">IA + produtividade · Estudar</div>
+<h3 class="title"><a href="/pt/blog/use-ai-equations-to-word-exercises">Use AI + Equations to Word para enviar exercícios no Word</a></h3>
+<p class="desc">Um método prático para resolver problemas com IA, estruturar sua resposta e exportar fórmulas para o Word como equações nativas.</p>
+<div class="meta"><span class="pill">exercícios em Word</span><span class="pill">IA</span><span class="pill">fórmulas</span></div>
 </article>
-  </section>
-  <div class="blog-actions">
-    <a class="blog-more" href="/en/blog">See all guides →</a>
-  </div>
+<article aria-label="Paste LaTeX into Word (Alt+=): clean equation tips" class="card half guide-card" data-href="/pt/blog/paste-latex-into-word-alt-eq" role="link" tabindex="0">
+<div class="kicker">Word · Editor de equações</div>
+<h3 class="title"><a href="/pt/blog/paste-latex-into-word-alt-eq">Colar LaTeX no Word (Alt+=): dicas para limpar equações</a></h3>
+<p class="desc">Como usar o editor de equações do Word com LaTeX e quando é melhor converter um documento completo automaticamente.</p>
+<div class="meta"><span class="pill">cole LaTeX no Word</span><span class="pill">Alt+=</span><span class="pill">UnicodeMatemática</span></div>
+</article>
+<article aria-label="What is OMML and why equations break when you paste into Word" class="card half guide-card" data-href="/pt/blog/what-is-omml-word-equations" role="link" tabindex="0">
+<div class="kicker">Formatação · Conceitos</div>
+<h3 class="title"><a href="/pt/blog/what-is-omml-word-equations">O que é OMML e por que as equações quebram quando você cola no Word</a></h3>
+<p class="desc">Uma explicação clara do OMML (Office Math Markup Language) e por que o Word não entende LaTeX bruto colado como texto.</p>
+<div class="meta"><span class="pill">OMML</span><span class="pill">Matemática de escritório</span><span class="pill">equações nativas</span></div>
+</article>
+<article aria-label="Markdown + LaTeX to Word (.docx): options and common issues" class="card half guide-card" data-href="/pt/blog/markdown-latex-to-word-docx" role="link" tabindex="0">
+<div class="kicker">Pandoc · Markdown</div>
+<h3 class="title"><a href="/pt/blog/markdown-latex-to-word-docx">Markdown + LaTeX to Word (.docx): opções e problemas comuns</a></h3>
+<p class="desc">Como evitar que equações desapareçam ou se tornem texto simples ao converter Markdown/MathJax para Word.</p>
+<div class="meta"><span class="pill">pandoc</span><span class="pill">redução</span><span class="pill">LaTeX para docx</span></div>
+</article>
+</section>
+<div class="blog-actions">
+<a class="blog-more" href="/pt/blog">Veja todos os guias →</a>
+</div>
 </section>
 </main>
-<!-- FAQ + PRIVACIDAD (EN ACORDEONES) -->
+FAQ + PRIVACIDADE (EN ACORDEONES)
 <section class="faq-privacy-section">
 <details>
 <summary>
 <span class="summary-label">
-<span class="summary-badge">FAQ</span>
-<span>Frequently asked questions</span>
+<span class="summary-badge">Perguntas frequentes</span>
+<span>Perguntas frequentes</span>
 </span>
 <span class="chevron">›</span>
 </summary>
 <div>
 <ul class="faq-list">
 <li>
-<div class="faq-q">
-                  What file types does the tool accept?
-                </div>
-<div class="faq-a">
-                  It accepts <strong>.docx</strong> documents and
-                  <strong>.txt</strong> files containing text and LaTeX formulas.
-                </div>
+<div class="faq-q">Quais tipos de arquivo a ferramenta aceita?</div>
+<div class="faq-a">Aceita<strong>.docx</strong>documentos e<strong>.TXT</strong>arquivos contendo texto e fórmulas LaTeX.</div>
 </li>
 <li>
-<div class="faq-q">
-                  Does it work with formulas generated by ChatGPT or other AIs?
-                </div>
-<div class="faq-a">
-                  Yes. It is especially designed for that: you copy the AI's
-                  answer (in LaTeX), paste it into a document and convert it to
-                  Word equations.
-                </div>
+<div class="faq-q">Funciona com fórmulas geradas por ChatGPT ou outras IAs?</div>
+<div class="faq-a">Sim. Foi especialmente desenhado para isso: você copia as IAs
+                  resposta (em LaTeX), cole-a em um documento e converta-a para
+                  Equações de palavras.</div>
 </li>
 <li>
-<div class="faq-q">
-                  Are my documents stored anywhere?
-                </div>
-<div class="faq-a">
-                  No. The files are processed on the server to generate the
-                  converted .docx and then discarded.
-                </div>
+<div class="faq-q">Meus documentos são armazenados em algum lugar?</div>
+<div class="faq-a">Não. Os arquivos são processados no servidor para gerar o
+                  convertido .docx e depois descartado.</div>
 </li>
 </ul>
 </div>
@@ -1143,45 +1086,34 @@
 <details>
 <summary>
 <span class="summary-label">
-<span class="summary-badge">Legal</span>
-<span>
-                Privacy policy (summary)
-              </span>
+<span class="summary-badge">Jurídico</span>
+<span>Política de privacidade (resumo)</span>
 </span>
 <span class="chevron">›</span>
 </summary>
 <div>
-<p>
-              This tool only processes the file you upload in order to generate
-              the converted document. Your data is not used for advertising nor
-              shared with third parties.
-            </p>
-<p>
-              For more details, see the full policy in the legal section of the
-              site.
-            </p>
+<p>Esta ferramenta processa apenas o arquivo que você carrega para gerar
+              o documento convertido. Os seus dados não são utilizados para publicidade nem
+              compartilhada com terceiros.</p>
+<p>Para mais detalhes, consulte a política completa na seção jurídica do
+              local.</p>
 </div>
 </details>
 </section>
-
 <footer>
 <div>
-        © <span id="year"></span> Ecuaciones a Word.
-
-<span>
-          Built for students who use AI and Word.
-        </span>
+        © <span id="year"></span>Equações a Word.<span>Criado para alunos que usam IA e Word.</span>
 </div>
 <div>
-<a href="https://www.ecuacionesaword.com/en" rel="noopener">Home</a>
+<a href="https://www.ecuacionesaword.com/en" rel="noopener">Lar</a>
         ·
-        <a href="/en/blog" rel="noopener">Blog</a>
+        <a href="/pt/blog" rel="noopener">Blogue</a>
         ·
-        <a href="/en/privacy" rel="noopener">Privacy</a>
+        <a href="/pt/privacy" rel="noopener">Privacidade</a>
         ·
-        <a href="/en/terms" rel="noopener">Terms</a>
+        <a href="/pt/terms" rel="noopener">Termos</a>
         ·
-        <a href="/en/contact" rel="noopener">Contact</a>
+        <a href="/pt/contact" rel="noopener">Contato</a>
         ·
         <a href="https://github.com/jmaelectro/latex-word-equation-converter" rel="noopener">GitHub</a>
 </div>
@@ -1422,4 +1354,3 @@ try {
 </script>
 </body>
 </html>
-
