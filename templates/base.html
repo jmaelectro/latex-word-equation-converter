@@ -7,7 +7,7 @@
   <meta name="description" content="{{ description }}">
   {% if keywords %}<meta name="keywords" content="{{ keywords|join(', ') }}">{% endif %}
 
-  <meta name="robots" content="index,follow,max-image-preview:large">
+  <meta name="robots" content="{{ robots_directive|default('index,follow,max-image-preview:large') }}">
   <meta name="theme-color" content="#020617">
 
   <link rel="canonical" href="{{ canonical_url }}">

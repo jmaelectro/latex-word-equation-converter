@@ -179,6 +179,19 @@ JINJA_ENV = Environment(
 
 SUPPORTED_LANGS: Tuple[str, ...] = ("es", "en", "de", "fr", "it", "pt")
 PRIMARY_CONTENT_LANGS: Tuple[str, ...] = ("es", "en")
+SITEMAP_LANGS: Tuple[str, ...] = PRIMARY_CONTENT_LANGS
+
+# Posts kept live for users but intentionally excluded from index/sitemap to reduce cannibalization.
+NON_INDEXABLE_BLOG_SLUGS: Dict[str, set[str]] = {
+    "es": {
+        "convertidor-formulas-chatgpt-a-word",
+        "conversor-formulas-chatgpt-a-word-errores",
+        "de-latex-a-word-guia-rapida",
+    },
+    "en": {
+        "latex-to-word-quick-guide-no-broken-equations",
+    },
+}
 
 LANGUAGE_LABELS: Dict[str, str] = {
     "es": "Español",
@@ -429,6 +442,29 @@ def _normalize_tag(tag: str) -> str:
         return t[0].upper() + t[1:].lower()
     return t[0].upper() + t[1:].lower()
 
+
+def _is_primary_lang(lang: str) -> bool:
+    return lang in PRIMARY_CONTENT_LANGS
+
+
+def _is_blog_post_indexable(lang: str, post: Dict[str, Any]) -> bool:
+    slug = (post.get("slug") or "").strip()
+    if not slug:
+        return False
+    if not _is_primary_lang(lang):
+        return False
+    if slug in NON_INDEXABLE_BLOG_SLUGS.get(lang, set()):
+        return False
+    if bool(post.get("noindex")):
+        return False
+    return True
+
+
+def _robots_directive(lang: str, indexable: bool = True) -> str:
+    if not indexable or not _is_primary_lang(lang):
+        return "noindex,follow,max-image-preview:large"
+    return "index,follow,max-image-preview:large"
+
 LANDING_PAGES: Dict[str, Dict[str, Dict[str, Any]]] = {
     "chatgpt-equations-to-word": {
         "es": {
@@ -611,6 +647,370 @@ LANDING_PAGES: Dict[str, Dict[str, Dict[str, Any]]] = {
         },
     },
 }
+
+
+LANDING_LONGFORM: Dict[str, Dict[str, Dict[str, Any]]] = {
+    "chatgpt-equations-to-word": {
+        "es": {
+            "primary_keyword": "ecuaciones de chatgpt a word",
+            "primary_intent": "transaccional para convertir respuestas de IA a .docx editable",
+            "problem_angle": "evitar copy/paste manual, capturas y formulas rotas desde ChatGPT",
+            "problem_statement": "Cuando ChatGPT entrega una solucion matematica en LaTeX, el problema real empieza al pasarla a Word. Muchos usuarios terminan rehaciendo formulas a mano, pegando capturas o corrigiendo simbolos raros. Esta landing esta pensada para cerrar ese hueco: pasar de una respuesta generada por IA a un documento Word limpio, editable y apto para revision academica. El foco no es solo conversion tecnica, sino productividad en entregas reales.",
+            "extra_context": "Tambien te ayuda a mantener consistencia entre versiones del mismo ejercicio. Si haces varias iteraciones de una respuesta con IA, puedes consolidar cambios sin perder la estructura matematica ni bloquear la edicion posterior.",
+            "when_to_use_intro": "Usa esta solucion cuando ChatGPT es tu fuente principal y Word es el formato final de entrega o colaboracion.",
+            "when_to_use_items": [
+                "Entregas ejercicios o practicas en .docx.",
+                "Necesitas revision con tutor/profesor en Word.",
+                "Consolidas varias respuestas de IA en un informe unico.",
+                "Quieres evitar fallos de copy/paste desde el navegador.",
+                "Necesitas mantener ecuaciones editables tras la entrega.",
+            ],
+            "workflow_steps": [
+                "Genera la respuesta en ChatGPT con delimitadores LaTeX claros.",
+                "Pasa el contenido a un .txt o .docx conservando $...$, $$...$$ o \\[...\\].",
+                "Sube el archivo al conversor desde esta pagina.",
+                "Descarga el .docx con ecuaciones OMML nativas.",
+                "Revisa 2-3 ecuaciones criticas y envia el archivo.",
+            ],
+            "example_input": "Texto con $f(x)=x^2+1$ y $$\\int_0^1 x^2 dx=\\frac{1}{3}$$ generado por ChatGPT.",
+            "example_output": "Documento Word con ecuaciones OMML editables e integradas en el texto.",
+            "before_text": "Antes: formulas como texto o capturas dificilmente editables.",
+            "after_text": "Despues: ecuaciones nativas Word listas para corregir y compartir.",
+            "mini_case": "Alumno de ingenieria con 20 ejercicios resueltos por IA que debe entregar en campus en formato .docx.",
+            "supported_formats": [
+                "Entrada DOCX con texto y formulas.",
+                "Entrada TXT con respuestas de chat.",
+                "Salida DOCX editable en Word.",
+                "Soporte de contenido mixto texto + matematicas.",
+            ],
+            "supported_delimiters": ["$...$", "$$...$$", "\\[...\\]"],
+            "known_limitations": [
+                "LaTeX sintacticamente invalido requiere correccion previa.",
+                "Macros no estandar pueden necesitar ajuste manual.",
+                "Documentos con maquetacion extrema deben revisarse al final.",
+            ],
+            "common_errors": [
+                {"error": "Signos raros tras pegar desde chat", "fix": "Guardar primero en TXT UTF-8 o DOCX limpio antes de convertir."},
+                {"error": "Ecuacion parcial sin convertir", "fix": "Comprobar delimitadores abiertos/cerrados en el texto origen."},
+                {"error": "Tutor no puede editar una formula", "fix": "Validar que la ecuacion final sea OMML y no imagen/texto plano."},
+            ],
+            "faq_items": [
+                {"q": "Sirve para respuestas largas de ChatGPT?", "a": "Si, esta orientada a respuestas completas con texto y ecuaciones."},
+                {"q": "Las ecuaciones quedan editables en Word?", "a": "Si, la salida esta en formato OMML editable."},
+                {"q": "Conviene para tareas academicas?", "a": "Si, es uno de los casos mas habituales de uso."},
+            ],
+            "secondary_cta_href": "/blog/signos-interrogacion-ecuaciones-chatgpt-word",
+            "secondary_cta_label": "Resolver errores de pegado",
+            "pillar_label": "Pilar: LaTeX a Word online",
+            "related_guides": [
+                {"href": "/blog/ia-chatgpt-a-word-ejercicios", "label": "Guia de ejercicios con IA + Word"},
+                {"href": "/blog/latex-a-word-omml-guia-definitiva", "label": "Guia definitiva LaTeX a Word OMML"},
+            ],
+        },
+        "en": {
+            "primary_keyword": "chatgpt equations to word",
+            "primary_intent": "transactional conversion from AI output to editable DOCX",
+            "problem_angle": "avoid screenshot workflows and broken chat copy/paste",
+            "problem_statement": "ChatGPT can solve the problem, but delivery in Word is where teams lose time. This page closes that gap by turning AI-generated LaTeX into native editable OMML equations in a review-ready DOCX.",
+            "when_to_use_intro": "Use this page when ChatGPT is your source and Word is your required output.",
+            "when_to_use_items": [
+                "Assignment submission in DOCX format",
+                "Supervisor review in Word",
+                "Consolidated AI responses in one report",
+                "Need for editable equations after sharing",
+            ],
+            "workflow_steps": [
+                "Generate response with clear LaTeX delimiters.",
+                "Save to TXT or DOCX source file.",
+                "Upload and convert to OMML output.",
+                "Download and verify key equations in Word.",
+            ],
+            "example_input": "Chat response containing $a^2+b^2=c^2$ and $$\\sum_{k=1}^{n}k$$.",
+            "example_output": "DOCX with native editable Word equations.",
+            "before_text": "Before: plain text formulas and manual cleanup.",
+            "after_text": "After: native editable OMML equations.",
+            "mini_case": "Engineering student compiling AI-generated homework into a single DOCX.",
+            "supported_formats": ["DOCX input", "TXT input", "DOCX OMML output"],
+            "supported_delimiters": ["$...$", "$$...$$", "\\[...\\]"],
+            "known_limitations": ["Invalid LaTeX must be corrected", "Custom macros may need manual edits"],
+            "common_errors": [
+                {"error": "Weird symbols from chat paste", "fix": "Use clean UTF-8 TXT/DOCX source before conversion."},
+                {"error": "Equation not converted", "fix": "Check delimiter consistency."},
+            ],
+            "faq_items": [
+                {"q": "Are equations editable after conversion?", "a": "Yes, output equations are generated as OMML."},
+                {"q": "Does this support long chat responses?", "a": "Yes, including mixed text and equations."},
+            ],
+            "secondary_cta_href": "/en/blog/question-marks-chatgpt-equations-word",
+            "secondary_cta_label": "Fix copy/paste issues",
+            "pillar_label": "Pillar: LaTeX to Word online",
+            "related_guides": [
+                {"href": "/en/blog/use-ai-equations-to-word-exercises", "label": "Guide: AI exercises to Word"},
+                {"href": "/en/blog/latex-to-word-online-free-editable-equations", "label": "Guide: LaTeX to Word online"},
+            ],
+        },
+    },
+    "gemini-equations-to-word": {
+        "es": {
+            "primary_keyword": "gemini a word ecuaciones",
+            "primary_intent": "transaccional para convertir respuestas matematicas de Gemini",
+            "problem_angle": "pasar prompts y bloques LaTeX de Gemini a Word editable",
+            "problem_statement": "Gemini suele generar salidas matematicas utiles, pero convertirlas en un .docx limpio consume tiempo si se hace a mano. Esta landing se enfoca en ese cuello de botella: conversion directa a OMML para informes y ejercicios editables. El objetivo es que no pierdas calidad al pasar de un prompt a una entrega formal. Tambien cubre el escenario de iteraciones: cuando ajustas una respuesta con varios prompts y luego necesitas consolidar todo en un unico archivo Word coherente, sin simbolos rotos ni ecuaciones bloqueadas.",
+            "extra_context": "La propuesta esta pensada para flujo continuo: generar, depurar y entregar. En lugar de tratar cada formula como caso aislado, conviertes todo el documento y mantienes una base editable para correcciones rapidas en Word.",
+            "when_to_use_intro": "Recomendada cuando Gemini es tu herramienta principal y necesitas entregar en Word.",
+            "when_to_use_items": [
+                "Informes tecnicos con formulas en bloque",
+                "Ejercicios semanales generados por IA",
+                "Revision en Word con cambios sobre ecuaciones",
+            ],
+            "workflow_steps": [
+                "Solicita salida LaTeX estable en Gemini.",
+                "Guarda en .txt o .docx.",
+                "Sube y convierte desde esta pagina.",
+                "Descarga DOCX OMML y revisa.",
+            ],
+            "example_input": "Respuesta Gemini con $$\\nabla\\cdot\\vec{E}=\\rho/\\epsilon_0$$ y formulas inline.",
+            "example_output": "Word con ecuaciones OMML listas para editar.",
+            "before_text": "Antes: salida correcta en chat, dificil de llevar a Word final.",
+            "after_text": "Despues: entrega .docx editable y consistente.",
+            "mini_case": "Estudiante de fisica que transforma ejercicios Gemini en entregas Word.",
+            "supported_formats": ["DOCX", "TXT", "Salida DOCX editable"],
+            "supported_delimiters": ["$...$", "$$...$$", "\\[...\\]"],
+            "known_limitations": ["LaTeX incompleto debe corregirse", "Macros no estandar pueden requerir retoque"],
+            "common_errors": [
+                {"error": "Mezcla markdown + LaTeX", "fix": "Separar bloques matematicos antes de convertir."},
+                {"error": "Delimitador sin cierre", "fix": "Verificar apertura y cierre en cada bloque."},
+            ],
+            "faq_items": [
+                {"q": "Sirve para informes largos?", "a": "Si, admite contenido mixto texto + ecuaciones."},
+                {"q": "Puedo usarlo aunque mezcle Gemini y ChatGPT?", "a": "Si, mientras mantengas LaTeX delimitado."},
+            ],
+            "secondary_cta_href": "/blog/ia-chatgpt-a-word-ejercicios",
+            "secondary_cta_label": "Guia IA + Word para ejercicios",
+            "pillar_label": "Pilar: LaTeX a Word online",
+            "related_guides": [
+                {"href": "/blog/pasar-ecuaciones-chatgpt-word", "label": "Guia ChatGPT a Word"},
+                {"href": "/blog/latex-a-word-online-gratis-ecuaciones-editables", "label": "Guia LaTeX a Word online"},
+            ],
+        },
+        "en": {
+            "primary_keyword": "gemini equations to word",
+            "primary_intent": "transactional conversion of Gemini math output",
+            "problem_angle": "turn Gemini LaTeX blocks into editable DOCX equations",
+            "problem_statement": "Gemini output often needs post-processing before Word delivery. This page provides a direct path to OMML so equations stay editable during review.",
+            "when_to_use_intro": "Use this when Gemini is your source and Word is your target deliverable.",
+            "when_to_use_items": ["Assignments in DOCX", "Prompt-generated reports", "Collaborative Word review"],
+            "workflow_steps": ["Generate in Gemini", "Save to TXT/DOCX", "Upload and convert", "Review final DOCX"],
+            "example_input": "Gemini output with inline and display LaTeX math.",
+            "example_output": "Editable OMML equations inside Word.",
+            "before_text": "Before: AI output not ready for delivery.",
+            "after_text": "After: clean DOCX with editable equations.",
+            "mini_case": "Weekly AI-generated worksheets submitted in Word.",
+            "supported_formats": ["DOCX", "TXT", "DOCX output"],
+            "supported_delimiters": ["$...$", "$$...$$", "\\[...\\]"],
+            "known_limitations": ["Invalid source LaTeX needs correction"],
+            "common_errors": [{"error": "Delimiter mismatch", "fix": "Normalize delimiter pairs before upload."}],
+            "faq_items": [{"q": "Does this keep equations editable?", "a": "Yes, output is generated as OMML."}],
+            "secondary_cta_href": "/en/blog/gemini-equations-to-word-omml",
+            "secondary_cta_label": "Gemini troubleshooting guide",
+            "pillar_label": "Pillar: LaTeX to Word online",
+            "related_guides": [
+                {"href": "/en/blog/use-ai-equations-to-word-exercises", "label": "Guide: AI exercises"},
+                {"href": "/en/blog/latex-to-word-online-free-editable-equations", "label": "Guide: LaTeX to Word online"},
+            ],
+        },
+    },
+    "pandoc-to-word-omml": {
+        "es": {
+            "primary_keyword": "pandoc a word ecuaciones editables",
+            "primary_intent": "transaccional para reparar salida Pandoc",
+            "problem_angle": "documentos convertidos donde Word no deja editar formulas",
+            "problem_statement": "Muchos flujos con Pandoc terminan en .docx visualmente correcto pero poco editable. Esta landing resuelve esa ultima milla: recuperar ecuaciones nativas OMML en Word sin rehacer todo el documento. Es especialmente valiosa en proyectos donde ya existe un pipeline markdown consolidado y no quieres romperlo, pero tampoco puedes permitir una entrega final con ecuaciones no editables. El foco esta en estabilizar la salida final para revision, mantenimiento y cambios de ultima hora.",
+            "extra_context": "Asi puedes conservar las ventajas de Pandoc para conversion masiva y, al mismo tiempo, cumplir con el requisito de editabilidad real que suele pedir universidad, cliente o equipo de revisores. Ademas, reduce el riesgo de llegar al final del proyecto con formulas bloqueadas justo cuando mas cambios necesitas aplicar. En equipos con fechas ajustadas, esta capa final suele ahorrar horas de correccion manual. Tambien simplifica auditorias internas de calidad antes de publicar o entregar.",
+            "when_to_use_intro": "Ideal cuando ya usaste Pandoc y necesitas estabilizar la editabilidad final en Word.",
+            "when_to_use_items": ["Markdown -> DOCX con matematicas", "Revision colaborativa en Word", "Entregas tecnicas largas"],
+            "workflow_steps": ["Genera salida Pandoc", "Sube el DOCX resultante", "Convierte a OMML", "Valida ecuaciones clave"],
+            "example_input": "DOCX generado por Pandoc desde markdown con LaTeX.",
+            "example_output": "DOCX final con ecuaciones editables en Word.",
+            "before_text": "Antes: ecuaciones visibles pero no editables.",
+            "after_text": "Despues: formulas OMML nativas listas para revision.",
+            "mini_case": "Memoria tecnica en markdown convertida a Word para entrega institucional.",
+            "supported_formats": ["DOCX post-Pandoc", "TXT", "DOCX editable"],
+            "supported_delimiters": ["$...$", "$$...$$", "\\[...\\]"],
+            "known_limitations": ["No sustituye tu pipeline Pandoc", "Sintaxis LaTeX rota debe corregirse en origen"],
+            "common_errors": [
+                {"error": "Asumir que Pandoc ya deja OMML perfecto", "fix": "Comprobar editabilidad real en Word antes de cerrar."},
+                {"error": "Bloques largos fragmentados", "fix": "Revisar delimitadores en markdown fuente."},
+            ],
+            "faq_items": [
+                {"q": "Sustituye a Pandoc?", "a": "No, complementa la fase final de compatibilidad Word."},
+                {"q": "Sirve para documentos largos?", "a": "Si, especialmente en informes tecnicos extensos."},
+            ],
+            "secondary_cta_href": "/blog/pandoc-ecuaciones-word-no-editables-soluciones",
+            "secondary_cta_label": "Checklist de errores Pandoc",
+            "pillar_label": "Pilar: LaTeX a Word online",
+            "related_guides": [
+                {"href": "/blog/markdown-con-latex-a-word-docx", "label": "Guia Markdown + LaTeX a Word"},
+                {"href": "/blog/que-es-omml-ecuaciones-word", "label": "Guia que es OMML"},
+            ],
+        },
+        "en": {
+            "primary_keyword": "pandoc to word editable equations",
+            "primary_intent": "transactional post-conversion fix",
+            "problem_angle": "restore editability after markdown/LaTeX pipelines",
+            "problem_statement": "Pandoc output may look fine but still fail Word equation editing. This landing restores OMML editability for final delivery.",
+            "when_to_use_intro": "Use this page after Pandoc conversion when equation editing in Word is still broken.",
+            "when_to_use_items": ["Equation-heavy markdown docs", "DOCX review workflows", "Technical reports"],
+            "workflow_steps": ["Run Pandoc", "Upload output file", "Convert to OMML", "Validate in Word"],
+            "example_input": "Pandoc DOCX with non-editable equations.",
+            "example_output": "DOCX with native editable OMML equations.",
+            "before_text": "Before: visual math, weak editability.",
+            "after_text": "After: Word-native editable equations.",
+            "mini_case": "Markdown engineering memo delivered as editable DOCX.",
+            "supported_formats": ["DOCX", "TXT", "DOCX output"],
+            "supported_delimiters": ["$...$", "$$...$$", "\\[...\\]"],
+            "known_limitations": ["Invalid source LaTeX must be fixed first"],
+            "common_errors": [{"error": "Late-stage manual cleanup", "fix": "Add this conversion as a fixed final step."}],
+            "faq_items": [{"q": "Does this replace Pandoc?", "a": "No, it complements it for Word editability."}],
+            "secondary_cta_href": "/en/blog/pandoc-math-to-word-omml-troubleshooting",
+            "secondary_cta_label": "Pandoc troubleshooting guide",
+            "pillar_label": "Pillar: LaTeX to Word online",
+            "related_guides": [
+                {"href": "/en/blog/markdown-latex-to-word-docx", "label": "Guide: Markdown + LaTeX to DOCX"},
+                {"href": "/en/blog/what-is-omml-word-equations", "label": "Guide: what OMML is"},
+            ],
+        },
+    },
+    "overleaf-latex-document-to-word": {
+        "es": {
+            "primary_keyword": "overleaf a word",
+            "primary_intent": "transaccional para entrega academica en Word",
+            "problem_angle": "pasar TFG/TFM de Overleaf a .docx revisable con tutor",
+            "problem_statement": "Redactar en Overleaf y entregar en Word suele romper la fase final de revision. Esta landing esta orientada a mantener ecuaciones editables en Word para TFG/TFM e informes tecnicos. El problema habitual aparece cuando el contenido ya esta bien resuelto en LaTeX, pero la institucion exige .docx para tutoria, tribunal o archivo final. Aqui el valor es reducir friccion en ese traspaso obligatorio: convertir sin perder capacidad de correccion, sin rehacer formulas y sin bloquear la colaboracion en Word.",
+            "extra_context": "La idea es que el documento final no sea una conversion estatica, sino una version revisable. Eso facilita comentarios, cambios de ultima hora y adaptacion a plantillas institucionales sin destruir la parte matematica. Tambien te permite responder mas rapido a feedback de tutor o tribunal en la fase mas sensible del trabajo.",
+            "when_to_use_intro": "Usa esta solucion cuando el documento nace en LaTeX pero el cierre y la revision son en Word.",
+            "when_to_use_items": ["Tutor corrige en DOCX", "Normativa institucional exige Word", "Varias rondas de correccion final"],
+            "workflow_steps": ["Prepara exportacion", "Sube .docx/.txt", "Convierte a OMML", "Revisa capitulos y entrega"],
+            "example_input": "Capitulo de TFM con matrices e integrales exportado desde Overleaf.",
+            "example_output": "DOCX revisable con formulas OMML editables.",
+            "before_text": "Antes: buen contenido en LaTeX, revision pesada en Word.",
+            "after_text": "Despues: documento Word apto para correccion colaborativa.",
+            "mini_case": "Estudiante que entrega memoria final en plantilla Word universitaria.",
+            "supported_formats": ["DOCX exportado", "TXT con LaTeX", "Salida DOCX editable"],
+            "supported_delimiters": ["$...$", "$$...$$", "\\[...\\]"],
+            "known_limitations": ["Maquetaciones LaTeX muy custom pueden requerir ajustes visuales"],
+            "common_errors": [
+                {"error": "No validar ecuaciones en la plantilla final", "fix": "Comprobar editabilidad tras aplicar estilos institucionales."},
+                {"error": "Revisar todo al final", "fix": "Validar por capitulos durante el proceso."},
+            ],
+            "faq_items": [
+                {"q": "Sirve para TFG/TFM largos?", "a": "Si, esta orientada a documentos extensos con revision academica."},
+                {"q": "El tutor puede editar formulas?", "a": "Si, quedan en formato OMML editable."},
+            ],
+            "secondary_cta_href": "/blog/overleaf-latex-a-word-ecuaciones-editables",
+            "secondary_cta_label": "Guia Overleaf a Word",
+            "pillar_label": "Pilar: LaTeX a Word online",
+            "related_guides": [
+                {"href": "/blog/convertir-documento-latex-word", "label": "Guia de documento LaTeX a Word"},
+                {"href": "/blog/omml-vs-mathtype-vs-latex-word-tfg", "label": "Comparativa OMML vs MathType vs LaTeX"},
+            ],
+        },
+        "en": {
+            "primary_keyword": "overleaf to word",
+            "primary_intent": "transactional thesis handoff conversion",
+            "problem_angle": "move LaTeX authoring into Word review workflows",
+            "problem_statement": "This page helps you keep equation editability when moving from Overleaf/LaTeX writing to Word-based review and submission.",
+            "when_to_use_intro": "Use this page for thesis/coursework handoff where Word review is mandatory.",
+            "when_to_use_items": ["Supervisor feedback in DOCX", "Institutional Word templates", "Final-round revisions"],
+            "workflow_steps": ["Export source", "Upload file", "Convert to OMML", "Review and submit"],
+            "example_input": "Overleaf chapter with matrix-heavy equations.",
+            "example_output": "Editable DOCX with OMML equations.",
+            "before_text": "Before: hard-to-review equation handoff.",
+            "after_text": "After: Word-native equations for tracked changes.",
+            "mini_case": "Master thesis drafted in Overleaf, delivered in DOCX.",
+            "supported_formats": ["DOCX", "TXT", "DOCX output"],
+            "supported_delimiters": ["$...$", "$$...$$", "\\[...\\]"],
+            "known_limitations": ["Custom layout features may need visual QA"],
+            "common_errors": [{"error": "Skipping editability checks", "fix": "Validate equations in final Word template."}],
+            "faq_items": [{"q": "Can this handle long thesis files?", "a": "Yes, it is built for long academic workflows."}],
+            "secondary_cta_href": "/en/blog/overleaf-latex-to-word-editable-equations",
+            "secondary_cta_label": "Overleaf workflow guide",
+            "pillar_label": "Pillar: LaTeX to Word online",
+            "related_guides": [
+                {"href": "/en/blog/convert-latex-document-to-word", "label": "Guide: LaTeX document to Word"},
+                {"href": "/en/blog/omml-vs-mathtype-vs-latex-word-thesis", "label": "Guide: OMML vs MathType vs LaTeX"},
+            ],
+        },
+    },
+    "omml-converter": {
+        "es": {
+            "primary_keyword": "conversor omml",
+            "primary_intent": "transaccional + informacional sobre compatibilidad Word",
+            "problem_angle": "entender y aplicar formato nativo OMML para colaboracion",
+            "problem_statement": "Cuando las ecuaciones fallan en Word, el problema suele ser de formato, no de contenido. Esta landing se centra en OMML para garantizar editabilidad y compatibilidad en .docx compartidos. Es la opcion correcta cuando necesitas una base tecnica estable para colaborar: revisiones entre equipos, intercambio de versiones y correcciones sobre formulas sin depender de plugins externos. En vez de tratar sintomas por cada documento, esta pagina ataca la causa raiz: estandarizar la matematica en formato nativo Word.",
+            "extra_context": "Con este enfoque evitas retrabajo repetitivo. Una vez unificas a OMML, la colaboracion en Word se vuelve predecible: menos sorpresas al compartir, menos fallos de render y mayor control durante todo el ciclo editorial. Es una mejora estructural, no solo un arreglo puntual para una entrega concreta. Tambien facilita mantener criterios uniformes de calidad cuando el sitio publica contenido tecnico de forma continua. A medio plazo, reduce incidencias y acelera la edicion colaborativa.",
+            "when_to_use_intro": "Usa esta pagina cuando te importa compatibilidad Word a largo plazo y colaboracion estable.",
+            "when_to_use_items": ["Documentos compartidos entre equipos", "Correcciones frecuentes sobre formulas", "Entregas institucionales en Word"],
+            "workflow_steps": ["Identifica archivo origen", "Sube .docx/.txt", "Convierte a OMML", "Valida y comparte"],
+            "example_input": "Documento con formulas LaTeX pegadas como texto.",
+            "example_output": "DOCX con ecuaciones OMML editables y consistentes.",
+            "before_text": "Antes: formulas visibles pero fragiles al editar.",
+            "after_text": "Despues: formato nativo Word para revision y colaboracion.",
+            "mini_case": "Equipo de proyecto que intercambia borradores DOCX con matematicas.",
+            "supported_formats": ["DOCX", "TXT", "DOCX editable"],
+            "supported_delimiters": ["$...$", "$$...$$", "\\[...\\]"],
+            "known_limitations": ["Sintaxis LaTeX invalida no se corrige automaticamente"],
+            "common_errors": [
+                {"error": "Confundir visualizacion con editabilidad", "fix": "Comprobar edicion directa en Equation Editor."},
+                {"error": "Mezclar formatos distintos de ecuaciones", "fix": "Unificar todo en OMML antes de entregar."},
+            ],
+            "faq_items": [
+                {"q": "Que es OMML?", "a": "Es el formato nativo de ecuaciones editable en Microsoft Word."},
+                {"q": "Sirve si no uso IA?", "a": "Si, es una solucion de formato independientemente de la fuente."},
+            ],
+            "secondary_cta_href": "/blog/que-es-omml-ecuaciones-word",
+            "secondary_cta_label": "Aprender que es OMML",
+            "pillar_label": "Pilar: LaTeX a Word online",
+            "related_guides": [
+                {"href": "/blog/omml-vs-mathtype-vs-latex-word-tfg", "label": "Comparativa OMML vs MathType vs LaTeX"},
+                {"href": "/blog/simbolos-raros-ecuaciones-word-cambria-math", "label": "Guia de compatibilidad Cambria Math"},
+            ],
+        },
+        "en": {
+            "primary_keyword": "omml converter",
+            "primary_intent": "transactional + educational format standardization",
+            "problem_angle": "Word-native equation compatibility for collaboration",
+            "problem_statement": "Equation issues in Word are often format issues. This landing focuses on OMML conversion to preserve editability in shared DOCX files.",
+            "when_to_use_intro": "Use this page when format compatibility matters more than source tool branding.",
+            "when_to_use_items": ["Cross-team DOCX editing", "Word tracked changes with equations", "Compatibility-first QA"],
+            "workflow_steps": ["Upload source", "Convert to OMML", "Validate in Word", "Share stable DOCX"],
+            "example_input": "LaTeX formulas pasted in mixed plain text format.",
+            "example_output": "Word-native OMML equations ready for editing.",
+            "before_text": "Before: fragile equation rendering across edits.",
+            "after_text": "After: stable editable equations in Word.",
+            "mini_case": "Research collaborators exchanging equation-heavy DOCX drafts.",
+            "supported_formats": ["DOCX", "TXT", "DOCX output"],
+            "supported_delimiters": ["$...$", "$$...$$", "\\[...\\]"],
+            "known_limitations": ["Invalid source LaTeX needs cleanup"],
+            "common_errors": [{"error": "Assuming rendered means editable", "fix": "Always test equation editing directly in Word."}],
+            "faq_items": [{"q": "What is OMML?", "a": "Word's native editable equation format."}],
+            "secondary_cta_href": "/en/blog/what-is-omml-word-equations",
+            "secondary_cta_label": "Learn what OMML is",
+            "pillar_label": "Pillar: LaTeX to Word online",
+            "related_guides": [
+                {"href": "/en/blog/omml-vs-mathtype-vs-latex-word-thesis", "label": "Guide: OMML vs MathType vs LaTeX"},
+                {"href": "/en/blog/weird-symbols-word-equations-cambria-math-fix", "label": "Guide: weird symbols fix"},
+            ],
+        },
+    },
+}
+
+
+def _landing_longform(lang: str, landing_key: str) -> Dict[str, Any]:
+    data = LANDING_LONGFORM.get(landing_key, {})
+    if not data:
+        return {}
+    return data.get(lang) or data.get(_content_lang(lang)) or data.get("en") or {}
 
 
 def _load_blog_data() -> Dict[str, Any]:
@@ -905,9 +1305,51 @@ def _build_schema_solution_page(
     lang: str,
     description: str,
     related_blog_url: str,
+    faq_items: Optional[List[Dict[str, str]]] = None,
 ) -> str:
     solutions_hub = _abs_url(_solutions_path(lang))
     solutions_name = "Soluciones" if lang == "es" else "Solutions"
+    faq_entities: List[Dict[str, Any]] = []
+    for item in faq_items or []:
+        q = (item.get("q") or "").strip()
+        a = (item.get("a") or "").strip()
+        if not q or not a:
+            continue
+        faq_entities.append(
+            {
+                "@type": "Question",
+                "name": q,
+                "acceptedAnswer": {"@type": "Answer", "text": a},
+            }
+        )
+    if not faq_entities:
+        faq_entities = [
+            {
+                "@type": "Question",
+                "name": "Does it keep equations editable in Word?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes. The converter generates native Word OMML equations that remain editable inside .docx.",
+                },
+            },
+            {
+                "@type": "Question",
+                "name": "Can I use files generated by AI tools?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes. You can upload DOCX or TXT files containing LaTeX produced by tools such as ChatGPT, Gemini or Overleaf workflows.",
+                },
+            },
+            {
+                "@type": "Question",
+                "name": "Where can I read a detailed guide?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": f"You can read the related guide here: {related_blog_url}",
+                },
+            },
+        ]
+
     schema = {
         "@context": "https://schema.org",
         "@graph": [
@@ -941,32 +1383,7 @@ def _build_schema_solution_page(
             },
             {
                 "@type": "FAQPage",
-                "mainEntity": [
-                    {
-                        "@type": "Question",
-                        "name": "Does it keep equations editable in Word?",
-                        "acceptedAnswer": {
-                            "@type": "Answer",
-                            "text": "Yes. The converter generates native Word OMML equations that remain editable inside .docx.",
-                        },
-                    },
-                    {
-                        "@type": "Question",
-                        "name": "Can I use files generated by AI tools?",
-                        "acceptedAnswer": {
-                            "@type": "Answer",
-                            "text": "Yes. You can upload DOCX or TXT files containing LaTeX produced by tools such as ChatGPT, Gemini or Overleaf workflows.",
-                        },
-                    },
-                    {
-                        "@type": "Question",
-                        "name": "Where can I read a detailed guide?",
-                        "acceptedAnswer": {
-                            "@type": "Answer",
-                            "text": f"You can read the related guide here: {related_blog_url}",
-                        },
-                    },
-                ],
+                "mainEntity": faq_entities[:8],
             },
         ],
     }
@@ -1001,9 +1418,9 @@ def _build_schema_index(lang: str, canonical_url: str) -> str:
 
 
 
-def _noindex_headers() -> Dict[str, str]:
+def _noindex_headers(follow: bool = False) -> Dict[str, str]:
     """Headers to discourage indexing for technical/non-content endpoints."""
-    return {"X-Robots-Tag": "noindex, nofollow"}
+    return {"X-Robots-Tag": "noindex, follow" if follow else "noindex, nofollow"}
 # ================================================================
 # Helpers
 # ================================================================
@@ -1067,9 +1484,10 @@ def _sitemap_url_entry(
 
 def generate_sitemap_xml() -> str:
     """
-    Sitemap XML generado desde las rutas reales del sitio y desde posts.json (cache BLOG_LIST/BLOG_POSTS).
-
-    Incluye alternates hreflang (xhtml:link) para todos los idiomas soportados.
+    Build sitemap using only canonical, indexable, final URLs:
+    - status 200 routes (no redirect hubs)
+    - primary languages only (es/en)
+    - blog posts explicitly marked as indexable by strategy
     """
     urls: List[str] = []
 
@@ -1079,10 +1497,10 @@ def generate_sitemap_xml() -> str:
             return d
         return _now_lastmod_iso()
 
-    # Home
-    home_paths = {lang: _home_path(lang) for lang in SUPPORTED_LANGS}
+    # Home (primary languages only)
+    home_paths = {lang: _home_path(lang) for lang in SITEMAP_LANGS}
     home_alts = _all_alternates(home_paths, default_lang="es")
-    for lang in SUPPORTED_LANGS:
+    for lang in SITEMAP_LANGS:
         urls.append(
             _sitemap_url_entry(
                 _abs_url(home_paths[lang]),
@@ -1094,9 +1512,9 @@ def generate_sitemap_xml() -> str:
         )
 
     # Blog index
-    blog_index_paths = {lang: _blog_index_path(lang) for lang in SUPPORTED_LANGS}
+    blog_index_paths = {lang: _blog_index_path(lang) for lang in SITEMAP_LANGS}
     blog_index_alts = _all_alternates(blog_index_paths, default_lang="es")
-    for lang in SUPPORTED_LANGS:
+    for lang in SITEMAP_LANGS:
         urls.append(
             _sitemap_url_entry(
                 _abs_url(blog_index_paths[lang]),
@@ -1107,31 +1525,25 @@ def generate_sitemap_xml() -> str:
             )
         )
 
-    # Legal pages
-    for page in ("privacy", "terms", "contact"):
-        paths = {lang: _legal_path(lang, page) for lang in SUPPORTED_LANGS}
-        alts = _all_alternates(paths, default_lang="es")
-        for lang in SUPPORTED_LANGS:
-            urls.append(
-                _sitemap_url_entry(
-                    _abs_url(paths[lang]),
-                    _now_lastmod_iso(),
-                    "monthly",
-                    "0.3",
-                    alternates=alts,
-                )
+    # Solutions hub
+    solutions_paths = {lang: _solutions_path(lang) for lang in SITEMAP_LANGS}
+    solutions_alts = _all_alternates(solutions_paths, default_lang="es")
+    for lang in SITEMAP_LANGS:
+        urls.append(
+            _sitemap_url_entry(
+                _abs_url(solutions_paths[lang]),
+                _now_lastmod_iso(),
+                "weekly",
+                "0.75" if lang == "es" else "0.7",
+                alternates=solutions_alts,
             )
+        )
 
     # Transactional landings
     for es_path, en_path in _all_landing_pairs():
-        route_slug = en_path.rstrip("/").split("/")[-1]
         landing_paths = {"es": es_path, "en": en_path}
-        for lang in SUPPORTED_LANGS:
-            if lang in ("es", "en"):
-                continue
-            landing_paths[lang] = f"{_solutions_path(lang)}/{route_slug}"
         alts = _all_alternates(landing_paths, default_lang="es")
-        for lang in SUPPORTED_LANGS:
+        for lang in SITEMAP_LANGS:
             path = landing_paths.get(lang)
             if not path:
                 continue
@@ -1145,23 +1557,27 @@ def generate_sitemap_xml() -> str:
                 )
             )
 
-    # Blog posts (all supported languages)
-    for lang in SUPPORTED_LANGS:
+    # Blog posts (indexable only)
+    for lang in SITEMAP_LANGS:
         for p in BLOG_LIST.get(lang, []):
+            if not _is_blog_post_indexable(lang, p):
+                continue
             slug = (p.get("slug") or "").strip()
             if not slug:
                 continue
             canonical_path = (p.get("canonical_path") or "").strip()
-            if lang not in PRIMARY_CONTENT_LANGS or not canonical_path:
+            if not canonical_path:
                 canonical_path = f"{_blog_index_path(lang)}/{slug}"
-            paths = {
-                "es": (BLOG_POSTS.get("es", {}).get(slug, {}).get("canonical_path") or f"/blog/{slug}"),
-                "en": (BLOG_POSTS.get("en", {}).get(slug, {}).get("canonical_path") or f"/en/blog/{slug}"),
-                "de": f"/de/blog/{slug}",
-                "fr": f"/fr/blog/{slug}",
-                "it": f"/it/blog/{slug}",
-                "pt": f"/pt/blog/{slug}",
-            }
+            translation_slug = (p.get("translation_slug") or "").strip()
+            if lang == "es":
+                es_path = canonical_path
+                en_slug = translation_slug or slug
+                en_path = (BLOG_POSTS.get("en", {}).get(en_slug, {}).get("canonical_path") or f"/en/blog/{en_slug}")
+            else:
+                en_path = canonical_path
+                es_slug = translation_slug or slug
+                es_path = (BLOG_POSTS.get("es", {}).get(es_slug, {}).get("canonical_path") or f"/blog/{es_slug}")
+            paths = {"es": es_path, "en": en_path}
             alts = _all_alternates(paths, default_lang="es")
             urls.append(
                 _sitemap_url_entry(
@@ -1647,33 +2063,41 @@ async def home_en() -> HTMLResponse:
 @app.get("/de", response_class=HTMLResponse)
 async def home_de() -> HTMLResponse:
     try:
-        return HTMLResponse(read_html_file("index-de.html"))
+        resp = HTMLResponse(read_html_file("index-de.html"))
     except FileNotFoundError:
-        return HTMLResponse(read_html_file("index-en.html"))
+        resp = HTMLResponse(read_html_file("index-en.html"))
+    resp.headers.update(_noindex_headers(follow=True))
+    return resp
 
 
 @app.get("/fr", response_class=HTMLResponse)
 async def home_fr() -> HTMLResponse:
     try:
-        return HTMLResponse(read_html_file("index-fr.html"))
+        resp = HTMLResponse(read_html_file("index-fr.html"))
     except FileNotFoundError:
-        return HTMLResponse(read_html_file("index-en.html"))
+        resp = HTMLResponse(read_html_file("index-en.html"))
+    resp.headers.update(_noindex_headers(follow=True))
+    return resp
 
 
 @app.get("/it", response_class=HTMLResponse)
 async def home_it() -> HTMLResponse:
     try:
-        return HTMLResponse(read_html_file("index-it.html"))
+        resp = HTMLResponse(read_html_file("index-it.html"))
     except FileNotFoundError:
-        return HTMLResponse(read_html_file("index-en.html"))
+        resp = HTMLResponse(read_html_file("index-en.html"))
+    resp.headers.update(_noindex_headers(follow=True))
+    return resp
 
 
 @app.get("/pt", response_class=HTMLResponse)
 async def home_pt() -> HTMLResponse:
     try:
-        return HTMLResponse(read_html_file("index-pt.html"))
+        resp = HTMLResponse(read_html_file("index-pt.html"))
     except FileNotFoundError:
-        return HTMLResponse(read_html_file("index-en.html"))
+        resp = HTMLResponse(read_html_file("index-en.html"))
+    resp.headers.update(_noindex_headers(follow=True))
+    return resp
 
 
 def _landing_from_slug(lang: str, slug: str) -> Optional[Dict[str, Any]]:
@@ -1687,7 +2111,7 @@ def _landing_key_from_route_slug(lang: str, route_slug: str) -> Optional[str]:
     route_slug = (route_slug or "").strip().lower()
     if not route_slug:
         return None
-    source_lang = _content_lang(lang)
+    source_lang = lang if lang in PRIMARY_CONTENT_LANGS else "en"
     for key, langs in LANDING_PAGES.items():
         path = (langs.get(source_lang, {}).get("path") or "").strip()
         if not path:
@@ -1710,8 +2134,7 @@ def _all_landing_pairs() -> List[Tuple[str, str]]:
 
 
 def _solution_landing_context(lang: str, route_slug: str) -> Optional[Dict[str, Any]]:
-    is_es = lang == "es"
-    source_lang = _content_lang(lang)
+    source_lang = lang if lang in PRIMARY_CONTENT_LANGS else "en"
     landing_key = _landing_key_from_route_slug(lang, route_slug)
     if not landing_key:
         return None
@@ -1728,6 +2151,8 @@ def _solution_landing_context(lang: str, route_slug: str) -> Optional[Dict[str, 
     related_blog_href = current["related_blog_href"]
     if lang not in PRIMARY_CONTENT_LANGS:
         related_blog_href = related_blog_href.replace("/en/blog/", f"/{lang}/blog/")
+    longform = _landing_longform(source_lang, landing_key)
+    indexable = _is_primary_lang(lang)
 
     alt_paths = {
         "es": es_page["path"],
@@ -1745,16 +2170,23 @@ def _solution_landing_context(lang: str, route_slug: str) -> Optional[Dict[str, 
         "description": current["description"],
         "keywords": [],
         "canonical_url": canonical_url,
+        "robots_directive": _robots_directive(lang, indexable=indexable),
         "alternates": _all_alternates(alt_paths, default_lang="es"),
         "og_type": "website",
         "og_title": current["title"],
         "og_description": current["description"],
         "og_image": _abs_url("/static/og-image.svg"),
         "schema_json": _build_schema_solution_page(
-            current["title"], canonical_url, lang, current["description"], _abs_url(related_blog_href)
+            current["title"],
+            canonical_url,
+            lang,
+            current["description"],
+            _abs_url(related_blog_href),
+            faq_items=longform.get("faq_items"),
         ),
         "converter_href": _home_path(lang),
         "blog_index_href": _blog_index_path(lang),
+        "solutions_hub_href": _solutions_path(lang),
         "nav_converter": _ui(lang, "nav_converter"),
         "nav_blog": "Blog",
         "lang_switch_href": _home_path("es" if lang != "es" else "en"),
@@ -1768,6 +2200,112 @@ def _solution_landing_context(lang: str, route_slug: str) -> Optional[Dict[str, 
         "source_page": source_page,
         "related_blog_href": related_blog_href,
         "related_blog_label": current["related_blog_label"],
+        "breadcrumbs": [
+            {"name": "Inicio" if lang == "es" else "Home", "url": _home_path(lang)},
+            {"name": "Soluciones" if lang == "es" else "Solutions", "url": _solutions_path(lang)},
+            {"name": current["h1"], "url": canonical_path},
+        ],
+        "primary_keyword": longform.get("primary_keyword", current["h1"]),
+        "primary_intent": longform.get("primary_intent", "transactional"),
+        "problem_angle": longform.get("problem_angle", current["description"]),
+        "problem_statement": longform.get("problem_statement", current["description"]),
+        "extra_context": longform.get("extra_context", ""),
+        "when_to_use_intro": longform.get("when_to_use_intro", current["description"]),
+        "when_to_use_items": longform.get("when_to_use_items", []),
+        "workflow_steps": longform.get("workflow_steps", []),
+        "example_input": longform.get("example_input", ""),
+        "example_output": longform.get("example_output", ""),
+        "before_text": longform.get("before_text", ""),
+        "after_text": longform.get("after_text", ""),
+        "mini_case": longform.get("mini_case", ""),
+        "supported_formats": longform.get("supported_formats", []),
+        "supported_delimiters": longform.get("supported_delimiters", []),
+        "known_limitations": longform.get("known_limitations", []),
+        "common_errors": longform.get("common_errors", []),
+        "faq_items": longform.get("faq_items", []),
+        "secondary_cta_href": longform.get("secondary_cta_href", related_blog_href),
+        "secondary_cta_label": longform.get("secondary_cta_label", current["related_blog_label"]),
+        "pillar_label": longform.get(
+            "pillar_label",
+            "Pilar: latex a word online" if lang == "es" else "Pillar: latex to word online",
+        ),
+        "related_guides": longform.get("related_guides", []),
+        "year": datetime.now().year,
+        "legal_links": {
+            "privacy": _legal_path(lang, "privacy"),
+            "terms": _legal_path(lang, "terms"),
+            "contact": _legal_path(lang, "contact"),
+        },
+    }
+
+
+def _solutions_hub_context(lang: str) -> Dict[str, Any]:
+    source_lang = lang if lang in PRIMARY_CONTENT_LANGS else "en"
+    canonical_path = _solutions_path(lang)
+    alt_paths = {code: _solutions_path(code) for code in SUPPORTED_LANGS}
+    cards: List[Dict[str, str]] = []
+    for key, langs in LANDING_PAGES.items():
+        current = langs.get(source_lang) or langs.get("en") or langs.get("es")
+        if not current:
+            continue
+        slug = current["path"].rstrip("/").split("/")[-1]
+        href = current["path"] if lang in PRIMARY_CONTENT_LANGS else f"{_solutions_path(lang)}/{slug}"
+        longform = _landing_longform(source_lang, key)
+        user_type = ", ".join((longform.get("when_to_use_items") or [])[:2])
+        cards.append(
+            {
+                "href": href,
+                "title": current.get("h1") or current.get("title") or "",
+                "kicker": current.get("kicker") or "",
+                "problem": longform.get("problem_angle", current.get("description", "")),
+                "user_type_label": "Para quien es:" if lang == "es" else "Best for:",
+                "user_type": user_type or (current.get("description") or ""),
+                "cta": "Ver solucion" if lang == "es" else "View solution",
+            }
+        )
+
+    title = "Soluciones LaTeX a Word por caso de uso" if lang == "es" else "LaTeX to Word solutions by use case"
+    description = (
+        "Elige la landing de conversion que mejor encaja con tu fuente: ChatGPT, Gemini, Overleaf, Pandoc u OMML."
+        if lang == "es"
+        else "Pick the conversion landing that matches your source: ChatGPT, Gemini, Overleaf, Pandoc or OMML."
+    )
+    return {
+        "lang": lang,
+        "site_name": SITE_NAME,
+        "seo_title": title,
+        "description": description,
+        "keywords": [],
+        "canonical_url": _abs_url(canonical_path),
+        "robots_directive": _robots_directive(lang, indexable=_is_primary_lang(lang)),
+        "alternates": _all_alternates(alt_paths, default_lang="es"),
+        "og_type": "website",
+        "og_title": title,
+        "og_description": description,
+        "og_image": _abs_url("/static/og-image.svg"),
+        "schema_json": _build_schema_simple_page("Soluciones" if lang == "es" else "Solutions", _abs_url(canonical_path), lang),
+        "converter_href": _home_path(lang),
+        "blog_index_href": _blog_index_path(lang),
+        "nav_converter": _ui(lang, "nav_converter"),
+        "nav_blog": "Blog",
+        "lang_options": _lang_options(alt_paths),
+        "breadcrumbs": [
+            {"name": "Inicio" if lang == "es" else "Home", "url": _home_path(lang)},
+            {"name": "Soluciones" if lang == "es" else "Solutions", "url": canonical_path},
+        ],
+        "h1": title,
+        "intro": description,
+        "cluster_title": "Arquitectura de soluciones por intencion" if lang == "es" else "Intent-based solution architecture",
+        "cluster_intro": (
+            "Cada landing ataca una keyword principal y un problema diferente para evitar canibalizacion y mejorar relevancia."
+            if lang == "es"
+            else "Each landing targets one primary keyword and one distinct problem to avoid cannibalization."
+        ),
+        "cards": cards,
+        "cta_strong": _ui(lang, "cta_strong"),
+        "cta_text": _ui(lang, "cta_text"),
+        "cta_primary": _ui(lang, "cta_primary"),
+        "cta_secondary": _ui(lang, "cta_secondary"),
         "year": datetime.now().year,
         "legal_links": {
             "privacy": _legal_path(lang, "privacy"),
@@ -1825,34 +2363,34 @@ async def solution_landing_pt(slug: str) -> HTMLResponse:
     return HTMLResponse(_render_template("solution_landing.html", ctx))
 
 
-@app.get("/soluciones", response_class=RedirectResponse)
-async def solutions_es() -> RedirectResponse:
-    return RedirectResponse(url="/soluciones/conversor-omml", status_code=301)
+@app.get("/soluciones", response_class=HTMLResponse)
+async def solutions_es() -> HTMLResponse:
+    return HTMLResponse(_render_template("solutions_hub.html", _solutions_hub_context("es")))
 
 
-@app.get("/en/solutions", response_class=RedirectResponse)
-async def solutions_en() -> RedirectResponse:
-    return RedirectResponse(url="/en/solutions/omml-converter", status_code=301)
+@app.get("/en/solutions", response_class=HTMLResponse)
+async def solutions_en() -> HTMLResponse:
+    return HTMLResponse(_render_template("solutions_hub.html", _solutions_hub_context("en")))
 
 
-@app.get("/de/solutions", response_class=RedirectResponse)
-async def solutions_de() -> RedirectResponse:
-    return RedirectResponse(url="/de/solutions/omml-converter", status_code=301)
+@app.get("/de/solutions", response_class=HTMLResponse)
+async def solutions_de() -> HTMLResponse:
+    return HTMLResponse(_render_template("solutions_hub.html", _solutions_hub_context("de")))
 
 
-@app.get("/fr/solutions", response_class=RedirectResponse)
-async def solutions_fr() -> RedirectResponse:
-    return RedirectResponse(url="/fr/solutions/omml-converter", status_code=301)
+@app.get("/fr/solutions", response_class=HTMLResponse)
+async def solutions_fr() -> HTMLResponse:
+    return HTMLResponse(_render_template("solutions_hub.html", _solutions_hub_context("fr")))
 
 
-@app.get("/it/solutions", response_class=RedirectResponse)
-async def solutions_it() -> RedirectResponse:
-    return RedirectResponse(url="/it/solutions/omml-converter", status_code=301)
+@app.get("/it/solutions", response_class=HTMLResponse)
+async def solutions_it() -> HTMLResponse:
+    return HTMLResponse(_render_template("solutions_hub.html", _solutions_hub_context("it")))
 
 
-@app.get("/pt/solutions", response_class=RedirectResponse)
-async def solutions_pt() -> RedirectResponse:
-    return RedirectResponse(url="/pt/solutions/omml-converter", status_code=301)
+@app.get("/pt/solutions", response_class=HTMLResponse)
+async def solutions_pt() -> HTMLResponse:
+    return HTMLResponse(_render_template("solutions_hub.html", _solutions_hub_context("pt")))
 
 
 # ================================================================
@@ -1936,6 +2474,7 @@ def _legal_page_context(lang: str, page: str) -> Dict[str, Any]:
         "description": description,
         "keywords": [],
         "canonical_url": canonical_url,
+        "robots_directive": _robots_directive(lang, indexable=False),
         "alternates": _all_alternates(alt_paths, default_lang="es"),
         "og_type": "website",
         "og_title": title,
@@ -2110,6 +2649,7 @@ async def blog_index_es() -> HTMLResponse:
         "description": "Guías para convertir LaTeX e IA a Word con ecuaciones nativas (OMML), sin imágenes ni fórmulas rotas.",
         "keywords": ["LaTeX a Word", "LaTeX a Word online", "OMML", "Word ecuaciones", "ChatGPT", "Pandoc"],
         "canonical_url": canonical_url,
+        "robots_directive": _robots_directive(lang, indexable=True),
         "alternates": [
             {"hreflang": "es", "href": canonical_url},
             {"hreflang": "en", "href": other_url},
@@ -2182,6 +2722,7 @@ async def blog_index_en() -> HTMLResponse:
         "description": "Practical guides to convert LaTeX/AI content to Word with native (OMML) editable equations.",
         "keywords": ["LaTeX to Word", "LaTeX to Word online", "OMML", "Word equations", "ChatGPT", "Pandoc"],
         "canonical_url": canonical_url,
+        "robots_directive": _robots_directive(lang, indexable=True),
         "alternates": [
             {"hreflang": "en", "href": canonical_url},
             {"hreflang": "es", "href": other_url},
@@ -2253,6 +2794,7 @@ def _build_blog_index_context_fallback_en(lang: str) -> Dict[str, Any]:
         "description": "Practical guides to convert LaTeX/AI content to Word with native (OMML) editable equations.",
         "keywords": ["LaTeX to Word", "LaTeX to Word online", "OMML", "Word equations", "ChatGPT", "Pandoc"],
         "canonical_url": canonical_url,
+        "robots_directive": _robots_directive(lang, indexable=False),
         "alternates": _all_alternates(alt_paths, default_lang="es"),
         "og_type": "website",
         "og_title": "Blog | Ecuaciones a Word",
@@ -2384,6 +2926,7 @@ async def blog_post_es(slug: str) -> HTMLResponse:
         meta_line += f" ?{reading_time}"
     if date_mod and date_mod != date_pub:
         meta_line += f" ?Actualizado {_format_date(lang, date_mod)}"
+    indexable = _is_blog_post_indexable(lang, post)
 
     ctx = {
         "lang": lang,
@@ -2392,6 +2935,7 @@ async def blog_post_es(slug: str) -> HTMLResponse:
         "description": post.get("description") or "",
         "keywords": post.get("keywords") or [],
         "canonical_url": canonical_url,
+        "robots_directive": _robots_directive(lang, indexable=indexable),
         "alternates": _all_alternates(alt_paths, default_lang="es"),
         "og_type": "article",
         "og_title": post.get("title") or "",
@@ -2403,6 +2947,8 @@ async def blog_post_es(slug: str) -> HTMLResponse:
         "summary_box_title": _ui(lang, "summary_title"),
         "summary_box_text": _ui(lang, "summary_text"),
         "summary_box_link_text": _ui(lang, "summary_link"),
+        "contextual_links_title": "Ruta de lectura y conversion recomendada",
+        "contextual_links": _build_contextual_links(lang, post),
         "converter_href": "/",
         "blog_index_href": "/blog",
         "nav_converter": _ui(lang, "nav_converter"),
@@ -2469,6 +3015,7 @@ async def blog_post_en(slug: str) -> HTMLResponse:
         meta_line += f" ?{reading_time}"
     if date_mod and date_mod != date_pub:
         meta_line += f" ?Updated {_format_date(lang, date_mod)}"
+    indexable = _is_blog_post_indexable(lang, post)
 
     ctx = {
         "lang": lang,
@@ -2477,6 +3024,7 @@ async def blog_post_en(slug: str) -> HTMLResponse:
         "description": post.get("description") or "",
         "keywords": post.get("keywords") or [],
         "canonical_url": canonical_url,
+        "robots_directive": _robots_directive(lang, indexable=indexable),
         "alternates": _all_alternates(alt_paths, default_lang="es"),
         "og_type": "article",
         "og_title": post.get("title") or "",
@@ -2488,6 +3036,8 @@ async def blog_post_en(slug: str) -> HTMLResponse:
         "summary_box_title": _ui(lang, "summary_title"),
         "summary_box_text": _ui(lang, "summary_text"),
         "summary_box_link_text": _ui(lang, "summary_link"),
+        "contextual_links_title": "Recommended reading and conversion path",
+        "contextual_links": _build_contextual_links(lang, post),
         "converter_href": "/en",
         "blog_index_href": "/en/blog",
         "nav_converter": _ui(lang, "nav_converter"),
@@ -2562,6 +3112,7 @@ def _blog_post_context_fallback_en(lang: str, post: Dict[str, Any], body_html: s
         "description": post.get("description") or "",
         "keywords": post.get("keywords") or [],
         "canonical_url": canonical_url,
+        "robots_directive": _robots_directive(lang, indexable=False),
         "alternates": _all_alternates(alt_paths, default_lang="es"),
         "og_type": "article",
         "og_title": post.get("title") or "",
@@ -2573,6 +3124,8 @@ def _blog_post_context_fallback_en(lang: str, post: Dict[str, Any], body_html: s
         "summary_box_title": _ui(lang, "summary_title"),
         "summary_box_text": _ui(lang, "summary_text"),
         "summary_box_link_text": _ui(lang, "summary_link"),
+        "contextual_links_title": "Recommended reading and conversion path",
+        "contextual_links": _build_contextual_links(lang, post),
         "converter_href": _home_path(lang),
         "blog_index_href": _blog_index_path(lang),
         "nav_converter": _ui(lang, "nav_converter"),
@@ -3715,4 +4268,95 @@ def _get_related_posts(lang: str, current_post: Dict[str, Any], limit: int = 4) 
             break
 
     return out
+
+
+def _solution_href_by_cluster(lang: str, cluster: str) -> str:
+    base = _solutions_path(lang)
+    if cluster == "chatgpt":
+        return f"{base}/chatgpt-ecuaciones-a-word" if lang == "es" else f"{base}/chatgpt-equations-to-word"
+    if cluster == "gemini":
+        return f"{base}/gemini-ecuaciones-a-word" if lang == "es" else f"{base}/gemini-equations-to-word"
+    if cluster == "pandoc":
+        return f"{base}/pandoc-a-word-omml" if lang == "es" else f"{base}/pandoc-to-word-omml"
+    if cluster == "overleaf":
+        return f"{base}/overleaf-latex-documento-a-word" if lang == "es" else f"{base}/overleaf-latex-document-to-word"
+    return f"{base}/conversor-omml" if lang == "es" else f"{base}/omml-converter"
+
+
+def _landing_label_by_cluster(lang: str, cluster: str) -> str:
+    if cluster == "chatgpt":
+        return "Landing: ChatGPT a Word" if lang == "es" else "Landing: ChatGPT to Word"
+    if cluster == "gemini":
+        return "Landing: Gemini a Word" if lang == "es" else "Landing: Gemini to Word"
+    if cluster == "pandoc":
+        return "Landing: Pandoc a Word OMML" if lang == "es" else "Landing: Pandoc to Word OMML"
+    if cluster == "overleaf":
+        return "Landing: Overleaf a Word" if lang == "es" else "Landing: Overleaf to Word"
+    return "Landing: Conversor OMML" if lang == "es" else "Landing: OMML converter"
+
+
+def _cluster_from_slug(slug: str) -> str:
+    s = (slug or "").lower()
+    if any(k in s for k in ("chatgpt", "copilot", "perplexity", "claude")):
+        return "chatgpt"
+    if "gemini" in s:
+        return "gemini"
+    if any(k in s for k in ("pandoc", "markdown")):
+        return "pandoc"
+    if any(k in s for k in ("overleaf", "obsidian", "notion", "thesis", "tfg", "tfm")):
+        return "overleaf"
+    if any(k in s for k in ("omml", "cambria", "unicode", "linear-format", "word-equation")):
+        return "omml"
+    if any(k in s for k in ("latex", "matrices", "delimitadores")):
+        return "overleaf"
+    if "ia-" in s:
+        return "chatgpt"
+    return "omml"
+
+
+def _pillar_link_for_lang(lang: str) -> Dict[str, str]:
+    if lang == "es":
+        return {
+            "href": "/blog/latex-a-word-omml-guia-definitiva",
+            "label": "Pilar: LaTeX a Word online (guia definitiva)",
+        }
+    return {
+        "href": "/en/blog/latex-to-word-online-free-editable-equations",
+        "label": "Pillar: LaTeX to Word online guide",
+    }
+
+
+def _build_contextual_links(lang: str, current_post: Dict[str, Any]) -> List[Dict[str, str]]:
+    slug = (current_post.get("slug") or "").strip()
+    cluster = _cluster_from_slug(slug)
+    links: List[Dict[str, str]] = [
+        {
+            "href": _solution_href_by_cluster(lang, cluster),
+            "label": _landing_label_by_cluster(lang, cluster),
+            "reason": (
+                "Ruta transaccional recomendada para ejecutar la conversion"
+                if lang == "es"
+                else "Primary transactional route for conversion"
+            ),
+        }
+    ]
+
+    related = _get_related_posts(lang, current_post, limit=6)
+    for rp in related[:2]:
+        links.append(
+            {
+                "href": rp["url"],
+                "label": rp["title"],
+                "reason": "Articulo relacionado del mismo cluster" if lang == "es" else "Related article in the same cluster",
+            }
+        )
+
+    links.append(
+        {
+            "href": _pillar_link_for_lang(lang)["href"],
+            "label": _pillar_link_for_lang(lang)["label"],
+            "reason": "Pagina pilar para contexto completo" if lang == "es" else "Pillar page for broad context",
+        }
+    )
+    return links
 

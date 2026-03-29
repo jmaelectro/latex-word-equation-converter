@@ -1,36 +1,69 @@
-<h2>Qué es OMML (Office Math Markup Language)</h2>
-<p>
-  Word guarda sus ecuaciones internas en un formato llamado <strong>OMML</strong> (Office Math Markup Language).
-  Cuando una ecuación está en OMML, Word la reconoce como ecuación: es editable, se alinea bien y se puede copiar entre documentos sin romperse.
-</p>
-<h2>Por qué LaTeX pegado "se rompe"</h2>
+<nav class="summary-box">
+  <strong>Indice rapido</strong>
+  <ol>
+    <li><a href="#definicion">Que es OMML</a></li>
+    <li><a href="#importa">Cuando importa de verdad</a></li>
+    <li><a href="#comparativa">OMML vs MathType vs LaTeX pegado</a></li>
+    <li><a href="#casos">Casos donde marca diferencia</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ol>
+</nav>
+
+<h2 id="definicion">Que es OMML</h2>
+<p>OMML significa <strong>Office Math Markup Language</strong>. Es el formato nativo que Word usa para representar ecuaciones de forma editable. No es solo una etiqueta tecnica: determina si tu formula se puede corregir, comentar y mantener en un flujo real de trabajo.</p>
+<p>Cuando una ecuacion no esta en OMML, puede verse bien pero comportarse mal al editar o compartir.</p>
+
+<h2 id="importa">Cuando importa de verdad</h2>
 <ul>
-<li><strong>LaTeX es código:</strong> si lo pegas en un párrafo normal, Word lo trata como texto.</li>
-<li><strong>Al pegar desde web/IA:</strong> pueden colarse caracteres invisibles o estilos que estropean el resultado.</li>
-<li><strong>Word necesita conversión:</strong> para que sea una ecuación nativa, el contenido debe terminar en OMML.</li>
+  <li>Cuando varias personas revisan el mismo .docx.</li>
+  <li>Cuando hay correcciones de ultima hora en formulas.</li>
+  <li>Cuando entregas a una institucion que exige Word editable.</li>
+  <li>Cuando quieres evitar capturas o objetos no mantenibles.</li>
 </ul>
-<h2>Dos maneras de llegar a ecuaciones nativas (OMML)</h2>
-<h3>1) Conversión manual (pocas ecuaciones)</h3>
-<p>
-  Usa el editor de ecuaciones (Alt+=), pega LaTeX dentro de la ecuación y deja que Word convierta.
-</p>
-<h3>2) Conversión automática (muchas ecuaciones o documentos completos)</h3>
-<p>
-  Si estás preparando un TFG/TFM, ejercicios o apuntes con muchas fórmulas, lo más eficiente es convertir un documento completo.
-  El conversor lee fórmulas en LaTeX dentro de <strong>.docx</strong> o <strong>.txt</strong> y genera un nuevo <strong>.docx</strong> con ecuaciones OMML.
-</p>
-<h2>Señales de que tu documento ya tiene ecuaciones nativas</h2>
+
+<h2 id="comparativa">OMML vs MathType vs LaTeX pegado</h2>
+<table>
+  <thead>
+    <tr><th>Formato</th><th>Ventaja</th><th>Riesgo</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>OMML</td><td>Nativo en Word, editable y compatible</td><td>Requiere conversion correcta desde origen</td></tr>
+    <tr><td>MathType</td><td>Amplio historial en academia</td><td>Dependencia de plugin/entorno</td></tr>
+    <tr><td>LaTeX pegado</td><td>Rapido para prueba puntual</td><td>No siempre queda editable ni estable</td></tr>
+  </tbody>
+</table>
+
+<h2 id="casos">Casos donde OMML marca la diferencia</h2>
+<h3>1) Correccion docente en Word</h3>
+<p>Si el profesor no puede editar una formula, la revision se frena.</p>
+
+<h3>2) Trabajo en equipo</h3>
+<p>OMML reduce inconsistencias al abrir en diferentes equipos/versiones.</p>
+
+<h3>3) Publicacion interna o entrega oficial</h3>
+<p>Un archivo editable y consistente evita reprocesos de ultima hora.</p>
+
+<h2>Errores tipicos de concepto</h2>
 <ul>
-<li>Al hacer clic, aparece el marco del editor de ecuaciones.</li>
-<li>Puedes editar la estructura (fracciones, raíces, límites) con el ribbon de ecuaciones.</li>
-<li>Las ecuaciones se comportan como objetos matemáticos, no como texto plano.</li>
+  <li><strong>"Se ve bien, entonces esta bien":</strong> no; prueba edicion.</li>
+  <li><strong>"OMML solo importa para matematicos":</strong> no; importa para cualquier documento tecnico con formulas.</li>
+  <li><strong>"Pegar LaTeX equivale a convertir":</strong> no siempre.</li>
 </ul>
-<blockquote>
-  Objetivo SEO: "LaTeX → OMML" es la clave cuando necesitas Word con ecuaciones editables y consistentes.
-</blockquote>
-<hr>
-<p class="cta">
-        Si necesitas convertir <strong>muchas fórmulas</strong> (por ejemplo, una respuesta larga de IA) o un documento completo,
-        la forma más rápida es: copiar el contenido a un <strong>.docx</strong> o <strong>.txt</strong> y usar
-        <a href="/">Ecuaciones a Word</a> para obtener un <strong>.docx con ecuaciones nativas (OMML)</strong>.
-      </p>
+
+<h2>Enlaces recomendados</h2>
+<ul>
+  <li><a href="/soluciones/conversor-omml">Landing transaccional: conversor OMML</a></li>
+  <li><a href="/blog/omml-vs-mathtype-vs-latex-word-tfg">Comparativa completa de formatos</a></li>
+  <li><a href="/blog/simbolos-raros-ecuaciones-word-cambria-math">Troubleshooting de compatibilidad</a></li>
+  <li><a href="/blog/latex-a-word-omml-guia-definitiva">Pilar: guia definitiva LaTeX a Word</a></li>
+</ul>
+
+<h2 id="faq">FAQ</h2>
+<h3>OMML es obligatorio para Word?</h3>
+<p>Para una editabilidad robusta, es la opcion mas segura y nativa.</p>
+
+<h3>Puedo usarlo aunque venga de ChatGPT o Pandoc?</h3>
+<p>Si. De hecho es uno de los motivos mas frecuentes para convertir.</p>
+
+<hr class="sep">
+<p><strong>CTA:</strong> si necesitas compatibilidad real en Word, prueba el <a href="/soluciones/conversor-omml">conversor OMML</a>.</p>

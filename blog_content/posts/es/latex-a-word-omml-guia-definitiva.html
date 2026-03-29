@@ -1,60 +1,77 @@
-<h2>Qué es OMML y por qué importa</h2>
-<p>Microsoft Word guarda las ecuaciones en un formato nativo llamado <strong>OMML</strong> (Office Math Markup Language). Cuando una ecuación está en OMML, puedes editarla con el editor de ecuaciones de Word, alinearla con el texto y mantener un formato estable.</p>
-<p>En cambio, el LaTeX pegado como texto suele romperse: símbolos raros, mala separación, o incluso "signos de interrogación" cuando faltan glifos o hay caracteres invisibles.</p>
+<nav class="summary-box">
+  <strong>Indice rapido</strong>
+  <ol>
+    <li><a href="#que-es">Que significa pasar LaTeX a Word de forma correcta</a></li>
+    <li><a href="#flujo">Flujo recomendado paso a paso</a></li>
+    <li><a href="#comparativa">Herramienta vs Alt+= vs Pandoc</a></li>
+    <li><a href="#errores">Errores frecuentes y como evitarlos</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ol>
+</nav>
 
-<h2>Casos típicos: ChatGPT, Pandoc, Overleaf</h2>
-<ul>
-  <li><strong>ChatGPT/Gemini/Copilot:</strong> generan LaTeX rápido, pero al pegar en Word muchas veces no queda editable.</li>
-  <li><strong>Pandoc:</strong> convierte a DOCX, pero las ecuaciones pueden no quedar como objetos editables según el flujo y las macros.</li>
-  <li><strong>Overleaf/proyectos LaTeX:</strong> exportar a Word suele mantener la maquetación, pero no siempre ecuaciones editables.</li>
-</ul>
+<h2 id="que-es">Que significa pasar LaTeX a Word de forma correcta</h2>
+<p>Muchos articulos explican como "pasar LaTeX a Word", pero mezclan tres objetivos distintos: <strong>visualizar</strong>, <strong>editar</strong> y <strong>entregar</strong>. Visualizar no basta. Si una formula se ve bien pero no se puede editar en Word, tarde o temprano aparecen bloqueos: correcciones imposibles, incompatibilidades entre equipos o retrabajo manual justo antes de la entrega.</p>
+<p>El objetivo real en entorno academico y tecnico es obtener ecuaciones en <strong>OMML</strong>, el formato nativo de Word. Por eso esta guia no se centra solo en convertir, sino en convertir con criterio: minimizar friccion, mantener editabilidad y dejar un documento estable para revisiones.</p>
+<p>Si trabajas con ejercicios, TFG/TFM, apuntes o informes de ingenieria, esta diferencia cambia por completo el tiempo final de cierre.</p>
 
-<h2>Flujo fiable para entregar (DOCX con ecuaciones editables)</h2>
+<h2 id="flujo">Flujo recomendado paso a paso</h2>
 <ol>
-  <li>Escribe las ecuaciones en LaTeX con delimitadores consistentes (<code>$...$</code>, <code>$$...$$</code> o <code>\[...\]</code>).</li>
-  <li>Guarda el contenido en <code>.txt</code> o en un <code>.docx</code> donde el LaTeX esté como texto.</li>
-  <li>Usa el <a href="/">conversor LaTeX → Word (OMML)</a> para descargar un DOCX con ecuaciones nativas.</li>
-  <li>Abre el resultado en Word y prueba a editar varias ecuaciones (fracciones, matrices, alineaciones).</li>
-  <li>En el documento final, usa una fuente matemática estable (Cambria Math suele funcionar bien) y estilos de Word.</li>
+  <li><strong>Define el origen:</strong> ChatGPT, Gemini, Overleaf, markdown/Pandoc o notas propias con LaTeX.</li>
+  <li><strong>Normaliza delimitadores:</strong> usa <code>$...$</code>, <code>$$...$$</code> o <code>\[...\]</code> de forma consistente.</li>
+  <li><strong>Guarda en .txt o .docx limpio:</strong> evita pegados intermedios que cambien caracteres.</li>
+  <li><strong>Convierte a OMML:</strong> usa el conversor para obtener un .docx nativo editable.</li>
+  <li><strong>Valida calidad:</strong> abre Word y comprueba ecuaciones complejas (fracciones, matrices, sumatorios).</li>
+  <li><strong>Cierra entrega:</strong> aplica estilo final y comparte el archivo con seguridad de editabilidad.</li>
 </ol>
 
-<h2>Ejemplos para probar</h2>
-<pre><code>En línea: $\frac{a}{b} + \sqrt{x}$
+<h3>Ejemplo real</h3>
+<p><strong>Entrada:</strong> texto con <code>$E=mc^2$</code> y bloque <code>$$\int_0^1 x^2dx=rac{1}{3}$$</code>.</p>
+<p><strong>Salida esperada:</strong> ecuaciones editables dentro del editor de Word, no imagenes ni texto plano.</p>
 
-En bloque:
-$$
-\begin{aligned}
-f(x) &= x^2 + 2x + 1\\
-&= (x+1)^2
-\end{aligned}
-$$
+<h2 id="comparativa">Herramienta vs Alt+= vs Pandoc</h2>
+<table>
+  <thead>
+    <tr><th>Opcion</th><th>Cu?ndo usarla</th><th>Riesgo principal</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Conversor LaTeX -> OMML</td><td>Documentos con muchas ecuaciones y entrega en Word</td><td>Si el LaTeX origen esta roto, hay que limpiarlo</td></tr>
+    <tr><td>Alt+= en Word</td><td>Formula suelta o ajustes puntuales</td><td>No escala para documentos largos</td></tr>
+    <tr><td>Pandoc</td><td>Pipelines markdown complejos</td><td>La salida puede no quedar editable al 100% en Word</td></tr>
+  </tbody>
+</table>
+<p>En practica, un flujo hibrido funciona muy bien: Pandoc para estructura + conversion final a OMML para asegurar editabilidad.</p>
 
-Matriz:
-$$
-A = \begin{pmatrix}
-1 & 2\\
-3 & 4
-\end{pmatrix}
-$$</code></pre>
+<h2 id="errores">Errores frecuentes y como evitarlos</h2>
+<h3>1) Pensar que "si se ve bien" ya esta listo</h3>
+<p>Comprueba edicion real de 2-3 formulas antes de cerrar. Es la validacion minima que evita sorpresas.</p>
 
-<h2>Por qué Word muestra signos de interrogación o símbolos raros</h2>
-<p>Suele ocurrir cuando Word no está renderizando una ecuación (OMML) sino texto con una fuente que no incluye ciertos símbolos, o cuando el copiado introduce caracteres invisibles. También puede pasar si el documento usa una fuente no compatible.</p>
-<p>Ver: <a href="/blog/signos-interrogacion-ecuaciones-chatgpt-word">Signos de interrogación en ecuaciones de ChatGPT</a>.</p>
+<h3>2) Mezclar delimitadores sin control</h3>
+<p>El parser pierde precision cuando una linea abre con <code>$</code> y cierra mal o cambia de estilo a mitad de bloque.</p>
 
-<h2>Pandoc vs conversión a OMML</h2>
-<p>Pandoc es excelente para convertir documentos, pero llevar matemáticas a ecuaciones editables en Word puede ser inconsistente. Si necesitas entregas académicas con ecuaciones editables, un paso de conversión enfocado en OMML suele ser más estable.</p>
-<p>Ver: <a href="/blog/pandoc-ecuaciones-word-no-editables-soluciones">Pandoc y OMML (EN)</a> y <a href="/blog/markdown-con-latex-a-word-docx">Markdown con LaTeX a Word</a>.</p>
+<h3>3) No separar fase tecnica y fase visual</h3>
+<p>Convierte primero, maqueta despues. Si inviertes el orden, acabas tocando estilos dos veces.</p>
 
-<h2>Preguntas frecuentes</h2>
-<h3>¿Las ecuaciones quedan editables en Word?</h3>
-<p>Sí. Al generar objetos nativos de Word (OMML), puedes hacer clic y editar la ecuación.</p>
-<h3>¿Guardáis mis archivos?</h3>
-<p>No. El archivo se procesa para generar el DOCX y no se almacena después.</p>
-<h3>¿Funciona con documentos largos?</h3>
-<p>Sí. Para documentos muy largos, evita macros complejas y prueba primero con una sección representativa.</p>
-<h3>¿Qué delimitadores se recomiendan?</h3>
-<p>Usa <code>$...$</code> para en línea y <code>$$...$$</code> o <code>\[...\]</code> para ecuaciones en bloque.</p>
-<h3>¿Y si ya tengo un DOCX con LaTeX escrito?</h3>
-<p>Es un caso común. Sube el DOCX y el conversor reemplazará los fragmentos LaTeX por ecuaciones OMML.</p>
+<h3>4) Dejar la conversion para el ultimo dia</h3>
+<p>En documentos largos conviene validar por capitulos. Te da margen para correcciones finas sin tension.</p>
 
-<p><strong>Siguiente:</strong> Si vienes de ChatGPT, mira <a href="/blog/pasar-ecuaciones-chatgpt-word">cómo pasar ecuaciones de ChatGPT a Word</a>. Si vienes de un .tex/Overleaf, mira <a href="/blog/de-latex-a-word-guia-rapida">guía rápida</a>.</p>
+<h2>Enlaces recomendados por cluster</h2>
+<ul>
+  <li><a href="/soluciones/chatgpt-ecuaciones-a-word">Landing transaccional: ChatGPT a Word</a></li>
+  <li><a href="/soluciones/overleaf-latex-documento-a-word">Landing transaccional: Overleaf a Word</a></li>
+  <li><a href="/soluciones/pandoc-a-word-omml">Landing transaccional: Pandoc a Word OMML</a></li>
+  <li><a href="/blog/pasar-ecuaciones-chatgpt-word">Guia: pasar ecuaciones de ChatGPT a Word</a></li>
+  <li><a href="/blog/que-es-omml-ecuaciones-word">Guia: que es OMML y por que importa</a></li>
+</ul>
+
+<h2 id="faq">FAQ</h2>
+<h3>Esta guia sirve si no uso IA?</h3>
+<p>Si. El criterio tecnico aplica igual para LaTeX manual, Overleaf o markdown.</p>
+
+<h3>Conviene sacar todos los posts cortos del sitemap?</h3>
+<p>Si no aportan intencion unica, mejor consolidarlos y redirigir al pilar adecuado.</p>
+
+<h3>Que URL deberia posicionar como principal del tema?</h3>
+<p>Para transaccional broad: home. Para explicacion profunda: este pilar.</p>
+
+<hr class="sep">
+<p><strong>CTA:</strong> si tu objetivo es entregar hoy en Word con ecuaciones editables, prueba el <a href="/">conversor principal</a> y elige la <a href="/soluciones">landing de solucion</a> segun tu caso.</p>

@@ -1,0 +1,17 @@
+URL,status code,index/noindex,canonical,in sitemap,enlaces internos entrantes,intencion principal,accion
+/,200,index,https://www.ecuacionesaword.com/,si,sitewide,pilar transaccional broad,mantener y reforzar foco "latex a word online"
+/en,200,index,https://www.ecuacionesaword.com/en,si,sitewide,english pilar,mantener
+/de,200,noindex,https://www.ecuacionesaword.com/de,no,sitewide,idioma secundario incompleto,mantener fuera de index hasta version completa
+/blog,200,index,https://www.ecuacionesaword.com/blog,si,sitewide,hub informacional,mantener
+/en/blog,200,index,https://www.ecuacionesaword.com/en/blog,si,sitewide,english blog hub,mantener
+/soluciones,200,index,https://www.ecuacionesaword.com/soluciones,si,home+blog,hub transaccional de soluciones,mantener como pagina 200 (sin redirect)
+/en/solutions,200,index,https://www.ecuacionesaword.com/en/solutions,si,home+blog,english hub de soluciones,mantener como pagina 200
+/soluciones/chatgpt-ecuaciones-a-word,200,index,https://www.ecuacionesaword.com/soluciones/chatgpt-ecuaciones-a-word,si,>=3,chatgpt a word transaccional,mantener y potenciar enlaces internos cluster IA
+/soluciones/gemini-ecuaciones-a-word,200,index,https://www.ecuacionesaword.com/soluciones/gemini-ecuaciones-a-word,si,>=3,gemini a word transaccional,mantener y potenciar enlaces internos cluster IA
+/soluciones/overleaf-latex-documento-a-word,200,index,https://www.ecuacionesaword.com/soluciones/overleaf-latex-documento-a-word,si,>=3,overleaf a word transaccional,mantener y potenciar cluster documentos tecnicos
+/soluciones/pandoc-a-word-omml,200,index,https://www.ecuacionesaword.com/soluciones/pandoc-a-word-omml,si,>=3,pandoc a word transaccional,mantener y potenciar cluster documentos tecnicos
+/soluciones/conversor-omml,200,index,https://www.ecuacionesaword.com/soluciones/conversor-omml,si,>=3,conversor omml transaccional,mantener y potenciar cluster troubleshooting
+/blog/convertidor-formulas-chatgpt-a-word,200,noindex,https://www.ecuacionesaword.com/blog/convertidor-formulas-chatgpt-a-word,no,>=2,post solapado chatgpt,excluir de sitemap y mantener como apoyo interno
+/blog/conversor-formulas-chatgpt-a-word-errores,200,noindex,https://www.ecuacionesaword.com/blog/conversor-formulas-chatgpt-a-word-errores,no,>=2,post solapado chatgpt,excluir de sitemap y mantener como apoyo interno
+/blog/de-latex-a-word-guia-rapida,200,noindex,https://www.ecuacionesaword.com/blog/de-latex-a-word-guia-rapida,no,>=2,post solapado latex general,excluir de sitemap y consolidar autoridad en guia pilar
+/blog/latex-a-word-omml-guia-definitiva,200,index,https://www.ecuacionesaword.com/blog/latex-a-word-omml-guia-definitiva,si,>=4,pilar informacional,mantener y usar como referencia principal
