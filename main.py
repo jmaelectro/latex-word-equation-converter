@@ -2452,7 +2452,7 @@ def _legal_page_context(lang: str, page: str) -> Dict[str, Any]:
             "contact": {
                 "title": "Contacto",
                 "description": "Contacta con el proyecto.",
-                "body": "<p>Email: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p><p>GitHub: <a href='https://github.com/jmaelectro/latex-word-equation-converter' rel='noopener'>Repositorio</a></p>",
+                "body": "<p>Email: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p>",
             },
         },
         "en": {
@@ -2469,28 +2469,28 @@ def _legal_page_context(lang: str, page: str) -> Dict[str, Any]:
             "contact": {
                 "title": "Contact",
                 "description": "Get in touch with the project.",
-                "body": "<p>Email: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p><p>GitHub: <a href='https://github.com/jmaelectro/latex-word-equation-converter' rel='noopener'>Repository</a></p>",
+                "body": "<p>Email: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p>",
             },
         },
         "de": {
             "privacy": {"title": "Datenschutzerkl?rung", "description": "Wie wir hochgeladene Dateien und Daten verarbeiten.", "body": "<h2>Dateiverarbeitung</h2><p>Wir verarbeiten hochgeladene Dateien nur f?r die Konvertierung und verkaufen keine Daten.</p><h2>Speicherung</h2><p>Dokumente werden nicht dauerhaft gespeichert. W?hrend der Konvertierung kann tempor?re Verarbeitung im Speicher stattfinden.</p><h2>Analyse</h2><p>Wir verwenden aggregierte Nutzungsdaten zur Produktverbesserung. Dokumentinhalte werden nicht an Analytics-Tools gesendet.</p><h2>Kontakt</h2><p>Fragen: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a>.</p>"},
             "terms": {"title": "Nutzungsbedingungen", "description": "Regeln und Einschr?nkungen f?r den Konverter.", "body": "<h2>Kostenloses Tool</h2><p>Der Konverter ist kostenlos; Dateigr??enlimits k?nnen gelten.</p><h2>Keine Gew?hr</h2><p>Der Dienst wird ohne Gew?hr bereitgestellt.</p><h2>Zul?ssige Nutzung</h2><p>Bitte keine illegalen Inhalte oder Malware hochladen.</p>"},
-            "contact": {"title": "Kontakt", "description": "So erreichst du das Projekt.", "body": "<p>E-Mail: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p><p>GitHub: <a href='https://github.com/jmaelectro/latex-word-equation-converter' rel='noopener'>Repository</a></p>"},
+            "contact": {"title": "Kontakt", "description": "So erreichst du das Projekt.", "body": "<p>E-Mail: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p>"},
         },
         "fr": {
             "privacy": {"title": "Politique de confidentialit?", "description": "Comment nous traitons les fichiers et donn?es envoy?s.", "body": "<h2>Traitement des fichiers</h2><p>Nous traitons les fichiers uniquement pour la conversion et ne vendons pas vos donn?es.</p><h2>Stockage</h2><p>Nous ne stockons pas durablement les documents. Un traitement temporaire en m?moire peut avoir lieu.</p><h2>Analytique</h2><p>Nous utilisons des statistiques agr?g?es pour am?liorer le produit. Le contenu des documents n'est pas envoy? aux outils d'analyse.</p><h2>Contact</h2><p>Questions : <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a>.</p>"},
             "terms": {"title": "Conditions d'utilisation", "description": "R?gles et limites d'utilisation du convertisseur.", "body": "<h2>Outil gratuit</h2><p>Le convertisseur est gratuit, avec possibles limites de taille.</p><h2>Sans garantie</h2><p>Le service est fourni tel quel.</p><h2>Usage acceptable</h2><p>N'envoyez pas de contenu ill?gal ou malveillant.</p>"},
-            "contact": {"title": "Contact", "description": "Contactez le projet.", "body": "<p>Email : <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p><p>GitHub : <a href='https://github.com/jmaelectro/latex-word-equation-converter' rel='noopener'>D?p?t</a></p>"},
+            "contact": {"title": "Contact", "description": "Contactez le projet.", "body": "<p>Email : <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p>"},
         },
         "it": {
             "privacy": {"title": "Informativa sulla privacy", "description": "Come trattiamo file e dati caricati.", "body": "<h2>Gestione dei file</h2><p>Elaboriamo i file caricati solo per la conversione e non vendiamo i dati.</p><h2>Archiviazione</h2><p>I documenti non sono conservati in modo permanente. Durante la conversione pu? esserci elaborazione temporanea in memoria.</p><h2>Analisi</h2><p>Usiamo dati aggregati per migliorare il prodotto. Il contenuto dei documenti non viene inviato agli strumenti di analytics.</p><h2>Contatto</h2><p>Domande: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a>.</p>"},
             "terms": {"title": "Termini di utilizzo", "description": "Regole e limiti d'uso del convertitore.", "body": "<h2>Strumento gratuito</h2><p>Il convertitore ? gratuito, con possibili limiti di dimensione.</p><h2>Nessuna garanzia</h2><p>Il servizio ? fornito cos? com'?.</p><h2>Uso accettabile</h2><p>Non caricare contenuti illegali o malware.</p>"},
-            "contact": {"title": "Contatto", "description": "Contatta il progetto.", "body": "<p>Email: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p><p>GitHub: <a href='https://github.com/jmaelectro/latex-word-equation-converter' rel='noopener'>Repository</a></p>"},
+            "contact": {"title": "Contatto", "description": "Contatta il progetto.", "body": "<p>Email: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p>"},
         },
         "pt": {
             "privacy": {"title": "Pol?tica de Privacidade", "description": "Como tratamos arquivos e dados enviados.", "body": "<h2>Tratamento de arquivos</h2><p>Processamos arquivos apenas para convers?o e n?o vendemos dados.</p><h2>Armazenamento</h2><p>N?o armazenamos documentos permanentemente. Pode haver processamento tempor?rio em mem?ria durante a convers?o.</p><h2>An?lises</h2><p>Usamos dados agregados para melhorar o produto. O conte?do dos documentos n?o ? enviado ?s ferramentas de analytics.</p><h2>Contato</h2><p>D?vidas: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a>.</p>"},
             "terms": {"title": "Termos de uso", "description": "Regras e limita??es para usar o conversor.", "body": "<h2>Ferramenta gratuita</h2><p>O conversor ? gratuito, com poss?veis limites de tamanho.</p><h2>Sem garantias</h2><p>O servi?o ? fornecido no estado em que se encontra.</p><h2>Uso aceit?vel</h2><p>N?o envie conte?do ilegal ou malware.</p>"},
-            "contact": {"title": "Contato", "description": "Fale com o projeto.", "body": "<p>Email: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p><p>GitHub: <a href='https://github.com/jmaelectro/latex-word-equation-converter' rel='noopener'>Reposit?rio</a></p>"},
+            "contact": {"title": "Contato", "description": "Fale com o projeto.", "body": "<p>Email: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p>"},
         },
     }
 
