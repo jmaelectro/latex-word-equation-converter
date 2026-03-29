@@ -1,29 +1,54 @@
-<h2>Objetivo: ecuaciones nativas (OMML) en Word</h2>
-      <p>Word guarda ecuaciones en <strong>OMML</strong>, un formato que permite editar fracciones, matrices y símbolos sin plugins.</p>
-      <h2>Flujo recomendado</h2>
-      <ol>
-        <li>En Overleaf, copia el contenido LaTeX (o el extracto) que quieras convertir.</li>
-        <li>Crea un <strong>.txt</strong> o <strong>.docx</strong> manteniendo delimitadores de fórmulas ($...$, $$...$$, \(...\), \[...\]).</li>
-        <li>Convierte el archivo con <a href="/">Ecuaciones a Word</a> y descarga el DOCX final con ecuaciones editables.</li>
-      </ol>
-      <h2>Errores típicos</h2>
-      <ul>
-        <li>Delimitadores mezclados o inconsistentes.</li>
-        <li>Comandos personalizados (\newcommand) que conviene expandir si dan problemas.</li>
-        <li>Entornos complejos (align/cases) donde es mejor convertir el documento completo.</li>
-      </ul>
-      <h2>Relacionado</h2>
-      <ul>
-        <li><a href="/blog/convertir-documento-latex-word">Convertir LaTeX a Word para TFG/TFM sin perder las fórmulas</a></li>
-        <li><a href="/blog/que-es-omml-ecuaciones-word">Qué es OMML y por qué tus ecuaciones no se copian bien en Word</a></li>
-      </ul>
+<nav class="summary-box">
+  <strong>Indice rapido</strong>
+  <ol>
+    <li><a href="#contexto">Contexto TFG/TFM</a></li>
+    <li><a href="#flujo">Flujo de entrega Overleaf -> Word</a></li>
+    <li><a href="#revision">Revision con tutor sin perder ecuaciones</a></li>
+    <li><a href="#errores">Errores tipicos</a></li>
+  </ol>
+</nav>
 
-      <hr class="sep">
-      <div class="callout">
-        <strong>Consejo rápido:</strong>
-        Si estás pegando muchas fórmulas (por ejemplo, una respuesta larga de IA) lo más estable es convertir el documento completo a ecuaciones nativas (OMML) y así editarlo sin errores en Word.
-      </div>
-      <div class="footer-cta">
-        <a class="button primary" href="/">Convertir un documento</a>
-        <a class="button" href="/blog">Volver al blog</a>
-      </div>
+<h2 id="contexto">Contexto real: escribes en Overleaf, entregas en Word</h2>
+<p>Este escenario es muy frecuente: redactas en LaTeX por comodidad tecnica, pero la universidad exige archivo Word para revision y entrega. El problema es que la conversion final suele romper lo mas sensible del trabajo: las ecuaciones.</p>
+<p>Si el tutor no puede editar formulas, la revision se ralentiza y aparecen versiones paralelas del documento. Por eso la prioridad no es solo "pasar a Word", sino pasar con <strong>ecuaciones OMML</strong> editables.</p>
+
+<h2 id="flujo">Flujo recomendado Overleaf -> Word</h2>
+<ol>
+  <li>Prepara una exportacion limpia desde Overleaf (o texto LaTeX organizado por secciones).</li>
+  <li>Conserva delimitadores de ecuacion en todo el documento.</li>
+  <li>Convierte a DOCX con ecuaciones editables.</li>
+  <li>Revisa secciones criticas (introduccion, metodologia, resultados).</li>
+  <li>Aplica formato institucional despues de validar la matematica.</li>
+</ol>
+
+<h3>Mini caso de uso</h3>
+<p>TFM de ingenieria con 70 paginas: conversion por capitulos, validacion de ecuaciones por bloque y consolidacion final en plantilla Word oficial.</p>
+
+<h2 id="revision">Revision con tutor sin perder ecuaciones</h2>
+<p>Una vez en Word, la clave es mantener el documento editable durante todo el ciclo de feedback. Si cada comentario obliga a rehacer formulas, se pierde mucho tiempo. Con salida OMML puedes corregir notacion, indices y signos sin salir de Word.</p>
+<p>Tambien mejora la colaboracion cuando hay mas de un revisor (tutor + tribunal + compa?ero), porque el archivo mantiene comportamiento estable.</p>
+
+<h2 id="errores">Errores tipicos en entregas academicas</h2>
+<ul>
+  <li><strong>Aplicar plantilla antes de validar ecuaciones:</strong> primero valida matematica, luego estilo.</li>
+  <li><strong>Esperar al final para revisar todo:</strong> mejor revisar por capitulos.</li>
+  <li><strong>Usar imagenes para "asegurar" aspecto:</strong> rompe la fase de correcciones.</li>
+  <li><strong>No probar en otro equipo:</strong> haz test rapido de compatibilidad antes de envio.</li>
+</ul>
+
+<h2>Enlaces recomendados</h2>
+<ul>
+  <li><a href="/soluciones/overleaf-latex-documento-a-word">Landing transaccional: Overleaf a Word</a></li>
+  <li><a href="/blog/convertir-documento-latex-word">Guia: documento LaTeX a Word</a></li>
+  <li><a href="/blog/omml-vs-mathtype-vs-latex-word-tfg">Comparativa OMML vs MathType vs LaTeX</a></li>
+  <li><a href="/blog/latex-a-word-omml-guia-definitiva">Pilar: guia definitiva</a></li>
+</ul>
+
+<h2>FAQ</h2>
+<h3>Sirve para TFG/TFM largos?</h3>
+<p>Si, especialmente si haces control por secciones durante la conversion.</p>
+<h3>Y si ya converti con otra herramienta?</h3>
+<p>Puedes usar la conversion final a OMML para recuperar editabilidad antes de la entrega.</p>
+
+<hr class="sep">
+<p><strong>CTA:</strong> ejecuta el flujo en <a href="/soluciones/overleaf-latex-documento-a-word">la landing de Overleaf a Word</a>.</p>

@@ -1,27 +1,56 @@
-<h2>7 soluciones prácticas</h2>
-      <ol>
-        <li>Revisa delimitadores ($...$, $$...$$) y consistencia.</li>
-        <li>Reduce macros (\newcommand) o expándelas.</li>
-        <li>Haz una prueba mínima con 2–3 ecuaciones.</li>
-        <li>Si el objetivo es Word editable: prioriza salida a OMML.</li>
-        <li>Para documentos largos: evita copy/paste; convierte el documento completo.</li>
-        <li>Valida en un segundo equipo (sin plugins).</li>
-        <li>Para entregas: DOCX con ecuaciones nativas editables.</li>
-      </ol>
-      <h2>Alternativa cuando Pandoc no da OMML fiable</h2>
-      <p>Exporta tu contenido a .txt/.docx con LaTeX y conviértelo con <a href="/">Ecuaciones a Word</a>.</p>
-      <h2>Relacionado</h2>
-      <ul>
-        <li><a href="/blog/markdown-con-latex-a-word-docx">Markdown con LaTeX a Word (.docx): opciones y errores típicos</a></li>
-        <li><a href="/blog/que-es-omml-ecuaciones-word">Qué es OMML y por qué tus ecuaciones no se copian bien en Word</a></li>
-      </ul>
+<nav class="summary-box">
+  <strong>Indice rapido</strong>
+  <ol>
+    <li><a href="#diagnostico">Por que Pandoc deja ecuaciones no editables</a></li>
+    <li><a href="#checklist">Checklist de solucion</a></li>
+    <li><a href="#pipeline">Pipeline recomendado</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ol>
+</nav>
 
-      <hr class="sep">
-      <div class="callout">
-        <strong>Consejo rápido:</strong>
-        Si estás pegando muchas fórmulas (por ejemplo, una respuesta larga de IA) lo más estable es convertir el documento completo a ecuaciones nativas (OMML) y así editarlo sin errores en Word.
-      </div>
-      <div class="footer-cta">
-        <a class="button primary" href="/">Convertir un documento</a>
-        <a class="button" href="/blog">Volver al blog</a>
-      </div>
+<h2 id="diagnostico">Por que Pandoc deja ecuaciones no editables</h2>
+<p>Pandoc es excelente para transformar estructura documental, pero en matematicas la editabilidad final en Word no siempre queda garantizada. El resultado puede verse correcto y aun asi fallar en el editor de ecuaciones. Ese detalle suele descubrirse tarde, justo cuando toca revisar y entregar.</p>
+<p>La solucion practica es tratar la conversion a OMML como una etapa final de calidad, no como un reemplazo de Pandoc.</p>
+
+<h2 id="checklist">Checklist de solucion (7 puntos)</h2>
+<ol>
+  <li>Confirma que el DOCX origen contiene delimitadores consistentes.</li>
+  <li>Valida que no haya ecuaciones truncadas por saltos de linea raros.</li>
+  <li>Convierte el archivo post-Pandoc a OMML.</li>
+  <li>Revisa integrales, matrices y ecuaciones multilinea.</li>
+  <li>Comprueba edicion en otro equipo si hay colaboracion.</li>
+  <li>Ajusta estilo final despues de validar editabilidad.</li>
+  <li>Publica/entrega solo la version validada.</li>
+</ol>
+
+<h2 id="pipeline">Pipeline recomendado</h2>
+<p><strong>Markdown/LaTeX -> Pandoc -> DOCX intermedio -> conversion OMML -> DOCX final.</strong></p>
+<p>Con este enfoque mantienes lo mejor de ambos mundos: productividad de pipeline y compatibilidad real en Word.</p>
+
+<h3>Antes y despues</h3>
+<p><strong>Antes:</strong> ecuaciones visibles pero friccion al editar.</p>
+<p><strong>Despues:</strong> ecuaciones nativas Word listas para correcciones rapidas.</p>
+
+<h2>Errores comunes</h2>
+<ul>
+  <li><strong>Confiar en vista visual:</strong> siempre prueba edicion real.</li>
+  <li><strong>No revisar delimitadores en markdown:</strong> una sola inconsistencia afecta bloques completos.</li>
+  <li><strong>Posponer QA al final:</strong> revisa por secciones en documentos largos.</li>
+</ul>
+
+<h2>Enlaces recomendados</h2>
+<ul>
+  <li><a href="/soluciones/pandoc-a-word-omml">Landing transaccional: Pandoc a Word OMML</a></li>
+  <li><a href="/blog/markdown-con-latex-a-word-docx">Guia markdown + LaTeX a Word</a></li>
+  <li><a href="/blog/que-es-omml-ecuaciones-word">Guia: que es OMML</a></li>
+  <li><a href="/blog/latex-a-word-omml-guia-definitiva">Pilar: guia definitiva</a></li>
+</ul>
+
+<h2 id="faq">FAQ</h2>
+<h3>Debo dejar de usar Pandoc?</h3>
+<p>No. Pandoc sigue siendo util; solo a?ade una fase final de editabilidad en Word.</p>
+<h3>Sirve para documentos largos?</h3>
+<p>Si, y precisamente ahi mas se nota la mejora de tiempo y calidad.</p>
+
+<hr class="sep">
+<p><strong>CTA:</strong> si ya tienes un DOCX de Pandoc, corrigelo con <a href="/soluciones/pandoc-a-word-omml">la landing de Pandoc a Word OMML</a>.</p>

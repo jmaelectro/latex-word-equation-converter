@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block content %}
 <header>
   <div class="topbar">
@@ -17,6 +17,19 @@
     </nav>
   </div>
 
+  {% if breadcrumbs %}
+  <nav class="breadcrumbs" aria-label="{{ 'Migas de pan' if lang == 'es' else 'Breadcrumb' }}">
+    {% for crumb in breadcrumbs %}
+      {% if loop.last %}
+        <span aria-current="page">{{ crumb.name }}</span>
+      {% else %}
+        <a href="{{ crumb.url }}">{{ crumb.name }}</a>
+        <span class="sep">/</span>
+      {% endif %}
+    {% endfor %}
+  </nav>
+  {% endif %}
+
   <p class="kicker">{{ page_kicker }}</p>
   <h1>{{ page_title }}</h1>
   <p class="intro">{{ page_intro }}</p>
@@ -24,10 +37,109 @@
 
 <main>
   <section class="summary-box">
-    <div><strong>{{ "Qué resuelve esta página" if lang == "es" else "What this page solves" }}</strong></div>
+    <div><strong>{{ "Keyword principal" if lang == "es" else "Primary keyword" }}:</strong> {{ primary_keyword }}</div>
+    <div><strong>{{ "Intención principal" if lang == "es" else "Primary intent" }}:</strong> {{ primary_intent }}</div>
+    <div><strong>{{ "Ángulo de problema" if lang == "es" else "Problem angle" }}:</strong> {{ problem_angle }}</div>
+  </section>
+
+  <section class="summary-box">
+    <div><strong>{{ "Qué problema resuelve esta solución" if lang == "es" else "What problem this solution solves" }}</strong></div>
+    <p>{{ problem_statement }}</p>
+    {% if extra_context %}<p>{{ extra_context }}</p>{% endif %}
     <ul>
       {% for item in intent_items %}
         <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="related">
+    <h2>{{ "Cuándo usar esta solución" if lang == "es" else "When to use this solution" }}</h2>
+    <p>{{ when_to_use_intro }}</p>
+    <ul>
+      {% for item in when_to_use_items %}
+        <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="related">
+    <h2>{{ "Paso a paso del flujo" if lang == "es" else "Step-by-step workflow" }}</h2>
+    <ol>
+      {% for step in workflow_steps %}
+        <li>{{ step }}</li>
+      {% endfor %}
+    </ol>
+  </section>
+
+  <section class="related">
+    <h2>{{ "Ejemplo real de entrada y salida" if lang == "es" else "Real input/output example" }}</h2>
+    <p><strong>{{ "Entrada" if lang == "es" else "Input" }}:</strong> {{ example_input }}</p>
+    <p><strong>{{ "Salida esperada" if lang == "es" else "Expected output" }}:</strong> {{ example_output }}</p>
+    <p><strong>{{ "Antes" if lang == "es" else "Before" }}:</strong> {{ before_text }}</p>
+    <p><strong>{{ "Después" if lang == "es" else "After" }}:</strong> {{ after_text }}</p>
+    <p><strong>{{ "Mini caso de uso" if lang == "es" else "Mini use case" }}:</strong> {{ mini_case }}</p>
+  </section>
+
+  <section class="related">
+    <h2>{{ "Formatos, delimitadores y límites" if lang == "es" else "Formats, delimiters and limits" }}</h2>
+    <div class="grid">
+      <article class="card half">
+        <div class="title">{{ "Formatos soportados" if lang == "es" else "Supported formats" }}</div>
+        <ul>
+          {% for item in supported_formats %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      </article>
+      <article class="card half">
+        <div class="title">{{ "Delimitadores soportados" if lang == "es" else "Supported delimiters" }}</div>
+        <ul>
+          {% for item in supported_delimiters %}
+            <li>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      </article>
+    </div>
+    <h3>{{ "Limitaciones conocidas" if lang == "es" else "Known limitations" }}</h3>
+    <ul>
+      {% for item in known_limitations %}
+        <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="related">
+    <h2>{{ "Errores frecuentes y solución" if lang == "es" else "Common errors and fixes" }}</h2>
+    <ul>
+      {% for item in common_errors %}
+        <li style="margin-bottom:.75rem;">
+          <strong>{{ item.error }}</strong><br>
+          <span>{{ item.fix }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="related">
+    <h2>FAQ</h2>
+    <ul>
+      {% for item in faq_items %}
+        <li style="margin-bottom:.75rem;">
+          <strong>{{ item.q }}</strong><br>
+          <span>{{ item.a }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="related">
+    <h2>{{ "Enlaces recomendados" if lang == "es" else "Recommended links" }}</h2>
+    <ul>
+      <li><a href="{{ converter_href }}">{{ pillar_label }}</a></li>
+      <li><a href="{{ related_blog_href }}">{{ related_blog_label }}</a></li>
+      {% for guide in related_guides %}
+      <li><a href="{{ guide.href }}">{{ guide.label }}</a></li>
       {% endfor %}
     </ul>
   </section>
@@ -39,6 +151,7 @@
     </span>
     <span>
       <a class="button" href="{{ converter_href }}#converter">{{ cta_label }}</a>
+      <a class="button" href="{{ secondary_cta_href }}">{{ secondary_cta_label }}</a>
       <a class="button" href="{{ related_blog_href }}">{{ related_blog_label }}</a>
     </span>
   </section>

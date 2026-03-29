@@ -567,64 +567,6 @@
     },
     {
       "lang": "es",
-      "slug": "convertidor-formulas-chatgpt-a-word",
-      "title": "Convertidor de fórmulas de ChatGPT a Word (ecuaciones editables en 1 clic)",
-      "seo_title": "Convertidor de fórmulas de ChatGPT a Word (ecuaciones editables en 1 clic) | Ecuaciones a Word",
-      "description": "Convierte fórmulas de ChatGPT en LaTeX a ecuaciones nativas de Word (OMML) editables. Flujo en 3 pasos y ejemplo práctico.",
-      "keywords": [
-        "convertidor de formulas de chatgpt a word",
-        "chatgpt a word ecuaciones",
-        "latex a word omml",
-        "ecuaciones editables word",
-        "convertir formulas latex a word"
-      ],
-      "canonical_path": "/blog/convertidor-formulas-chatgpt-a-word",
-      "date_published": "2025-12-15",
-      "date_modified": "2025-12-15",
-      "reading_time": "4–6 min",
-      "kicker": "ChatGPT → Word · Conversión rápida",
-      "tags": [
-        "ChatGPT",
-        "Word",
-        "OMML"
-      ],
-      "intro_html": [
-        "<p class=\"intro\">Si ChatGPT te devuelve las ecuaciones en <strong>LaTeX</strong>, pegarlas directamente en Word suele acabar en texto plano o símbolos raros. Un <strong>convertidor</strong> que genere <strong>ecuaciones nativas (OMML)</strong> te evita reescribirlas a mano.</p>",
-        "<p class=\"intro\">Aquí tienes el flujo más rápido para convertir una respuesta (o un documento completo) y descargar un <strong>.docx con ecuaciones editables</strong>.</p>"
-      ],
-      "translation_slug": "latex-to-word-quick-guide-no-broken-equations"
-    },
-    {
-      "lang": "es",
-      "slug": "conversor-formulas-chatgpt-a-word-errores",
-      "title": "Conversor de fórmulas de ChatGPT a Word: 7 errores típicos (y cómo evitarlos)",
-      "seo_title": "Conversor de fórmulas de ChatGPT a Word: 7 errores típicos (y cómo evitarlos) | Ecuaciones a Word",
-      "description": "Checklist rápida: delimitadores, bloques de código, llaves desbalanceadas y símbolos raros. Evita los fallos más comunes al pasar LaTeX de ChatGPT a Word.",
-      "keywords": [
-        "conversor de formulas de chatgpt a word",
-        "errores chatgpt word ecuaciones",
-        "latex a word falla",
-        "simbolos raros word ecuaciones",
-        "delimitadores latex"
-      ],
-      "canonical_path": "/blog/conversor-formulas-chatgpt-a-word-errores",
-      "date_published": "2025-12-15",
-      "date_modified": "2025-12-15",
-      "reading_time": "5–7 min",
-      "kicker": "Troubleshooting · Copy/paste",
-      "tags": [
-        "ChatGPT",
-        "LaTeX",
-        "Word"
-      ],
-      "intro_html": [
-        "<p class=\"intro\">Si al convertir ecuaciones de ChatGPT a Word ves <strong>texto con $...$</strong>, ecuaciones rotas o símbolos raros, suele ser un problema de <strong>entrada (LaTeX)</strong>, no del Word final.</p>",
-        "<p class=\"intro\">Este checklist te ayuda a detectar el fallo en minutos y dejar el documento listo para convertirlo a <strong>OMML</strong>.</p>"
-      ],
-      "translation_slug": "weird-symbols-word-equations-cambria-math-fix"
-    },
-    {
-      "lang": "es",
       "slug": "codigo-latex-a-word",
       "title": "Código LaTeX a Word: 3 formas de pegarlo y cuándo usar cada una",
       "seo_title": "Código LaTeX a Word: 3 formas de pegarlo y cuándo usar cada una | Ecuaciones a Word",
@@ -648,34 +590,6 @@
       ],
       "intro_html": [
         "<p class=\"intro\">Si tienes <strong>código LaTeX</strong> (de apuntes, Overleaf o IA) y necesitas llevarlo a Word, hay varias rutas. La clave es elegir la que mejor encaja con <strong>cuántas ecuaciones</strong> tienes y si deben quedar <strong>editables</strong>.</p>"
-      ],
-      "translation_slug": ""
-    },
-    {
-      "lang": "es",
-      "slug": "de-latex-a-word-guia-rapida",
-      "title": "De LaTeX a Word: guía rápida para convertir un documento sin perder ecuaciones",
-      "seo_title": "De LaTeX a Word: guía rápida para convertir un documento sin perder ecuaciones | Ecuaciones a Word",
-      "description": "Guía corta para pasar de LaTeX a Word manteniendo ecuaciones editables (OMML): preparación, delimitadores y revisión final.",
-      "keywords": [
-        "de latex a word",
-        "convertir latex a word",
-        "latex a word ecuaciones editables",
-        "omml word",
-        "documento latex a word"
-      ],
-      "canonical_path": "/blog/de-latex-a-word-guia-rapida",
-      "date_published": "2025-12-15",
-      "date_modified": "2025-12-15",
-      "reading_time": "5–7 min",
-      "kicker": "Documento completo · Checklist",
-      "tags": [
-        "LaTeX → Word",
-        "DOCX",
-        "OMML"
-      ],
-      "intro_html": [
-        "<p class=\"intro\">Cuando el documento tiene muchas fórmulas, el enfoque \"copiar/pegar ecuación por ecuación\" se vuelve inviable. Este flujo te permite pasar de <strong>LaTeX a Word</strong> conservando ecuaciones <strong>editables</strong> (OMML).</p>"
       ],
       "translation_slug": ""
     },
@@ -1077,34 +991,6 @@
         "<p class=\"intro\">When people search for <strong>LaTeX to Word online free</strong>, they usually need one thing: a clean .docx with <strong>editable equations</strong>, not screenshots or broken symbols.</p>"
       ],
       "translation_slug": "latex-a-word-online-gratis-ecuaciones-editables"
-    },
-    {
-      "lang": "en",
-      "slug": "latex-to-word-quick-guide-no-broken-equations",
-      "title": "LaTeX to Word quick guide: convert documents without breaking equations",
-      "seo_title": "LaTeX to Word quick guide: convert documents without broken equations",
-      "description": "7-step checklist to move from LaTeX to Word while preserving editable equations (OMML) in your final .docx.",
-      "keywords": [
-        "latex to word quick guide",
-        "convert latex document to word",
-        "latex to omml",
-        "editable equations word",
-        "docx equations"
-      ],
-      "canonical_path": "/en/blog/latex-to-word-quick-guide-no-broken-equations",
-      "date_published": "2026-03-27",
-      "date_modified": "2026-03-27",
-      "reading_time": "5-7 min",
-      "kicker": "Full document · Quick checklist",
-      "tags": [
-        "LaTeX to Word",
-        "DOCX",
-        "OMML"
-      ],
-      "intro_html": [
-        "<p class=\"intro\">If your document has many formulas, manual copy/paste does not scale. This quick checklist helps you convert LaTeX to Word and keep equations editable.</p>"
-      ],
-      "translation_slug": "de-latex-a-word-guia-rapida"
     },
     {
       "lang": "en",
@@ -4151,7 +4037,10 @@
       "omml-vs-mathtype-vs-latex-word": "omml-vs-mathtype-vs-latex-word-tfg",
       "pandoc-word-ecuaciones-no-editables": "pandoc-ecuaciones-word-no-editables-soluciones",
       "latex-a-word-online-gratis": "latex-a-word-online-gratis-ecuaciones-editables",
-      "latex-a-word-guia-rapida": "de-latex-a-word-guia-rapida"
+      "latex-a-word-guia-rapida": "latex-a-word-omml-guia-definitiva",
+      "convertidor-formulas-chatgpt-a-word": "pasar-ecuaciones-chatgpt-word",
+      "conversor-formulas-chatgpt-a-word-errores": "pasar-ecuaciones-chatgpt-word",
+      "de-latex-a-word-guia-rapida": "latex-a-word-omml-guia-definitiva"
     },
     "en": {
       "copy-chatgpt-equations-to-word": "copy-chatgpt-equations-word",
@@ -4165,7 +4054,8 @@
       "pandoc-to-word-equations-not-editable": "pandoc-math-to-word-omml-troubleshooting",
       "latex-to-word-online-free": "latex-to-word-online-free-editable-equations",
       "latex-to-word-quick-guide": "latex-to-word-quick-guide-no-broken-equations",
-      "cambria-math-word-symbols-fix": "weird-symbols-word-equations-cambria-math-fix"
+      "cambria-math-word-symbols-fix": "weird-symbols-word-equations-cambria-math-fix",
+      "latex-to-word-quick-guide-no-broken-equations": "latex-to-word-online-free-editable-equations"
     },
     "de": {
       "copy-chatgpt-equations-to-word": "copy-chatgpt-equations-word",

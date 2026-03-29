@@ -1,69 +1,64 @@
-<h2>1. Pídele a ChatGPT que te dé las fórmulas en LaTeX</h2>
-<p>
-        Lo primero es asegurarte de que ChatGPT genera las fórmulas en <strong>LaTeX</strong>. Puedes añadir
-        al final de tu prompt algo como:
-      </p>
-<blockquote>
-<em>"Escribe la solución con las fórmulas en LaTeX, usando $ para fórmulas en línea y $$ para fórmulas en bloque."</em>
-</blockquote>
-<p>Por ejemplo, ChatGPT puede devolverte algo así:</p>
-<pre><code>La función es:
-$$f(t) = e^{-8t+1} + \sin(8t+1)$$
+<nav class="summary-box">
+  <strong>Indice rapido</strong>
+  <ol>
+    <li><a href="#problema">El problema real al pasar de ChatGPT a Word</a></li>
+    <li><a href="#proceso">Proceso recomendado</a></li>
+    <li><a href="#antes-despues">Antes y despues</a></li>
+    <li><a href="#errores">Errores comunes</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ol>
+</nav>
 
-Y otra ecuación en línea sería $E = mc^2$ dentro del texto.</code></pre>
-<h2>2. Copia el resultado a un documento .docx o .txt</h2>
-<p>Cuando tengas la respuesta de ChatGPT con las fórmulas en LaTeX:</p>
-<ul>
-<li>Selecciona todo el texto de la respuesta.</li>
-<li>Cópialo y pégalo en un documento de <strong>Word (.docx)</strong> o en un archivo de texto <strong>.txt</strong>.</li>
-<li>Guarda el archivo en tu ordenador (por ejemplo, <code>ejercicios-chatgpt-latex.docx</code>).</li>
-</ul>
-<p>No hace falta que des formato bonito todavía: lo importante es que las <strong>fórmulas en LaTeX</strong> estén tal cual en el archivo.</p>
-<h2>3. Sube el archivo a Ecuaciones a Word</h2>
-<p>Ahora ve a <strong><a href="https://www.ecuacionesaword.com/">https://www.ecuacionesaword.com/</a></strong>.</p>
-<ul>
-<li>Haz clic en el botón para <strong>subir tu archivo .docx o .txt</strong>.</li>
-<li>Selecciona el archivo donde pegaste el contenido de ChatGPT.</li>
-<li>Pulsa el botón de <strong>convertir</strong>.</li>
-</ul>
-<p>
-        La herramienta leerá las expresiones en <strong>LaTeX</strong> (tanto en <code>$...$</code> como en <code>$$...$$</code>
-        o <code>\[...\]</code>) y creará un nuevo <strong>documento .docx</strong> donde esas fórmulas ya son
-        <strong>ecuaciones nativas de Word</strong>.
-      </p>
-<h2>4. Descarga el .docx con ecuaciones nativas de Word</h2>
-<p>Una vez terminada la conversión, podrás <strong>descargar el nuevo archivo .docx</strong>.</p>
-<p>Al abrirlo en Word verás que:</p>
-<ul>
-<li>Las fórmulas aparecen como <strong>ecuaciones editables</strong> (no imágenes).</li>
-<li>Puedes hacer doble clic en una ecuación y modificarla con el <strong>editor de ecuaciones de Word</strong>.</li>
-<li>Puedes copiar y pegar ecuaciones entre documentos sin perder el formato.</li>
-</ul>
-<h2>5. Ventajas frente a copiar todo a mano en Word</h2>
-<p>Sin una herramienta como <strong>Ecuaciones a Word</strong>, tendrías que:</p>
-<ul>
-<li>Volver a escribir cada fórmula usando el editor de ecuaciones de Word.</li>
-<li>Ir copiando y pegando trozos, con riesgo de errores.</li>
-<li>Perder mucho tiempo en algo que la IA ya había calculado por ti.</li>
-</ul>
-<p>
-        Aquí simplemente aprovechas que ChatGPT te dé las fórmulas en LaTeX, y de ahí pasas
-        directamente a <strong>Word con ecuaciones nativas</strong> en unos pocos clics.
-      </p>
-<h2>6. Consejos para que la conversión de LaTeX a Word sea más limpia</h2>
-<ul>
-<li>Pide a la IA que use siempre el mismo formato de delimitadores: por ejemplo, <code>$...$</code> para inline y <code>$$...$$</code> para bloque.</li>
-<li>Evita anidar código extraño alrededor de las fórmulas (tablas muy complejas, etc.) en el mismo paso.</li>
-<li>Si algo no se convierte bien, prueba con una fórmula más simple y ve complicando poco a poco.</li>
-</ul>
-<h2>7. Resumen: flujo recomendado ChatGPT → LaTeX → Word</h2>
+<h2 id="problema">El problema real al pasar de ChatGPT a Word</h2>
+<p>ChatGPT puede resolver ejercicios con mucha rapidez, pero la salida llega normalmente en texto con LaTeX. Cuando esa salida pasa por copy/paste directo a Word aparecen tres sintomas: caracteres extra?os, ecuaciones no editables o formulas partidas. Este no es un problema menor: si hay revision docente o correcciones de ultimo minuto, el documento se vuelve inmanejable.</p>
+<p>El objetivo no es solo copiar resultados, sino convertirlos a <strong>OMML</strong> para mantener control total en Word.</p>
+
+<h2 id="proceso">Proceso recomendado</h2>
 <ol>
-<li>Pide a <strong>ChatGPT</strong> que te dé la solución con las fórmulas en <strong>LaTeX</strong>.</li>
-<li>Copia la respuesta a un <strong>.docx</strong> o <strong>.txt</strong>.</li>
-<li>Súbelo a <strong><a href="https://www.ecuacionesaword.com/">Ecuaciones a Word</a></strong>.</li>
-<li>Descarga el <strong>.docx</strong> con las <strong>ecuaciones nativas de Word</strong> listas para entregar.</li>
+  <li>Pide a ChatGPT formato estable: texto + LaTeX con delimitadores claros.</li>
+  <li>Guarda la respuesta en <code>.txt</code> o <code>.docx</code> limpio.</li>
+  <li>Sube el archivo al conversor.</li>
+  <li>Descarga el DOCX con OMML.</li>
+  <li>Valida 2-3 formulas clave dentro de Word.</li>
 </ol>
-<hr>
-<p class="cta">
-        👉 Prueba ahora el conversor en: <strong><a href="https://www.ecuacionesaword.com/">Ecuaciones a Word</a></strong>.
-      </p>
+
+<h3>Checklist minimo antes de entregar</h3>
+<ul>
+  <li>Las ecuaciones inline se editan con doble clic.</li>
+  <li>Los bloques largos no se rompieron en saltos raros.</li>
+  <li>No quedan simbolos raros por codificacion.</li>
+  <li>El archivo abre igual en otro equipo.</li>
+</ul>
+
+<h2 id="antes-despues">Antes y despues</h2>
+<p><strong>Antes:</strong> respuesta de ChatGPT pegada como texto plano con delimitadores visibles.</p>
+<p><strong>Despues:</strong> documento Word con objetos matematicos editables y flujo de revision normal.</p>
+<p>Este cambio reduce mucho el tiempo de cierre en ejercicios de algebra, calculo, estadistica o fisica, donde una sola correccion puede afectar varias lineas de desarrollo.</p>
+
+<h2 id="errores">Errores comunes y solucion</h2>
+<h3>No cierra delimitadores</h3>
+<p>Si abres <code>$$</code> y no cierras, toda la deteccion posterior se degrada. Solucion: validar rapidamente bloques antes de subir.</p>
+
+<h3>Pega desde chat con formato mixto</h3>
+<p>El chat puede introducir caracteres invisibles. Solucion: pasar por TXT UTF-8 o DOCX limpio antes de convertir.</p>
+
+<h3>Confunde Word visual con Word editable</h3>
+<p>Si no puedes editar una formula desde el editor, no esta en formato correcto. Solucion: validar OMML en archivo final.</p>
+
+<h2>Enlaces de apoyo</h2>
+<ul>
+  <li><a href="/soluciones/chatgpt-ecuaciones-a-word">Landing transaccional: ChatGPT a Word</a></li>
+  <li><a href="/blog/signos-interrogacion-ecuaciones-chatgpt-word">Troubleshooting: signos raros al pegar</a></li>
+  <li><a href="/blog/latex-a-word-omml-guia-definitiva">Pilar: guia definitiva LaTeX a Word</a></li>
+</ul>
+
+<h2 id="faq">FAQ</h2>
+<h3>Sirve para respuestas largas con varias secciones?</h3>
+<p>Si, siempre que conserves delimitadores y estructura razonable del texto.</p>
+<h3>Puedo usarlo para entregas academicas?</h3>
+<p>Si, es uno de los usos principales del flujo ChatGPT -> Word editable.</p>
+<h3>Cuando uso esta guia y cuando la landing?</h3>
+<p>Esta guia te explica estrategia. La landing es para ejecutar conversion inmediatamente.</p>
+
+<hr class="sep">
+<p><strong>CTA:</strong> ve a <a href="/soluciones/chatgpt-ecuaciones-a-word">la solucion de ChatGPT a Word</a> o prueba directamente el <a href="/">conversor</a>.</p>
