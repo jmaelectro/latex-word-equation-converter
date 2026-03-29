@@ -103,6 +103,44 @@ Segment = Tuple[str, str]  # ("text" | "inline" | "display", contenido)
 USE_EXERCISE_TWEAKS = True
 
 
+def _fix_text_mojibake(text: str) -> str:
+    """Best-effort repair for common UTF-8/Latin-1 mojibake fragments."""
+    if not text:
+        return text
+
+    fixed = text
+    # Typical case: UTF-8 bytes decoded as Latin-1/cp1252.
+    if "Ã" in fixed or "Â" in fixed or "â" in fixed:
+        for encoding in ("latin-1", "cp1252"):
+            try:
+                recoded = fixed.encode(encoding).decode("utf-8")
+                if recoded.count("Ã") + recoded.count("Â") < fixed.count("Ã") + fixed.count("Â"):
+                    fixed = recoded
+                    break
+            except Exception:
+                continue
+
+    replacements = {
+        "â†’": "→",
+        "â€œ": "“",
+        "â€": "”",
+        "â€˜": "‘",
+        "â€™": "’",
+        "â€“": "–",
+        "â€”": "—",
+        "â€¦": "…",
+        "Â¿": "¿",
+        "Â¡": "¡",
+        "Âº": "º",
+        "Âª": "ª",
+        "Â·": "·",
+        "Â ": " ",
+    }
+    for bad, good in replacements.items():
+        fixed = fixed.replace(bad, good)
+    return fixed
+
+
 def _parse_allowed_origins(value: str) -> List[str]:
     return [o.strip() for o in value.split(",") if o.strip()]
 
