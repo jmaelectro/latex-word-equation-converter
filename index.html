@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>LaTeX a Word online (ecuaciones nativas OMML) | Ecuaciones a Word</title>
-<meta content="Convierte documentos .docx o .txt con fÃ³rmulas LaTeX (incluidas las generadas por ChatGPT, Gemini, Copilot u otras IA) en ecuaciones nativas de Word (OMML) editables. Ideal para TFG/TFM, ejercicios y apuntes en Word." name="description"/>
+<meta content="Convierte documentos .docx o .txt con fórmulas LaTeX (incluidas las generadas por ChatGPT, Gemini, Copilot u otras IA) en ecuaciones nativas de Word (OMML) editables. Ideal para TFG/TFM, ejercicios y apuntes en Word." name="description"/>
 <meta content="latex a word, convertir latex a word, ecuaciones nativas word, omml, office math markup language, ecuaciones word editables, convertir ecuaciones chatgpt a word, pasar formulas de chatgpt a word, convertir formulas de ia a word, latex to word converter, tex a word, ecuaciones en word latex" name="keywords"/>
 <link href="https://www.ecuacionesaword.com/" rel="canonical"/>
 <meta content="index,follow,max-image-preview:large" name="robots"/>
@@ -18,25 +18,25 @@
 <meta content="es_ES" property="og:locale"/>
 <meta content="en_US" property="og:locale:alternate"/>
 <meta content="LaTeX a Word online (ecuaciones nativas OMML) | Ecuaciones a Word" property="og:title"/>
-<meta content="Convierte documentos .docx o .txt con fÃ³rmulas LaTeX (incluidas de ChatGPT, Gemini o Copilot) en ecuaciones nativas de Word (OMML) editables. RÃ¡pido y automÃ¡tico." property="og:description"/>
+<meta content="Convierte documentos .docx o .txt con fórmulas LaTeX (incluidas de ChatGPT, Gemini o Copilot) en ecuaciones nativas de Word (OMML) editables. Rápido y automático." property="og:description"/>
 <meta content="https://www.ecuacionesaword.com/" property="og:url"/>
-<meta content="https://www.ecuacionesaword.com/static/og-image.svg" property="og:image"/>
+<meta content="https://www.ecuacionesaword.com/static/og-image.png" property="og:image"/>
 <meta content="summary_large_image" name="twitter:card"/>
 <meta content="LaTeX a Word online (ecuaciones nativas OMML) | Ecuaciones a Word" name="twitter:title"/>
 <meta content="Convierte LaTeX (incluido el generado por IA) a ecuaciones nativas de Word (OMML) en un .docx listo para entregar." name="twitter:description"/>
-<meta content="https://www.ecuacionesaword.com/static/og-image.svg" name="twitter:image"/>
+<meta content="https://www.ecuacionesaword.com/static/og-image.png" name="twitter:image"/>
 <link href="https://www.googletagmanager.com" rel="preconnect"/>
 <link href="https://www.googletagmanager.com" rel="dns-prefetch"/>
 <!-- Google Analytics -->
-<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-GS589S9BG4"></script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=__GA_MEASUREMENT_ID__"></script>
 <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('consent', 'default', { analytics_storage: 'granted' });
-    gtag('config', 'G-GS589S9BG4');
+    gtag('consent', 'default', { analytics_storage: 'denied' });
+    gtag('config', '__GA_MEASUREMENT_ID__');
     window.setAnalyticsConsent = function(granted) {
-      gtag('consent', 'update', { analytics_storage: granted ? 'granted' : 'denied' });
+      gtag('consent', 'update', { analytics_storage: granted ?'granted' : 'denied' });
     };
   </script>
 <!-- Fin Google Analytics -->
@@ -263,7 +263,27 @@
     }
 
     .file-input {
-      display: none;
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     .convert-btn {
@@ -295,6 +315,15 @@
       opacity: 0.6;
       cursor: wait;
       box-shadow: none;
+    }
+
+    a:focus-visible,
+    button:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    .file-label:focus-within {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
     }
 
     .status-row {
@@ -792,7 +821,7 @@
         "url": "https://www.ecuacionesaword.com/",
         "applicationCategory": "EducationalApplication",
         "operatingSystem": "All",
-        "description": "Convierte documentos con fÃ³rmulas LaTeX (incluidas las generadas por IA) a ecuaciones nativas de Word (OMML) editables.",
+        "description": "Convierte documentos con fórmulas LaTeX (incluidas las generadas por IA) a ecuaciones nativas de Word (OMML) editables.",
         "offers": {
           "@type": "Offer",
           "price": "0",
@@ -804,26 +833,26 @@
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "Â¿QuÃ© archivos acepta el conversor LaTeX a Word?",
+            "name": "?Qué archivos acepta el conversor LaTeX a Word?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Acepta documentos .docx y archivos .txt que contengan texto y fÃ³rmulas LaTeX."
+              "text": "Acepta documentos .docx y archivos .txt que contengan texto y fórmulas LaTeX."
             }
           },
           {
             "@type": "Question",
-            "name": "Â¿Funciona con ecuaciones generadas por ChatGPT u otras IA?",
+            "name": "?Funciona con ecuaciones generadas por ChatGPT u otras IA?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "SÃ­. EstÃ¡ pensado para convertir LaTeX generado por IA (ChatGPT, Gemini, Copilot, etc.) a ecuaciones nativas de Word (OMML)."
+              "text": "Sí. Está pensado para convertir LaTeX generado por IA (ChatGPT, Gemini, Copilot, etc.) a ecuaciones nativas de Word (OMML)."
             }
           },
           {
             "@type": "Question",
-            "name": "Â¿Mis archivos se guardan en algÃºn sitio?",
+            "name": "?Mis archivos se guardan en algún sitio?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. El archivo se procesa para generar el .docx convertido y despuÃ©s se descarta."
+              "text": "No. El archivo se procesa para generar el .docx convertido y después se descarta."
             }
           }
         ]
@@ -836,18 +865,19 @@
 <div class="page">
 <header>
 <div class="brand">
-<div class="brand-logo">âˆ‘</div>
+<div class="brand-logo">?</div>
 <div class="brand-text">
 <div class="brand-title">Ecuaciones a Word</div>
 <div class="brand-sub">
-            Convierte fÃ³rmulas LaTeX (tambiÃ©n desde IA) a ecuaciones de Word
+            Convierte fórmulas LaTeX (también desde IA) a ecuaciones de Word
           </div>
 
 </div>
 </div>
 <div class="nav-right">
 <div class="lang-switch">
-<select class="lang-select" id="lang-select">
+<label class="sr-only" for="lang-select">Idioma del sitio</label>
+<select aria-label="Idioma del sitio" class="lang-select" id="lang-select">
 <option value="es">Español</option>
 <option value="en">English</option>
 </select>
@@ -859,7 +889,7 @@
 <div class="hero-pill">
 <span>?</span>
 <span>
-            Ideal para pasar ejercicios de matemÃ¡ticas desde ChatGPT u otras IA a Word
+            Ideal para pasar ejercicios de matemáticas desde ChatGPT u otras IA a Word
           </span>
 
 </div>
@@ -868,7 +898,7 @@
         </h1>
 
 <p class="hero-subtitle">
-          Sube un <strong>.docx</strong> o <strong>.txt</strong> con fÃ³rmulas en <strong>LaTeX</strong> (ChatGPT, Gemini, Copilot, Overleaf o Pandoc) y descarga un Word con <strong>ecuaciones nativas OMML</strong>. Sin copiar ecuaciÃ³n por ecuaciÃ³n.
+          Sube un <strong>.docx</strong> o <strong>.txt</strong> con fórmulas en <strong>LaTeX</strong> (ChatGPT, Gemini, Copilot, Overleaf o Pandoc) y descarga un Word con <strong>ecuaciones nativas OMML</strong>. Sin copiar ecuación por ecuación.
         </p>
 
 <div class="hero-grid">
@@ -880,11 +910,12 @@
               </div>
 
 <div class="upload-hint">
-                Soporta fÃ³rmulas delimitadas por <code>$...$</code>, <code>$$...$$</code> o <code>\[...\]</code>.
+                Soporta fórmulas delimitadas por <code>$...$</code>, <code>$$...$$</code> o <code>\[...\]</code>.
               </div>
 
 </div>
 <form enctype="multipart/form-data" id="upload-form" method="post" action="/convert">
+<input name="lang" type="hidden" value="es"/>
 <div class="upload-body">
 <div class="file-row">
 <label class="file-label" for="file-input">
@@ -898,21 +929,21 @@
 <button class="convert-btn" id="convert-btn" type="submit">
 <span>Convertir y descargar</span>
 
-<span>â¬‡</span>
+<span aria-hidden="true">↓</span>
 </button>
 </div>
 <div class="status-row">
-<span id="status-text">
+<span aria-live="polite" id="status-text" role="status">
                     Estado: listo para convertir.
                   </span>
 
 <span class="status-pill">
 <span class="status-dot" id="status-dot"></span>
-<span>ConversiÃ³n directa a Word</span>
+<span>Conversión directa a Word</span>
 
 </span>
 </div>
-<p class="mini-note">ConversiÃ³n online inmediata. MÃ¡ximo 5MB por archivo.</p>
+<p class="mini-note">Conversión online inmediata. Máximo 5MB por archivo.</p>
 </div>
 </form>
 </div>
@@ -929,13 +960,13 @@
             </p>
 
 <p>
-              Ideal para TFG, TFM, prÃ¡cticas, hojas de ejercicios o apuntes que
+              Ideal para TFG, TFM, prácticas, hojas de ejercicios o apuntes que
               tienes que entregar obligatoriamente en Word.
             </p>
 <div class="trust-list">
-<span>â€¢ Ecuaciones en formato nativo de Word (OMML).</span>
-<span>â€¢ No se vende ni reutiliza el contenido de tus documentos.</span>
-<span>â€¢ Flujo pensado para entregas acadÃ©micas y tÃ©cnicas.</span>
+<span>? Ecuaciones en formato nativo de Word (OMML).</span>
+<span>? No se vende ni reutiliza el contenido de tus documentos.</span>
+<span>? Flujo pensado para entregas académicas y técnicas.</span>
 </div>
 
 <div class="side-tag">
@@ -946,21 +977,21 @@
 
 </div>
 <div class="badge-ia">
-              IA-friendly Â· ChatGPT Â· Gemini Â· Copilot Â· etc.
+              IA-friendly ? ChatGPT ? Gemini ? Copilot ? etc.
             </div>
 </div>
 </div>
 <!-- CÃ“MO FUNCIONA + DETALLES -->
 <section class="how-section">
 <div class="how-card">
-<h2>CÃ³mo funciona</h2>
+<h2>Cómo funciona</h2>
 
 <ul class="how-steps">
 <li class="how-step">
 <div class="how-step-number">1</div>
 <div class="how-step-text">
-                  Copia el texto (con fÃ³rmulas LaTeX) desde ChatGPT, otra IA,
-                  LaTeX o cualquier fuente, y guÃ¡rdalo como <strong>.docx</strong> o
+                  Copia el texto (con fórmulas LaTeX) desde ChatGPT, otra IA,
+                  LaTeX o cualquier fuente, y guárdalo como <strong>.docx</strong> o
                   <strong>.txt</strong>.
                 </div>
 
@@ -968,7 +999,7 @@
 <li class="how-step">
 <div class="how-step-number">2</div>
 <div class="how-step-text">
-                  Sube el archivo a esta pÃ¡gina y pulsa en
+                  Sube el archivo a esta página y pulsa en
                   <strong>"Convertir documento"</strong>.
                 </div>
 
@@ -983,7 +1014,7 @@
 </li>
 </ul>
 <p class="mini-note">
-              La herramienta entiende LaTeX sencillo: potencias, subÃ­ndices,
+              La herramienta entiende LaTeX sencillo: potencias, subíndices,
               matrices, productos, determinantes, etc.
             </p>
 
@@ -994,8 +1025,8 @@
             </h2>
 
 <p>
-              Microsoft Word no entiende directamente el cÃ³digo LaTeX que
-              generan muchas IA. Ecuaciones a Word actÃºa como puente: lee el
+              Microsoft Word no entiende directamente el código LaTeX que
+              generan muchas IA. Ecuaciones a Word actúa como puente: lee el
               LaTeX y genera ecuaciones en formato OMML, el formato interno de
               Word.
             </p>
@@ -1010,7 +1041,7 @@
 
 <section class="how-section">
 <div class="how-card">
-<h2>QuÃ© soporta</h2>
+<h2>Qué soporta</h2>
 <div class="support-grid">
 <div class="support-card">
 <h3>Entradas compatibles</h3>
@@ -1031,16 +1062,16 @@
 </div>
 </div>
 <div class="how-card">
-<h2>Errores comunes y soluciÃ³n</h2>
+<h2>Errores comunes y solución</h2>
 <ul class="how-steps">
 <li class="how-step"><div class="how-step-number">1</div><div class="how-step-text"><strong>No seleccionaste archivo.</strong> Elige un .docx/.txt antes de convertir.</div></li>
-<li class="how-step"><div class="how-step-number">2</div><div class="how-step-text"><strong>Archivo no vÃ¡lido.</strong> Si falla, reexporta como .docx estÃ¡ndar y vuelve a subirlo.</div></li>
+<li class="how-step"><div class="how-step-number">2</div><div class="how-step-text"><strong>Archivo no válido.</strong> Si falla, reexporta como .docx estándar y vuelve a subirlo.</div></li>
 <li class="how-step"><div class="how-step-number">3</div><div class="how-step-text"><strong>Ecuaciones no interpretadas.</strong> Revisa delimitadores LaTeX: <code>$...$</code>, <code>$$...$$</code>, <code>\[...\]</code>.</div></li>
 </ul>
 <div class="example-box">
-<strong>Ejemplo rÃ¡pido (input â†’ output)</strong>
-<code>Input (.txt): EnergÃ­a: $E=mc^2$</code>
-<code>Output (.docx): ecuaciÃ³n OMML editable dentro de Word</code>
+<strong>Ejemplo rápido (input ? output)</strong>
+<code>Input (.txt): Energía: $E=mc^2$</code>
+<code>Output (.docx): ecuación OMML editable dentro de Word</code>
 </div>
 </div>
 </section>
@@ -1048,8 +1079,8 @@
 <section class="how-section">
 <div class="how-card compact-summary-card">
 <h2>Privacidad y seguridad (resumen)</h2>
-<p>Procesamos el archivo Ãºnicamente para generar el documento convertido. No enviamos el contenido de tus fÃ³rmulas a Google Analytics.</p>
-<p>Consulta los detalles en <a href="/privacy">Privacidad</a>, <a href="/terms">TÃ©rminos</a> y <a href="/contact">Contacto</a>.</p>
+<p>Procesamos el archivo únicamente para generar el documento convertido. No enviamos el contenido de tus fórmulas a Google Analytics.</p>
+<p>Consulta los detalles en <a href="/privacy">Privacidad</a>, <a href="/terms">Términos</a> y <a href="/contact">Contacto</a>.</p>
 </div>
 <div class="how-card">
 <h2>Soluciones por caso de uso</h2>
@@ -1094,70 +1125,70 @@
 <!-- BLOG / RECURSOS -->
 <section class="blog-section" id="guias">
   <div class="blog-header">
-    <h2>GuÃ­as y recursos</h2>
-    <p class="blog-intro">GuÃ­as rÃ¡pidas para convertir fÃ³rmulas LaTeX (por ejemplo de ChatGPT) a ecuaciones nativas de Word (OMML), sin errores al copiar y pegar.</p>
+    <h2>Guías y recursos</h2>
+    <p class="blog-intro">Guías rápidas para convertir fórmulas LaTeX (por ejemplo de ChatGPT) a ecuaciones nativas de Word (OMML), sin errores al copiar y pegar.</p>
   </div>
     <h3 class="blog-header h2" style="margin: 0 0 12px; font-size: 1.12rem;">Popular ahora</h3>
-  <section class="grid" aria-label="ArtÃ­culos populares">
-    <article class="card half guide-card" data-href="/blog/latex-a-word-online-gratis-ecuaciones-editables" tabindex="0" role="link" aria-label="LaTeX a Word online gratis: consigue ecuaciones editables (OMML) en minutos">
-      <div class="kicker">Trending SEO Â· LaTeX a Word online</div>
+  <section class="grid" aria-label="Artículos populares">
+    <article class="card half guide-card" data-href="/blog/latex-a-word-online-gratis-ecuaciones-editables">
+      <div class="kicker">Trending SEO ? LaTeX a Word online</div>
       <h3 class="title"><a href="/blog/latex-a-word-online-gratis-ecuaciones-editables">LaTeX a Word online gratis: consigue ecuaciones editables (OMML) en minutos</a></h3>
-      <p class="desc">GuÃ­a enfocada en la bÃºsqueda mÃ¡s demandada: convertir LaTeX a Word online y obtener un .docx editable para entregar.</p>
+      <p class="desc">Guía enfocada en la búsqueda más demandada: convertir LaTeX a Word online y obtener un .docx editable para entregar.</p>
       <div class="meta"><span class="pill">LaTeX a Word online</span><span class="pill">OMML</span><span class="pill">gratis</span></div>
     </article>
-    <article class="card half guide-card" data-href="/blog/de-latex-a-word-guia-rapida" tabindex="0" role="link" aria-label="De LaTeX a Word: guÃ­a rÃ¡pida para convertir un documento sin perder ecuaciones">
-      <div class="kicker">Checklist rÃ¡pido Â· Documento completo</div>
-      <h3 class="title"><a href="/blog/de-latex-a-word-guia-rapida">De LaTeX a Word: guÃ­a rÃ¡pida para convertir un documento sin perder ecuaciones</a></h3>
-      <p class="desc">Checklist en 7 pasos para pasar de LaTeX a Word con ecuaciones nativas, ideal para tareas, informes y entregas acadÃ©micas.</p>
-      <div class="meta"><span class="pill">LaTeX â†’ Word</span><span class="pill">DOCX</span><span class="pill">guÃ­a rÃ¡pida</span></div>
+    <article class="card half guide-card" data-href="/blog/de-latex-a-word-guia-rapida">
+      <div class="kicker">Checklist rápido ? Documento completo</div>
+      <h3 class="title"><a href="/blog/de-latex-a-word-guia-rapida">De LaTeX a Word: guía rápida para convertir un documento sin perder ecuaciones</a></h3>
+      <p class="desc">Checklist en 7 pasos para pasar de LaTeX a Word con ecuaciones nativas, ideal para tareas, informes y entregas académicas.</p>
+      <div class="meta"><span class="pill">LaTeX ? Word</span><span class="pill">DOCX</span><span class="pill">guía rápida</span></div>
     </article>
-    <article class="card half guide-card" data-href="/blog/simbolos-raros-ecuaciones-word-cambria-math" tabindex="0" role="link" aria-label="SÃ­mbolos raros en ecuaciones de Word: Cambria Math, cuadrados y cÃ³mo arreglarlo">
-      <div class="kicker">Troubleshooting Â· Word</div>
-      <h3 class="title"><a href="/blog/simbolos-raros-ecuaciones-word-cambria-math">SÃ­mbolos raros en ecuaciones de Word: Cambria Math, cuadrados y cÃ³mo arreglarlo</a></h3>
-      <p class="desc">Soluciones rÃ¡pidas para rombos, cuadrados y caracteres extraÃ±os al abrir ecuaciones en otros equipos o versiones de Word.</p>
+    <article class="card half guide-card" data-href="/blog/simbolos-raros-ecuaciones-word-cambria-math">
+      <div class="kicker">Troubleshooting ? Word</div>
+      <h3 class="title"><a href="/blog/simbolos-raros-ecuaciones-word-cambria-math">Símbolos raros en ecuaciones de Word: Cambria Math, cuadrados y cómo arreglarlo</a></h3>
+      <p class="desc">Soluciones rápidas para rombos, cuadrados y caracteres extraños al abrir ecuaciones en otros equipos o versiones de Word.</p>
       <div class="meta"><span class="pill">Cambria Math</span><span class="pill">compatibilidad</span><span class="pill">fuentes</span></div>
     </article>
   </section>
-  <h3 class="blog-header h2" style="margin: 14px 0 12px; font-size: 1.12rem;">MÃ¡s guÃ­as recomendadas</h3>  <section class="grid">
-    <article class="card half guide-card" data-href="/blog/pasar-ecuaciones-chatgpt-word" tabindex="0" role="link" aria-label="CÃ³mo pasar ecuaciones de ChatGPT a Word sin copiarlas a mano">
-  <div class="kicker">IA â†’ Word Â· Problema tÃ­pico</div>
-  <h3 class="title"><a href="/blog/pasar-ecuaciones-chatgpt-word">CÃ³mo pasar ecuaciones de ChatGPT a Word sin copiarlas a mano</a></h3>
-  <p class="desc">Flujo recomendado: ChatGPT â†’ LaTeX â†’ .docx/.txt â†’ conversiÃ³n a ecuaciones nativas (OMML) editables.</p>
+  <h3 class="blog-header h2" style="margin: 14px 0 12px; font-size: 1.12rem;">Más guías recomendadas</h3>  <section class="grid">
+    <article class="card half guide-card" data-href="/blog/pasar-ecuaciones-chatgpt-word">
+  <div class="kicker">IA ? Word ? Problema típico</div>
+  <h3 class="title"><a href="/blog/pasar-ecuaciones-chatgpt-word">Cómo pasar ecuaciones de ChatGPT a Word sin copiarlas a mano</a></h3>
+  <p class="desc">Flujo recomendado: ChatGPT ? LaTeX ? .docx/.txt ? conversión a ecuaciones nativas (OMML) editables.</p>
   <div class="meta"><span class="pill">ecuaciones ChatGPT a Word</span><span class="pill">LaTeX</span><span class="pill">OMML</span></div>
 </article>
-<article class="card half guide-card" data-href="/blog/convertir-documento-latex-word" tabindex="0" role="link" aria-label="CÃ³mo convertir LaTeX a Word para TFG/TFM sin perder las fÃ³rmulas">
-  <div class="kicker">TFG/TFM Â· Entregas en Word</div>
-  <h3 class="title"><a href="/blog/convertir-documento-latex-word">CÃ³mo convertir LaTeX a Word para TFG/TFM sin perder las fÃ³rmulas</a></h3>
-  <p class="desc">CÃ³mo preparar documentos con matemÃ¡ticas para entregar en Word: ecuaciones editables, consistentes y sin capturas.</p>
+<article class="card half guide-card" data-href="/blog/convertir-documento-latex-word">
+  <div class="kicker">TFG/TFM ? Entregas en Word</div>
+  <h3 class="title"><a href="/blog/convertir-documento-latex-word">Cómo convertir LaTeX a Word para TFG/TFM sin perder las fórmulas</a></h3>
+  <p class="desc">Cómo preparar documentos con matemáticas para entregar en Word: ecuaciones editables, consistentes y sin capturas.</p>
   <div class="meta"><span class="pill">LaTeX a Word TFG</span><span class="pill">ecuaciones Word</span><span class="pill">docx</span></div>
 </article>
-<article class="card half guide-card" data-href="/blog/ia-chatgpt-a-word-ejercicios" tabindex="0" role="link" aria-label="Usar IA + Ecuaciones a Word para hacer tus ejercicios en Word">
-  <div class="kicker">IA + productividad Â· Estudio</div>
+<article class="card half guide-card" data-href="/blog/ia-chatgpt-a-word-ejercicios">
+  <div class="kicker">IA + productividad ? Estudio</div>
   <h3 class="title"><a href="/blog/ia-chatgpt-a-word-ejercicios">Usar IA + Ecuaciones a Word para hacer tus ejercicios en Word</a></h3>
-  <p class="desc">MÃ©todo prÃ¡ctico para resolver ejercicios con IA, estructurar la respuesta y pasar las fÃ³rmulas a Word con ecuaciones nativas.</p>
-  <div class="meta"><span class="pill">ejercicios en Word</span><span class="pill">IA</span><span class="pill">fÃ³rmulas</span></div>
+  <p class="desc">Método práctico para resolver ejercicios con IA, estructurar la respuesta y pasar las fórmulas a Word con ecuaciones nativas.</p>
+  <div class="meta"><span class="pill">ejercicios en Word</span><span class="pill">IA</span><span class="pill">fórmulas</span></div>
 </article>
-<article class="card half guide-card" data-href="/blog/pegar-latex-en-word-alt-eq" tabindex="0" role="link" aria-label="Pegar LaTeX en Word (Alt+=): trucos para ecuaciones limpias">
-  <div class="kicker">Word Â· Editor de ecuaciones</div>
+<article class="card half guide-card" data-href="/blog/pegar-latex-en-word-alt-eq">
+  <div class="kicker">Word ? Editor de ecuaciones</div>
   <h3 class="title"><a href="/blog/pegar-latex-en-word-alt-eq">Pegar LaTeX en Word (Alt+=): trucos para ecuaciones limpias</a></h3>
-  <p class="desc">CÃ³mo usar el editor de ecuaciones de Word con LaTeX y cuÃ¡ndo conviene convertir documentos automÃ¡ticamente.</p>
+  <p class="desc">Cómo usar el editor de ecuaciones de Word con LaTeX y cuándo conviene convertir documentos automáticamente.</p>
   <div class="meta"><span class="pill">pegar LaTeX en Word</span><span class="pill">Alt+=</span><span class="pill">UnicodeMath</span></div>
 </article>
-<article class="card half guide-card" data-href="/blog/que-es-omml-ecuaciones-word" tabindex="0" role="link" aria-label="QuÃ© es OMML y por quÃ© tus ecuaciones no se copian bien en Word">
-  <div class="kicker">Formato Â· Conceptos</div>
-  <h3 class="title"><a href="/blog/que-es-omml-ecuaciones-word">QuÃ© es OMML y por quÃ© tus ecuaciones no se copian bien en Word</a></h3>
-  <p class="desc">ExplicaciÃ³n clara de OMML (Office Math Markup Language) y por quÃ© Word "no entiende" LaTeX pegado como texto.</p>
+<article class="card half guide-card" data-href="/blog/que-es-omml-ecuaciones-word">
+  <div class="kicker">Formato ? Conceptos</div>
+  <h3 class="title"><a href="/blog/que-es-omml-ecuaciones-word">Qué es OMML y por qué tus ecuaciones no se copian bien en Word</a></h3>
+  <p class="desc">Explicación clara de OMML (Office Math Markup Language) y por qué Word "no entiende" LaTeX pegado como texto.</p>
   <div class="meta"><span class="pill">OMML</span><span class="pill">Office Math</span><span class="pill">ecuaciones nativas</span></div>
 </article>
-<article class="card half guide-card" data-href="/blog/markdown-con-latex-a-word-docx" tabindex="0" role="link" aria-label="Markdown con LaTeX a Word (.docx): opciones y errores tÃ­picos">
-  <div class="kicker">Pandoc Â· Markdown</div>
-  <h3 class="title"><a href="/blog/markdown-con-latex-a-word-docx">Markdown con LaTeX a Word (.docx): opciones y errores tÃ­picos</a></h3>
-  <p class="desc">CÃ³mo evitar que las ecuaciones desaparezcan o queden como texto al convertir Markdown/MathJax a Word.</p>
+<article class="card half guide-card" data-href="/blog/markdown-con-latex-a-word-docx">
+  <div class="kicker">Pandoc ? Markdown</div>
+  <h3 class="title"><a href="/blog/markdown-con-latex-a-word-docx">Markdown con LaTeX a Word (.docx): opciones y errores típicos</a></h3>
+  <p class="desc">Cómo evitar que las ecuaciones desaparezcan o queden como texto al convertir Markdown/MathJax a Word.</p>
   <div class="meta"><span class="pill">pandoc</span><span class="pill">markdown</span><span class="pill">LaTeX a docx</span></div>
 </article>
   </section>
   <div class="blog-actions">
-    <a class="blog-more" href="/blog">Ver todas las guÃ­as del blog â†’</a>
+    <a class="blog-more" href="/blog">Ver todas las guías del blog ?</a>
   </div>
 </section>
 </main>
@@ -1176,22 +1207,22 @@
 <ul class="faq-list">
 <li>
 <div class="faq-q">
-                  Â¿QuÃ© tipos de archivos acepta la herramienta?
+                  ?Qué tipos de archivos acepta la herramienta?
                 </div>
 
 <div class="faq-a">
                   Acepta documentos <strong>.docx</strong> y archivos
-                  <strong>.txt</strong> con texto y fÃ³rmulas LaTeX.
+                  <strong>.txt</strong> con texto y fórmulas LaTeX.
                 </div>
 
 </li>
 <li>
 <div class="faq-q">
-                  Â¿Sirve tambiÃ©n para fÃ³rmulas generadas por ChatGPT u otra IA?
+                  ?Sirve también para fórmulas generadas por ChatGPT u otra IA?
                 </div>
 
 <div class="faq-a">
-                  SÃ­. De hecho, estÃ¡ especialmente pensada para eso: copias la
+                  Sí. De hecho, está especialmente pensada para eso: copias la
                   respuesta de la IA (en LaTeX), la pegas en un documento y la
                   conviertes a ecuaciones de Word.
                 </div>
@@ -1199,12 +1230,12 @@
 </li>
 <li>
 <div class="faq-q">
-                  Â¿Mis documentos se guardan en algÃºn sitio?
+                  ?Mis documentos se guardan en algún sitio?
                 </div>
 
 <div class="faq-a">
                   No. Los archivos se procesan en el servidor para generar el
-                  .docx convertido y despuÃ©s se descartan.
+                  .docx convertido y después se descartan.
                 </div>
 
 </li>
@@ -1215,20 +1246,20 @@
 <summary>
 <span class="summary-label">
 <span class="summary-badge">Legal</span>
-<span>PolÃ­tica de privacidad (resumen)</span>
+<span>Política de privacidad (resumen)</span>
 
 </span>
 <span class="chevron">â€º</span>
 </summary>
 <div>
 <p>
-              Esta herramienta procesa Ãºnicamente el archivo que subes para
+              Esta herramienta procesa únicamente el archivo que subes para
               generar el documento convertido. No se utilizan tus datos para
               publicidad ni se comparten con terceros.
             </p>
 
 <p>
-              Para mÃ¡s detalles, consulta la polÃ­tica completa en el apartado
+              Para más detalles, consulta la política completa en el apartado
               legal del sitio.
             </p>
 
@@ -1238,7 +1269,7 @@
 
 <footer>
 <div>
-        Â© <span id="year"></span> Ecuaciones a Word.
+        ? <span id="year"></span> Ecuaciones a Word.
         <span>
           Hecho por y para estudiantes que usan IA y Word.
         </span>
@@ -1246,13 +1277,13 @@
 </div>
 <div>
 <a href="https://www.ecuacionesaword.com/" rel="noopener">Inicio</a>
-        Â·
+        ?
         <a href="/blog" rel="noopener">Blog</a>
-        Â·
+        ?
         <a href="/privacy" rel="noopener">Privacidad</a>
-        Â·
-        <a href="/terms" rel="noopener">TÃ©rminos</a>
-        Â·
+        ?
+        <a href="/terms" rel="noopener">Términos</a>
+        ?
         <a href="/contact" rel="noopener">Contacto</a>
 </div>
 </footer>
@@ -1262,11 +1293,11 @@
   const endpoint = "/convert";
   const supportedLangs = ["es", "en"];
   const firstSegment = (window.location.pathname.split("/").filter(Boolean)[0] || "es").toLowerCase();
-  const currentLang = supportedLangs.includes(firstSegment) ? firstSegment : "es";
+  const currentLang = supportedLangs.includes(firstSegment) ?firstSegment : "es";
   const isEnglish = currentLang !== "es";
 
   function getDeviceType() {
-    return window.matchMedia && window.matchMedia("(max-width: 900px)").matches ? "mobile" : "desktop";
+    return window.matchMedia && window.matchMedia("(max-width: 900px)").matches ?"mobile" : "desktop";
   }
 
   function getReferrerType() {
@@ -1290,7 +1321,7 @@
   const baseParams = {
     language: currentLang,
     page_type: "home_converter",
-    page_path: window.location.pathname || (currentLang === "es" ? "/" : `/${currentLang}`),
+    page_path: window.location.pathname || (currentLang === "es" ?"/" : `/${currentLang}`),
     referrer_type: getReferrerType(),
     device_type: getDeviceType(),
   };
@@ -1312,18 +1343,18 @@
 
   function getFileExt(name) {
     const idx = (name || "").lastIndexOf(".");
-    return idx > -1 ? name.slice(idx + 1).toLowerCase() : "unknown";
+    return idx > -1 ?name.slice(idx + 1).toLowerCase() : "unknown";
   }
 
   const langSelect = document.getElementById("lang-select");
   if (langSelect) {
     langSelect.value = currentLang;
     langSelect.addEventListener("change", () => {
-      const target = supportedLangs.includes(langSelect.value) ? langSelect.value : "es";
+      const target = supportedLangs.includes(langSelect.value) ?langSelect.value : "es";
       track("language_selected", { selected_language: target, source_language: currentLang });
       try { localStorage.setItem("preferredLang", target); } catch {}
       if (target !== currentLang) {
-        window.location.href = target === "es" ? "/" : `/${target}`;
+        window.location.href = target === "es" ?"/" : `/${target}`;
       }
     });
   }
@@ -1335,19 +1366,19 @@
 
   const fileInput =
     document.getElementById("file-input") ||
-    (uploadForm ? uploadForm.querySelector('input[type="file"]') : document.querySelector('input[type="file"]'));
+    (uploadForm ?uploadForm.querySelector('input[type="file"]') : document.querySelector('input[type="file"]'));
 
   const fileNameDisplay =
     document.getElementById("file-name-display") ||
-    (uploadForm ? uploadForm.querySelector("#file-name-display") : null);
+    (uploadForm ?uploadForm.querySelector("#file-name-display") : null);
 
   const fileDropTarget =
-    (uploadForm ? uploadForm.querySelector('label[for="file-input"]') : null) ||
+    (uploadForm ?uploadForm.querySelector('label[for="file-input"]') : null) ||
     document.querySelector('label[for="file-input"]');
 
   const convertBtn =
     document.getElementById("convert-btn") ||
-    (uploadForm ? uploadForm.querySelector("button") : document.querySelector("button"));
+    (uploadForm ?uploadForm.querySelector("button") : document.querySelector("button"));
 
   const statusDot = document.getElementById("status-dot");
   const statusTextEs = document.getElementById("status-text");
@@ -1365,7 +1396,7 @@
     if (statusTextEs) statusTextEs.textContent = messageEs;
     if (statusTextEn) statusTextEn.textContent = messageEn;
     if (convertBtn) {
-      convertBtn.setAttribute("aria-busy", type === "loading" ? "true" : "false");
+      convertBtn.setAttribute("aria-busy", type === "loading" ?"true" : "false");
     }
   }
 
@@ -1389,7 +1420,7 @@
   function currentDurationMs() {
     if (!convertStartMs) return 0;
     const now = (window.performance && typeof window.performance.now === "function")
-      ? window.performance.now()
+      ?window.performance.now()
       : Date.now();
     return Math.max(0, Math.round(now - convertStartMs));
   }
@@ -1431,7 +1462,7 @@
     inFlight = true;
     attemptId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     convertStartMs = (window.performance && typeof window.performance.now === "function")
-      ? window.performance.now()
+      ?window.performance.now()
       : Date.now();
 
     if (convertBtn) convertBtn.disabled = true;
@@ -1441,6 +1472,7 @@
     const fd = new FormData();
     fd.append("file", file);
     fd.append("document", file);
+    fd.append("lang", currentLang);
 
     let res;
     try {
@@ -1462,7 +1494,7 @@
       let detail = "";
       try {
         const txt = await res.text();
-        detail = txt ? ` (${txt.slice(0, 200)})` : "";
+        detail = txt ?` (${txt.slice(0, 200)})` : "";
       } catch {}
       inFlight = false;
       if (convertBtn) convertBtn.disabled = false;
@@ -1471,7 +1503,7 @@
     }
 
     const blob = await res.blob();
-    const fallbackName = isEnglish ? "converted.docx" : "convertido.docx";
+    const fallbackName = isEnglish ?"converted.docx" : "convertido.docx";
     const filename = parseFilename(res.headers.get("content-disposition"), fallbackName);
 
     const url = URL.createObjectURL(blob);
@@ -1507,8 +1539,8 @@
 
   if (fileInput && fileNameDisplay) {
     fileInput.addEventListener("change", () => {
-      const f = (fileInput.files && fileInput.files[0]) ? fileInput.files[0] : null;
-      fileNameDisplay.textContent = f ? f.name : "";
+      const f = (fileInput.files && fileInput.files[0]) ?fileInput.files[0] : null;
+      fileNameDisplay.textContent = f ?f.name : "";
       if (f) {
         track("file_selected", {
           file_type: getFileExt(f.name),
@@ -1565,7 +1597,7 @@
       track("landing_cta_clicked", {
         cta_target: href,
         cta_text: (anchor.textContent || "").trim().slice(0, 120),
-        cta_section: anchor.closest("header") ? "header" : "body",
+        cta_section: anchor.closest("header") ?"header" : "body",
       });
     },
     { capture: true }
@@ -1580,6 +1612,3 @@
 </script>
 </body>
 </html>
-
-
-

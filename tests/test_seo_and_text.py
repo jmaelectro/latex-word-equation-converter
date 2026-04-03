@@ -1,10 +1,23 @@
 import asyncio
+import io
 import unittest
+import zipfile
+
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.requests import Request
 
 import main
 
 
 class SeoAndTextTests(unittest.TestCase):
+    def _doc_omml_count(self, doc) -> int:
+        buf = io.BytesIO()
+        doc.save(buf)
+        buf.seek(0)
+        with zipfile.ZipFile(buf) as zf:
+            document_xml = zf.read("word/document.xml").decode("utf-8", errors="ignore")
+        return document_xml.count("<m:oMath") + document_xml.count("<m:oMathPara")
+
     def test_fix_text_mojibake(self):
         raw = "GuÃƒÂ­a rÃƒÂ¡pida Ã¢â€ â€™ Word con fÃƒÂ³rmulas"
         fixed = main._fix_text_mojibake(raw)
@@ -94,6 +107,63 @@ class SeoAndTextTests(unittest.TestCase):
         for event_name in required_events:
             self.assertIn(event_name, html)
         self.assertNotIn("convert_error", html)
+
+    def test_parse_math_segments_ignores_currency(self):
+        segments = main.parse_math_segments("Price is $5 and $10.")
+        self.assertEqual(segments, [("text", "Price is $5 and $10.")])
+
+    def test_parse_math_segments_supports_parenthesis_delimiter(self):
+        segments = main.parse_math_segments(r"Inline \(x+1\) should convert")
+        self.assertEqual(
+            segments,
+            [("text", "Inline "), ("inline", "x+1"), ("text", " should convert")],
+        )
+
+    def test_txt_conversion_keeps_currency_as_text(self):
+        doc = main.build_document_from_paragraphs(["Budget: $5-$10"])
+        self.assertEqual(self._doc_omml_count(doc), 0)
+        self.assertIn("Budget: $5-$10", doc.paragraphs[0].text)
+
+    def test_keywords_are_normalized_to_lists(self):
+        keywords = main.BLOG_POSTS["en"]["copy-chatgpt-equations-word"]["keywords"]
+        self.assertIsInstance(keywords, list)
+        self.assertGreater(len(keywords), 1)
+
+    def test_untranslated_post_does_not_emit_missing_hreflang(self):
+        resp = asyncio.run(main.blog_post_en("gemini-equations-to-word-omml"))
+        html = resp.body.decode("utf-8", errors="ignore")
+        self.assertNotIn(
+            'hreflang="es" href="https://www.ecuacionesaword.com/blog/gemini-equations-to-word-omml"',
+            html,
+        )
+
+    def test_custom_404_is_noindex(self):
+        request = Request(
+            {
+                "type": "http",
+                "method": "GET",
+                "path": "/missing-page",
+                "headers": [],
+                "scheme": "https",
+                "server": ("testserver", 443),
+                "client": ("127.0.0.1", 12345),
+                "query_string": b"",
+            }
+        )
+        resp = asyncio.run(
+            main.custom_http_exception_handler(
+                request,
+                StarletteHTTPException(status_code=404, detail="Not found"),
+            )
+        )
+        self.assertEqual(resp.headers.get("X-Robots-Tag"), "noindex, nofollow")
+        self.assertIn("noindex, nofollow", resp.body.decode("utf-8", errors="ignore"))
+
+    def test_home_markup_has_accessibility_improvements(self):
+        html = main.read_html_file("index.html")
+        self.assertIn('role="status"', html)
+        self.assertIn('aria-live="polite"', html)
+        self.assertNotIn('role="link"', html)
 
 
 if __name__ == "__main__":

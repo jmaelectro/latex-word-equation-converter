@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>LaTeX to Word online (native Word equations / OMML) | Equations to Word</title>
-<meta content="Convert LaTeX equations to native Word equations (OMML) inside a .docx. Fix ChatGPTâ†’Word copy/paste issues and keep equations fully editable." name="description"/>
+<meta content="Convert LaTeX equations to native Word equations (OMML) inside a .docx. Fix ChatGPT?Word copy/paste issues and keep equations fully editable." name="description"/>
 <meta content="latex to word, latex to word converter, convert latex to word, chatgpt equations to word, OMML, Word equation editor, LaTeX to OMML" name="keywords"/>
 <link href="https://www.ecuacionesaword.com/en" rel="canonical"/>
 <meta content="index,follow,max-image-preview:large" name="robots"/>
@@ -15,28 +15,28 @@
 <link href="/static/site.webmanifest" rel="manifest"/>
 <meta content="website" property="og:type"/>
 <meta content="Ecuaciones a Word" property="og:site_name"/>
-<meta content="es_ES" property="og:locale"/>
-<meta content="en_US" property="og:locale:alternate"/>
+<meta content="en_US" property="og:locale"/>
+<meta content="es_ES" property="og:locale:alternate"/>
 <meta content="LaTeX to Word converter (native Word equations / OMML)" property="og:title"/>
-<meta content="Convert LaTeX equations to native Word equations (OMML) inside a .docx. Fix ChatGPTâ†’Word copy/paste issues and keep equations fully editable." property="og:description"/>
+<meta content="Convert LaTeX equations to native Word equations (OMML) inside a .docx. Fix ChatGPT?Word copy/paste issues and keep equations fully editable." property="og:description"/>
 <meta content="https://www.ecuacionesaword.com/en" property="og:url"/>
-<meta content="https://www.ecuacionesaword.com/static/og-image.svg" property="og:image"/>
+<meta content="https://www.ecuacionesaword.com/static/og-image.png" property="og:image"/>
 <meta content="summary_large_image" name="twitter:card"/>
 <meta content="LaTeX to Word converter (native Word equations / OMML)" name="twitter:title"/>
-<meta content="Convert LaTeX equations to native Word equations (OMML) inside a .docx. Fix ChatGPTâ†’Word copy/paste issues and keep equations fully editable." name="twitter:description"/>
-<meta content="https://www.ecuacionesaword.com/static/og-image.svg" name="twitter:image"/>
+<meta content="Convert LaTeX equations to native Word equations (OMML) inside a .docx. Fix ChatGPT?Word copy/paste issues and keep equations fully editable." name="twitter:description"/>
+<meta content="https://www.ecuacionesaword.com/static/og-image.png" name="twitter:image"/>
 <link href="https://www.googletagmanager.com" rel="preconnect"/>
 <link href="https://www.googletagmanager.com" rel="dns-prefetch"/>
 <!-- Google Analytics -->
-<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-GS589S9BG4"></script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=__GA_MEASUREMENT_ID__"></script>
 <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('consent', 'default', { analytics_storage: 'granted' });
-    gtag('config', 'G-GS589S9BG4');
+    gtag('consent', 'default', { analytics_storage: 'denied' });
+    gtag('config', '__GA_MEASUREMENT_ID__');
     window.setAnalyticsConsent = function(granted) {
-      gtag('consent', 'update', { analytics_storage: granted ? 'granted' : 'denied' });
+      gtag('consent', 'update', { analytics_storage: granted ?'granted' : 'denied' });
     };
   </script>
 <!-- Fin Google Analytics -->
@@ -263,7 +263,27 @@
     }
 
     .file-input {
-      display: none;
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     .convert-btn {
@@ -295,6 +315,15 @@
       opacity: 0.6;
       cursor: wait;
       box-shadow: none;
+    }
+
+    a:focus-visible,
+    button:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    .file-label:focus-within {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
     }
 
     .status-row {
@@ -837,7 +866,7 @@
 <div class="page">
 <header>
 <div class="brand">
-<div class="brand-logo">âˆ‘</div>
+<div class="brand-logo">?</div>
 <div class="brand-text">
 <div class="brand-title">Ecuaciones a Word</div>
 <div class="brand-sub">
@@ -847,7 +876,8 @@
 </div>
 <div class="nav-right">
 <div class="lang-switch">
-<select class="lang-select" id="lang-select">
+<label class="sr-only" for="lang-select">Site language</label>
+<select aria-label="Site language" class="lang-select" id="lang-select">
 <option value="es">Español</option>
 <option value="en">English</option>
 </select>
@@ -880,6 +910,7 @@
               </div>
 </div>
 <form enctype="multipart/form-data" id="upload-form" method="post" action="/convert">
+<input name="lang" type="hidden" value="en"/>
 <div class="upload-body">
 <div class="file-row">
 <label class="file-label" for="file-input">
@@ -891,11 +922,11 @@
 <input accept=".docx,.txt" class="file-input" id="file-input" name="file" required="" type="file"/>
 <button class="convert-btn" id="convert-btn" type="submit">
 <span>Convert and download</span>
-<span>â¬‡</span>
+<span aria-hidden="true">↓</span>
 </button>
 </div>
 <div class="status-row">
-<span id="status-text-en">
+<span aria-live="polite" id="status-text-en" role="status">
                     Status: ready to convert.
                   </span>
 <span class="status-pill">
@@ -924,9 +955,9 @@
               delivered in Word.
             </p>
 <div class="trust-list">
-<span>â€¢ Native Word equation output (OMML).</span>
-<span>â€¢ Uploaded content is not sold or reused for ads.</span>
-<span>â€¢ Built for academic and technical workflows.</span>
+<span>? Native Word equation output (OMML).</span>
+<span>? Uploaded content is not sold or reused for ads.</span>
+<span>? Built for academic and technical workflows.</span>
 </div>
 <div class="side-tag">
 <span>âœ…</span>
@@ -935,7 +966,7 @@
               </span>
 </div>
 <div class="badge-ia">
-              IA-friendly Â· ChatGPT Â· Gemini Â· Copilot Â· etc.
+              IA-friendly ? ChatGPT ? Gemini ? Copilot ? etc.
             </div>
 </div>
 </div>
@@ -1074,69 +1105,69 @@
 <section class="blog-section" id="guides">
   <div class="blog-header">
     <h2>Guides and resources</h2>
-    <p class="blog-intro">Quick guides to turn LaTeX formulas (for example from ChatGPT) into native, editable Word equations (OMML) without copyâ€‘paste issues.</p>
+    <p class="blog-intro">Quick guides to turn LaTeX formulas (for example from ChatGPT) into native, editable Word equations (OMML) without copy?paste issues.</p>
   </div>
     <h3 class="blog-header h2" style="margin: 0 0 12px; font-size: 1.12rem;">Popular now</h3>
   <section class="grid" aria-label="Popular guides">
-    <article class="card half guide-card" data-href="/en/blog/latex-to-word-online-free-editable-equations" tabindex="0" role="link" aria-label="LaTeX to Word online for free: get editable equations (OMML) fast">
-      <div class="kicker">Trending SEO Â· LaTeX to Word online</div>
+    <article class="card half guide-card" data-href="/en/blog/latex-to-word-online-free-editable-equations">
+      <div class="kicker">Trending SEO ? LaTeX to Word online</div>
       <h3 class="title"><a href="/en/blog/latex-to-word-online-free-editable-equations">LaTeX to Word online for free: get editable equations (OMML) fast</a></h3>
       <p class="desc">Focused guide for the highest-demand query: convert LaTeX to Word online and keep equations editable in your final .docx.</p>
       <div class="meta"><span class="pill">LaTeX to Word online</span><span class="pill">OMML</span><span class="pill">free</span></div>
     </article>
-    <article class="card half guide-card" data-href="/en/blog/latex-to-word-quick-guide-no-broken-equations" tabindex="0" role="link" aria-label="LaTeX to Word quick guide: convert documents without breaking equations">
-      <div class="kicker">Quick checklist Â· Full document</div>
+    <article class="card half guide-card" data-href="/en/blog/latex-to-word-quick-guide-no-broken-equations">
+      <div class="kicker">Quick checklist ? Full document</div>
       <h3 class="title"><a href="/en/blog/latex-to-word-quick-guide-no-broken-equations">LaTeX to Word quick guide: convert documents without breaking equations</a></h3>
       <p class="desc">A 7-step checklist to move from LaTeX to Word with native editable equations for assignments and technical docs.</p>
-      <div class="meta"><span class="pill">LaTeX â†’ Word</span><span class="pill">DOCX</span><span class="pill">quick guide</span></div>
+      <div class="meta"><span class="pill">LaTeX ? Word</span><span class="pill">DOCX</span><span class="pill">quick guide</span></div>
     </article>
-    <article class="card half guide-card" data-href="/en/blog/weird-symbols-word-equations-cambria-math-fix" tabindex="0" role="link" aria-label="Weird symbols in Word equations: Cambria Math and square boxes fixed">
-      <div class="kicker">Troubleshooting Â· Word</div>
+    <article class="card half guide-card" data-href="/en/blog/weird-symbols-word-equations-cambria-math-fix">
+      <div class="kicker">Troubleshooting ? Word</div>
       <h3 class="title"><a href="/en/blog/weird-symbols-word-equations-cambria-math-fix">Weird symbols in Word equations: Cambria Math and square boxes fixed</a></h3>
       <p class="desc">Fast fixes for square boxes, broken symbols, and font compatibility issues across Word versions and devices.</p>
       <div class="meta"><span class="pill">Cambria Math</span><span class="pill">compatibility</span><span class="pill">fonts</span></div>
     </article>
   </section>
   <h3 class="blog-header h2" style="margin: 14px 0 12px; font-size: 1.12rem;">More recommended guides</h3>  <section class="grid">
-    <article class="card half guide-card" data-href="/en/blog/copy-chatgpt-equations-to-word" tabindex="0" role="link" aria-label="Copy ChatGPT equations into Word (editable equations)">
-  <div class="kicker">AI â†’ Word Â· Common issue</div>
+    <article class="card half guide-card" data-href="/en/blog/copy-chatgpt-equations-to-word">
+  <div class="kicker">AI ? Word ? Common issue</div>
   <h3 class="title"><a href="/en/blog/copy-chatgpt-equations-to-word">Copy ChatGPT equations into Word (editable equations)</a></h3>
-  <p class="desc">Recommended workflow: ChatGPT â†’ LaTeX â†’ .docx/.txt â†’ convert to native Word equations (OMML) you can edit.</p>
+  <p class="desc">Recommended workflow: ChatGPT ? LaTeX ? .docx/.txt ? convert to native Word equations (OMML) you can edit.</p>
   <div class="meta"><span class="pill">ChatGPT equations to Word</span><span class="pill">LaTeX</span><span class="pill">OMML</span></div>
 </article>
-<article class="card half guide-card" data-href="/en/blog/convert-latex-document-to-word" tabindex="0" role="link" aria-label="Convert a LaTeX document to Word with editable equations (OMML)">
-  <div class="kicker">Thesis / Assignments Â· Word submissions</div>
+<article class="card half guide-card" data-href="/en/blog/convert-latex-document-to-word">
+  <div class="kicker">Thesis / Assignments ? Word submissions</div>
   <h3 class="title"><a href="/en/blog/convert-latex-document-to-word">Convert a LaTeX document to Word with editable equations (OMML)</a></h3>
   <p class="desc">How to prepare math-heavy documents to submit in Word: editable, consistent equations without screenshots.</p>
   <div class="meta"><span class="pill">LaTeX to Word</span><span class="pill">Word equations</span><span class="pill">docx</span></div>
 </article>
-<article class="card half guide-card" data-href="/en/blog/use-ai-equations-to-word-exercises" tabindex="0" role="link" aria-label="Use AI + Equations to Word to submit exercises in Word">
-  <div class="kicker">AI + productivity Â· Studying</div>
+<article class="card half guide-card" data-href="/en/blog/use-ai-equations-to-word-exercises">
+  <div class="kicker">AI + productivity ? Studying</div>
   <h3 class="title"><a href="/en/blog/use-ai-equations-to-word-exercises">Use AI + Equations to Word to submit exercises in Word</a></h3>
   <p class="desc">A practical method to solve problems with AI, structure your answer, and export formulas to Word as native equations.</p>
   <div class="meta"><span class="pill">exercises in Word</span><span class="pill">AI</span><span class="pill">formulas</span></div>
 </article>
-<article class="card half guide-card" data-href="/en/blog/paste-latex-into-word-alt-eq" tabindex="0" role="link" aria-label="Paste LaTeX into Word (Alt+=): clean equation tips">
-  <div class="kicker">Word Â· Equation editor</div>
+<article class="card half guide-card" data-href="/en/blog/paste-latex-into-word-alt-eq">
+  <div class="kicker">Word ? Equation editor</div>
   <h3 class="title"><a href="/en/blog/paste-latex-into-word-alt-eq">Paste LaTeX into Word (Alt+=): clean equation tips</a></h3>
   <p class="desc">How to use Word's equation editor with LaTeX and when it's better to convert a full document automatically.</p>
   <div class="meta"><span class="pill">paste LaTeX into Word</span><span class="pill">Alt+=</span><span class="pill">UnicodeMath</span></div>
 </article>
-<article class="card half guide-card" data-href="/en/blog/what-is-omml-word-equations" tabindex="0" role="link" aria-label="What is OMML and why equations break when you paste into Word">
-  <div class="kicker">Formatting Â· Concepts</div>
+<article class="card half guide-card" data-href="/en/blog/what-is-omml-word-equations">
+  <div class="kicker">Formatting ? Concepts</div>
   <h3 class="title"><a href="/en/blog/what-is-omml-word-equations">What is OMML and why equations break when you paste into Word</a></h3>
   <p class="desc">A clear explanation of OMML (Office Math Markup Language) and why Word doesn't understand raw LaTeX pasted as text.</p>
   <div class="meta"><span class="pill">OMML</span><span class="pill">Office Math</span><span class="pill">native equations</span></div>
 </article>
-<article class="card half guide-card" data-href="/en/blog/markdown-latex-to-word-docx" tabindex="0" role="link" aria-label="Markdown + LaTeX to Word (.docx): options and common issues">
-  <div class="kicker">Pandoc Â· Markdown</div>
+<article class="card half guide-card" data-href="/en/blog/markdown-latex-to-word-docx">
+  <div class="kicker">Pandoc ? Markdown</div>
   <h3 class="title"><a href="/en/blog/markdown-latex-to-word-docx">Markdown + LaTeX to Word (.docx): options and common issues</a></h3>
   <p class="desc">How to prevent equations from disappearing or becoming plain text when converting Markdown/MathJax to Word.</p>
   <div class="meta"><span class="pill">pandoc</span><span class="pill">markdown</span><span class="pill">LaTeX to docx</span></div>
 </article>
   </section>
   <div class="blog-actions">
-    <a class="blog-more" href="/en/blog">See all guides â†’</a>
+    <a class="blog-more" href="/en/blog">See all guides ?</a>
   </div>
 </section>
 </main>
@@ -1201,7 +1232,7 @@
 
 <footer>
 <div>
-        Â© <span id="year"></span> Ecuaciones a Word.
+        ? <span id="year"></span> Ecuaciones a Word.
 
 <span>
           Built for students who use AI and Word.
@@ -1209,13 +1240,13 @@
 </div>
 <div>
 <a href="https://www.ecuacionesaword.com/en" rel="noopener">Home</a>
-        Â·
+        ?
         <a href="/en/blog" rel="noopener">Blog</a>
-        Â·
+        ?
         <a href="/en/privacy" rel="noopener">Privacy</a>
-        Â·
+        ?
         <a href="/en/terms" rel="noopener">Terms</a>
-        Â·
+        ?
         <a href="/en/contact" rel="noopener">Contact</a>
 </div>
 </footer>
@@ -1225,11 +1256,11 @@
   const endpoint = "/convert";
   const supportedLangs = ["es", "en"];
   const firstSegment = (window.location.pathname.split("/").filter(Boolean)[0] || "es").toLowerCase();
-  const currentLang = supportedLangs.includes(firstSegment) ? firstSegment : "es";
+  const currentLang = supportedLangs.includes(firstSegment) ?firstSegment : "es";
   const isEnglish = currentLang !== "es";
 
   function getDeviceType() {
-    return window.matchMedia && window.matchMedia("(max-width: 900px)").matches ? "mobile" : "desktop";
+    return window.matchMedia && window.matchMedia("(max-width: 900px)").matches ?"mobile" : "desktop";
   }
 
   function getReferrerType() {
@@ -1253,7 +1284,7 @@
   const baseParams = {
     language: currentLang,
     page_type: "home_converter",
-    page_path: window.location.pathname || (currentLang === "es" ? "/" : `/${currentLang}`),
+    page_path: window.location.pathname || (currentLang === "es" ?"/" : `/${currentLang}`),
     referrer_type: getReferrerType(),
     device_type: getDeviceType(),
   };
@@ -1275,18 +1306,18 @@
 
   function getFileExt(name) {
     const idx = (name || "").lastIndexOf(".");
-    return idx > -1 ? name.slice(idx + 1).toLowerCase() : "unknown";
+    return idx > -1 ?name.slice(idx + 1).toLowerCase() : "unknown";
   }
 
   const langSelect = document.getElementById("lang-select");
   if (langSelect) {
     langSelect.value = currentLang;
     langSelect.addEventListener("change", () => {
-      const target = supportedLangs.includes(langSelect.value) ? langSelect.value : "es";
+      const target = supportedLangs.includes(langSelect.value) ?langSelect.value : "es";
       track("language_selected", { selected_language: target, source_language: currentLang });
       try { localStorage.setItem("preferredLang", target); } catch {}
       if (target !== currentLang) {
-        window.location.href = target === "es" ? "/" : `/${target}`;
+        window.location.href = target === "es" ?"/" : `/${target}`;
       }
     });
   }
@@ -1298,19 +1329,19 @@
 
   const fileInput =
     document.getElementById("file-input") ||
-    (uploadForm ? uploadForm.querySelector('input[type="file"]') : document.querySelector('input[type="file"]'));
+    (uploadForm ?uploadForm.querySelector('input[type="file"]') : document.querySelector('input[type="file"]'));
 
   const fileNameDisplay =
     document.getElementById("file-name-display") ||
-    (uploadForm ? uploadForm.querySelector("#file-name-display") : null);
+    (uploadForm ?uploadForm.querySelector("#file-name-display") : null);
 
   const fileDropTarget =
-    (uploadForm ? uploadForm.querySelector('label[for="file-input"]') : null) ||
+    (uploadForm ?uploadForm.querySelector('label[for="file-input"]') : null) ||
     document.querySelector('label[for="file-input"]');
 
   const convertBtn =
     document.getElementById("convert-btn") ||
-    (uploadForm ? uploadForm.querySelector("button") : document.querySelector("button"));
+    (uploadForm ?uploadForm.querySelector("button") : document.querySelector("button"));
 
   const statusDot = document.getElementById("status-dot");
   const statusTextEs = document.getElementById("status-text");
@@ -1328,7 +1359,7 @@
     if (statusTextEs) statusTextEs.textContent = messageEs;
     if (statusTextEn) statusTextEn.textContent = messageEn;
     if (convertBtn) {
-      convertBtn.setAttribute("aria-busy", type === "loading" ? "true" : "false");
+      convertBtn.setAttribute("aria-busy", type === "loading" ?"true" : "false");
     }
   }
 
@@ -1352,7 +1383,7 @@
   function currentDurationMs() {
     if (!convertStartMs) return 0;
     const now = (window.performance && typeof window.performance.now === "function")
-      ? window.performance.now()
+      ?window.performance.now()
       : Date.now();
     return Math.max(0, Math.round(now - convertStartMs));
   }
@@ -1394,7 +1425,7 @@
     inFlight = true;
     attemptId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     convertStartMs = (window.performance && typeof window.performance.now === "function")
-      ? window.performance.now()
+      ?window.performance.now()
       : Date.now();
 
     if (convertBtn) convertBtn.disabled = true;
@@ -1404,6 +1435,7 @@
     const fd = new FormData();
     fd.append("file", file);
     fd.append("document", file);
+    fd.append("lang", currentLang);
 
     let res;
     try {
@@ -1425,7 +1457,7 @@
       let detail = "";
       try {
         const txt = await res.text();
-        detail = txt ? ` (${txt.slice(0, 200)})` : "";
+        detail = txt ?` (${txt.slice(0, 200)})` : "";
       } catch {}
       inFlight = false;
       if (convertBtn) convertBtn.disabled = false;
@@ -1434,7 +1466,7 @@
     }
 
     const blob = await res.blob();
-    const fallbackName = isEnglish ? "converted.docx" : "convertido.docx";
+    const fallbackName = isEnglish ?"converted.docx" : "convertido.docx";
     const filename = parseFilename(res.headers.get("content-disposition"), fallbackName);
 
     const url = URL.createObjectURL(blob);
@@ -1470,8 +1502,8 @@
 
   if (fileInput && fileNameDisplay) {
     fileInput.addEventListener("change", () => {
-      const f = (fileInput.files && fileInput.files[0]) ? fileInput.files[0] : null;
-      fileNameDisplay.textContent = f ? f.name : "";
+      const f = (fileInput.files && fileInput.files[0]) ?fileInput.files[0] : null;
+      fileNameDisplay.textContent = f ?f.name : "";
       if (f) {
         track("file_selected", {
           file_type: getFileExt(f.name),
@@ -1528,7 +1560,7 @@
       track("landing_cta_clicked", {
         cta_target: href,
         cta_text: (anchor.textContent || "").trim().slice(0, 120),
-        cta_section: anchor.closest("header") ? "header" : "body",
+        cta_section: anchor.closest("header") ?"header" : "body",
       });
     },
     { capture: true }
@@ -1543,6 +1575,3 @@
 </script>
 </body>
 </html>
-
-
-

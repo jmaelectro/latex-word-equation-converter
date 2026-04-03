@@ -36,7 +36,7 @@
     gtag('consent', 'default', { analytics_storage: 'granted' });
     gtag('config', 'G-GS589S9BG4');
     window.setAnalyticsConsent = function(granted) {
-      gtag('consent', 'update', { analytics_storage: granted ? 'granted' : 'denied' });
+      gtag('consent', 'update', { analytics_storage: granted ?'granted' : 'denied' });
     };
   </script>
 <!-- Fin Google Analytics -->
@@ -1140,12 +1140,12 @@
   const endpoint = "/convert";
   const supportedLangs = ["es", "en", "de", "fr", "it", "pt"];
   const firstSegment = (window.location.pathname.split("/").filter(Boolean)[0] || "es").toLowerCase();
-  const currentLang = supportedLangs.includes(firstSegment) ? firstSegment : "es";
+  const currentLang = supportedLangs.includes(firstSegment) ?firstSegment : "es";
   const isEnglish = currentLang !== "es";
   const baseParams = {
     lang: currentLang,
     page_type: "home",
-    source_page: window.location.pathname || (currentLang === "es" ? "/" : `/${currentLang}`),
+    source_page: window.location.pathname || (currentLang === "es" ?"/" : `/${currentLang}`),
   };
 
   function track(name, params = {}) {
@@ -1164,19 +1164,19 @@
 
   function getFileExt(name) {
     const idx = (name || "").lastIndexOf(".");
-    return idx > -1 ? name.slice(idx + 1).toLowerCase() : "unknown";
+    return idx > -1 ?name.slice(idx + 1).toLowerCase() : "unknown";
   }  // Language switcher (home)
   const langSelect = document.getElementById("lang-select");
   if (langSelect) {
     langSelect.value = currentLang;
 
     langSelect.addEventListener("change", () => {
-      const target = supportedLangs.includes(langSelect.value) ? langSelect.value : "es";
+      const target = supportedLangs.includes(langSelect.value) ?langSelect.value : "es";
 
       try { localStorage.setItem("preferredLang", target); } catch {}
 
       if (target !== currentLang) {
-        window.location.href = target === "es" ? "/" : `/${target}`;
+        window.location.href = target === "es" ?"/" : `/${target}`;
       }
     });
   }
@@ -1188,19 +1188,19 @@
 
   const fileInput =
     document.getElementById("file-input") ||
-    (uploadForm ? uploadForm.querySelector('input[type="file"]') : document.querySelector('input[type="file"]'));
+    (uploadForm ?uploadForm.querySelector('input[type="file"]') : document.querySelector('input[type="file"]'));
 
   const fileNameDisplay =
     document.getElementById("file-name-display") ||
-    (uploadForm ? uploadForm.querySelector("#file-name-display") : null);
+    (uploadForm ?uploadForm.querySelector("#file-name-display") : null);
 
   const fileDropTarget =
-    (uploadForm ? uploadForm.querySelector('label[for="file-input"]') : null) ||
+    (uploadForm ?uploadForm.querySelector('label[for="file-input"]') : null) ||
     document.querySelector('label[for="file-input"]');
 
   const convertBtn =
     document.getElementById("convert-btn") ||
-    (uploadForm ? uploadForm.querySelector("button") : document.querySelector("button"));
+    (uploadForm ?uploadForm.querySelector("button") : document.querySelector("button"));
 
   const statusDot = document.getElementById("status-dot");
   const statusTextEs = document.getElementById("status-text");
@@ -1215,7 +1215,7 @@
     if (statusTextEs) statusTextEs.textContent = messageEs;
     if (statusTextEn) statusTextEn.textContent = messageEn;
     if (convertBtn) {
-      convertBtn.setAttribute("aria-busy", type === "loading" ? "true" : "false");
+      convertBtn.setAttribute("aria-busy", type === "loading" ?"true" : "false");
     }
   }
 
@@ -1286,7 +1286,7 @@
       let detail = "";
 try {
         const txt = await res.text();
-        detail = txt ? ` (${txt.slice(0, 200)})` : "";
+        detail = txt ?` (${txt.slice(0, 200)})` : "";
       } catch {}
       inFlight = false;
       if (convertBtn) convertBtn.disabled = false;
@@ -1299,7 +1299,7 @@ try {
     }
 
     const blob = await res.blob();
-    const fallbackName = isEnglish ? "converted.docx" : "convertido.docx";
+    const fallbackName = isEnglish ?"converted.docx" : "convertido.docx";
     const filename = parseFilename(res.headers.get("content-disposition"), fallbackName);
 
     const url = URL.createObjectURL(blob);
@@ -1320,8 +1320,8 @@ try {
 
   if (fileInput && fileNameDisplay) {
     fileInput.addEventListener("change", () => {
-      const f = (fileInput.files && fileInput.files[0]) ? fileInput.files[0] : null;
-      fileNameDisplay.textContent = f ? f.name : "";
+      const f = (fileInput.files && fileInput.files[0]) ?fileInput.files[0] : null;
+      fileNameDisplay.textContent = f ?f.name : "";
       if (f) {
         track("file_selected", {
           file_ext: getFileExt(f.name),

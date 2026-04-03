@@ -5,7 +5,12 @@ import logging
 import os
 import json
 import re
+from collections import defaultdict, deque
+from pathlib import Path
 from html import escape as html_escape
+from threading import Lock
+from time import monotonic
+from urllib.parse import quote
 from zipfile import BadZipFile
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
@@ -16,7 +21,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.opc.exceptions import PackageNotFoundError
 from docx.shared import Pt
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import (
     HTMLResponse,
@@ -81,6 +86,24 @@ def _add_common_headers(resp: StarletteResponse) -> StarletteResponse:
     resp.headers.setdefault("X-Content-Type-Options", "nosniff")
     resp.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
     resp.headers.setdefault("Permissions-Policy", "interest-cohort=()")
+    resp.headers.setdefault("X-Frame-Options", "DENY")
+    resp.headers.setdefault(
+        "Content-Security-Policy",
+        "; ".join(
+            [
+                "default-src 'self'",
+                "base-uri 'self'",
+                "object-src 'none'",
+                "frame-ancestors 'none'",
+                "img-src 'self' data: https:",
+                "style-src 'self' 'unsafe-inline'",
+                "font-src 'self' data:",
+                "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com",
+                "connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com",
+                "form-action 'self'",
+            ]
+        ),
+    )
     return resp
 
 import math2docx
@@ -97,15 +120,40 @@ if not logger.handlers:
     logging.basicConfig(level=logging.INFO)
 
 MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
+MAX_UPLOAD_CONTENT_LENGTH_BYTES = MAX_FILE_SIZE_BYTES + 64 * 1024
+RATE_LIMIT_WINDOW_SECONDS = int(os.getenv("CONVERT_RATE_LIMIT_WINDOW_SECONDS", "60"))
+RATE_LIMIT_MAX_REQUESTS = int(os.getenv("CONVERT_RATE_LIMIT_MAX_REQUESTS", "20"))
 Segment = Tuple[str, str]  # ("text" | "inline" | "display", contenido)
 
 # Puedes desactivar reglas específicas del "ejercicio" si no las quieres:
-USE_EXERCISE_TWEAKS = True
+USE_EXERCISE_TWEAKS = os.getenv("USE_EXERCISE_TWEAKS", "0").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
+
+_RATE_LIMIT_BUCKETS: Dict[str, deque[float]] = defaultdict(deque)
+_RATE_LIMIT_LOCK = Lock()
 
 
 def _mojibake_score(value: str) -> int:
-    markers = ("Ã", "Â", "â€™", "â€œ", "â€", "�", "Ð", "Ñ")
-    return sum(value.count(m) for m in markers)
+    if not value:
+        return 0
+    suspect_chars = {"\u00c2", "\u00c3", "\u00e2", "\ufffd"}
+    score = sum(ch in suspect_chars for ch in value)
+    score += value.count("â") * 2
+    return score
+
+
+def _decode_mojibake_once(value: str) -> str:
+    candidates = [value]
+    for source_encoding in ("latin-1", "cp1252"):
+        try:
+            candidates.append(value.encode(source_encoding).decode("utf-8"))
+        except Exception:
+            continue
+    return min(candidates, key=lambda candidate: (_mojibake_score(candidate), len(candidate)))
 
 
 def _fix_text_mojibake(text: str) -> str:
@@ -113,32 +161,50 @@ def _fix_text_mojibake(text: str) -> str:
     if not text:
         return text
 
-    fixed = text
+    fixed = text.lstrip("\ufeff")
     original_score = _mojibake_score(fixed)
-    if any(token in fixed for token in ("Ã", "Â", "â", "Ð", "Ñ", "�")):
-        candidates = [fixed]
-        for encoding in ("latin-1", "cp1252"):
-            try:
-                candidates.append(fixed.encode(encoding, errors="ignore").decode("utf-8", errors="ignore"))
-            except Exception:
-                continue
-        fixed = min(candidates, key=_mojibake_score) if candidates else fixed
+    candidate = fixed
+    for _ in range(4):
+        new_candidate = _decode_mojibake_once(candidate)
+        if new_candidate == candidate:
+            break
+        if _mojibake_score(new_candidate) <= _mojibake_score(candidate):
+            candidate = new_candidate
+            continue
+        break
+    fixed = candidate
 
     replacements = {
-        "â†’": "->",
-        "â€œ": "\"",
-        "â€": "\"",
-        "â€˜": "'",
-        "â€™": "'",
-        "â€“": "-",
-        "â€”": "-",
-        "â€¦": "...",
+        "â€¦": "…",
+        "â€œ": "“",
+        "â€": "”",
+        "â€˜": "‘",
+        "â€™": "’",
+        "â€“": "–",
+        "â€”": "—",
+        "â€¢": "•",
+        "â†’": "→",
+        "â†": "←",
+        "â†”": "↔",
+        "â‡’": "⇒",
+        "â‡”": "⇔",
+        "âˆ‘": "∑",
+        "âˆ": "∏",
+        "âˆš": "√",
+        "âˆž": "∞",
+        "âˆ‚": "∂",
+        "âˆ‡": "∇",
+        "â‰¤": "≤",
+        "â‰¥": "≥",
+        "â‰ ": "≠",
+        "â‰ˆ": "≈",
+        "Â©": "©",
+        "Â·": "·",
         "Â¿": "¿",
         "Â¡": "¡",
         "Âº": "º",
         "Âª": "ª",
-        "Â·": "·",
-        " ": " ",
+        "\u00a0": " ",
     }
     for bad, good in replacements.items():
         fixed = fixed.replace(bad, good)
@@ -158,6 +224,37 @@ def _deep_fix_mojibake(value: Any) -> Any:
     if isinstance(value, dict):
         return {k: _deep_fix_mojibake(v) for k, v in value.items()}
     return value
+
+
+def _request_is_https(request: Request) -> bool:
+    scheme = (
+        request.headers.get("x-forwarded-proto")
+        or request.url.scheme
+        or ""
+    ).split(",")[0].strip().lower()
+    return scheme == "https"
+
+
+def _client_ip(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for", "")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    if request.client and request.client.host:
+        return request.client.host
+    return "unknown"
+
+
+def _check_convert_rate_limit(request: Request) -> bool:
+    now = monotonic()
+    key = f"{_client_ip(request)}:convert"
+    with _RATE_LIMIT_LOCK:
+        bucket = _RATE_LIMIT_BUCKETS[key]
+        while bucket and now - bucket[0] > RATE_LIMIT_WINDOW_SECONDS:
+            bucket.popleft()
+        if len(bucket) >= RATE_LIMIT_MAX_REQUESTS:
+            return False
+        bucket.append(now)
+    return True
 
 
 def _parse_allowed_origins(value: str) -> List[str]:
@@ -195,7 +292,18 @@ if CANONICAL_HOST:
 
 @app.middleware("http")
 async def add_common_headers_mw(request: Request, call_next):
+    if request.url.path == "/convert" and request.method == "POST":
+        content_length = request.headers.get("content-length", "").strip()
+        if content_length.isdigit() and int(content_length) > MAX_UPLOAD_CONTENT_LENGTH_BYTES:
+            resp = PlainTextResponse("File too large (max 5MB)", status_code=413)
+            return _add_common_headers(resp)
+        if not _check_convert_rate_limit(request):
+            resp = PlainTextResponse("Too many conversion requests. Please try again shortly.", status_code=429)
+            return _add_common_headers(resp)
+
     resp = await call_next(request)
+    if _request_is_https(request):
+        resp.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
     return _add_common_headers(resp)
 
 
@@ -221,6 +329,8 @@ if not SITE_CANONICAL_ORIGIN:
 BLOG_DATA_PATH = os.path.join(BASE_DIR, "blog_content", "posts.json")
 BLOG_POSTS_DIR = os.path.join(BASE_DIR, "blog_content", "posts")
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
+OG_IMAGE_PATH = "/static/og-image.png" if os.path.exists(os.path.join(BASE_DIR, "static", "og-image.png")) else "/static/og-image.svg"
+GA_MEASUREMENT_ID = os.getenv("GA_MEASUREMENT_ID", "G-GS589S9BG4").strip()
 
 try:
     from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -233,6 +343,7 @@ JINJA_ENV = Environment(
     loader=FileSystemLoader(TEMPLATES_DIR),
     autoescape=select_autoescape(["html", "xml"]),
 )
+JINJA_ENV.globals["GA_MEASUREMENT_ID"] = GA_MEASUREMENT_ID
 
 SUPPORTED_LANGS: Tuple[str, ...] = ("es", "en", "de", "fr", "it", "pt")
 PRIMARY_CONTENT_LANGS: Tuple[str, ...] = ("es", "en")
@@ -456,6 +567,33 @@ def _all_alternates(
     default_path = path_by_lang.get(default_lang) or path_by_lang.get("en") or "/"
     out.append({"hreflang": "x-default", "href": _abs_url(default_path)})
     return out
+
+
+def _iso_date_from_timestamp(timestamp: float) -> str:
+    return datetime.fromtimestamp(timestamp, tz=timezone.utc).date().isoformat()
+
+
+def _default_site_lastmod_iso() -> str:
+    env_value = os.getenv("SITE_DEFAULT_LASTMOD", "").strip()
+    if env_value:
+        return env_value
+    tracked_paths = [
+        Path(__file__),
+        Path(BASE_DIR) / "index.html",
+        Path(BASE_DIR) / "index-en.html",
+        Path(BASE_DIR) / "templates" / "base.html",
+        Path(BASE_DIR) / "templates" / "blog_index.html",
+        Path(BASE_DIR) / "templates" / "blog_post.html",
+        Path(BASE_DIR) / "templates" / "legal_page.html",
+        Path(BLOG_DATA_PATH),
+    ]
+    mtimes = [path.stat().st_mtime for path in tracked_paths if path.exists()]
+    if not mtimes:
+        return datetime.now(timezone.utc).date().isoformat()
+    return _iso_date_from_timestamp(max(mtimes))
+
+
+SITE_DEFAULT_LASTMOD = _default_site_lastmod_iso()
 
 
 def _lang_options(path_by_lang: Dict[str, str]) -> List[Dict[str, str]]:
@@ -1111,7 +1249,27 @@ def _load_blog_data() -> Dict[str, Any]:
             raise ValueError("posts.json root is not a JSON object")
         data.setdefault("posts", [])
         data.setdefault("aliases", {})
-        return _deep_fix_mojibake(data)
+        data = _deep_fix_mojibake(data)
+        normalized_posts: List[Dict[str, Any]] = []
+        for post in data.get("posts", []):
+            if not isinstance(post, dict):
+                continue
+            normalized = dict(post)
+            keywords = normalized.get("keywords")
+            if isinstance(keywords, str):
+                normalized["keywords"] = [
+                    kw.strip()
+                    for kw in keywords.split(",")
+                    if kw.strip()
+                ]
+            elif not isinstance(keywords, list):
+                normalized["keywords"] = []
+
+            translation_slug = (normalized.get("translation_slug") or "").strip()
+            normalized["translation_slug"] = translation_slug
+            normalized_posts.append(normalized)
+        data["posts"] = normalized_posts
+        return data
     except Exception:
         logger.exception("Failed to load blog data from %s", BLOG_DATA_PATH)
         # Keep the app running (converter is critical). Blog will 404 gracefully.
@@ -1498,7 +1656,10 @@ def _read_text_file(path: str, default: Optional[str] = None) -> str:
 
 def read_html_file(filename: str) -> str:
     path = os.path.join(BASE_DIR, filename)
-    return _fix_text_mojibake(_read_text_file(path))
+    html = _fix_text_mojibake(_read_text_file(path))
+    html = html.replace("__GA_MEASUREMENT_ID__", GA_MEASUREMENT_ID)
+    html = html.replace("/static/og-image.svg", OG_IMAGE_PATH)
+    return html
 
 
 def _force_meta_robots_noindex(html: str) -> str:
@@ -1518,7 +1679,7 @@ def _force_meta_robots_noindex(html: str) -> str:
 
 
 def _now_lastmod_iso() -> str:
-    return datetime.now(timezone.utc).date().isoformat()
+    return SITE_DEFAULT_LASTMOD
 
 
 def _abs_url(path: str) -> str:
@@ -1573,6 +1734,25 @@ def _translated_indexable_path(lang: str, slug: str) -> Optional[str]:
     if not _is_valid_blog_canonical_path(lang, path):
         return None
     return path
+
+
+def _blog_alternate_paths(lang: str, post: Dict[str, Any]) -> Dict[str, str]:
+    canonical_path = (post.get("canonical_path") or "").strip()
+    slug = (post.get("slug") or "").strip()
+    if not canonical_path and slug:
+        canonical_path = f"{_blog_index_path(lang)}/{slug}"
+    paths: Dict[str, str] = {}
+    if canonical_path and _is_valid_blog_canonical_path(lang, canonical_path):
+        paths[lang] = canonical_path
+
+    translation_slug = (post.get("translation_slug") or "").strip()
+    counterpart_lang = "en" if lang == "es" else "es"
+    counterpart_slug = translation_slug or slug
+    counterpart_path = _translated_indexable_path(counterpart_lang, counterpart_slug)
+    if counterpart_path:
+        paths[counterpart_lang] = counterpart_path
+
+    return paths
 
 
 def generate_sitemap_xml() -> str:
@@ -1680,20 +1860,7 @@ def generate_sitemap_xml() -> str:
                 canonical_path = f"{_blog_index_path(lang)}/{slug}"
             if not _is_valid_blog_canonical_path(lang, canonical_path):
                 continue
-            translation_slug = (p.get("translation_slug") or "").strip()
-            if lang == "es":
-                es_path = canonical_path
-                en_slug = translation_slug or slug
-                en_path = _translated_indexable_path("en", en_slug)
-            else:
-                en_path = canonical_path
-                es_slug = translation_slug or slug
-                es_path = _translated_indexable_path("es", es_slug)
-            paths = {lang: canonical_path}
-            if es_path:
-                paths["es"] = es_path
-            if en_path:
-                paths["en"] = en_path
+            paths = _blog_alternate_paths(lang, p)
             alts = _all_alternates(paths, default_lang="es")
             append_url(
                 canonical_path,
@@ -1913,6 +2080,56 @@ def add_math_safe(paragraph, latex: str) -> bool:
     except Exception:
         return True
 
+
+def _is_escaped(text: str, idx: int) -> bool:
+    backslashes = 0
+    j = idx - 1
+    while j >= 0 and text[j] == "\\":
+        backslashes += 1
+        j -= 1
+    return bool(backslashes % 2)
+
+
+def _find_unescaped(text: str, token: str, start: int) -> int:
+    idx = text.find(token, start)
+    while idx != -1:
+        if not _is_escaped(text, idx):
+            return idx
+        idx = text.find(token, idx + 1)
+    return -1
+
+
+def _looks_like_math_fragment(fragment: str) -> bool:
+    candidate = (fragment or "").strip()
+    if not candidate:
+        return False
+    if "\\" in candidate or any(ch in candidate for ch in "^_{}[]=<>"):
+        return True
+    if re.search(r"[A-Za-z]", candidate) and re.search(r"[0-9]", candidate):
+        return True
+    if re.search(r"[A-Za-z]", candidate) and any(op in candidate for op in ("+", "-", "*", "/", "=", "(", ")")):
+        return True
+    if re.fullmatch(r"[0-9().,+\-*/=\s]+", candidate) and any(op in candidate for op in ("+", "-", "*", "/", "=")):
+        return True
+    return False
+
+
+def _is_probable_currency_span(text: str, start: int, end: int, fragment: str) -> bool:
+    if start < 0 or end <= start or text[start] != "$":
+        return False
+    next_char = text[start + 1] if start + 1 < len(text) else ""
+    after_char = text[end] if end < len(text) else ""
+    candidate = (fragment or "").strip()
+    if not next_char.isdigit():
+        return False
+    if after_char.isdigit():
+        return True
+    if not _looks_like_math_fragment(candidate):
+        return True
+    if candidate.endswith(("-", "–", "—", ",")):
+        return True
+    return False
+
 def parse_math_segments(text: str) -> List[Segment]:
     segments: List[Segment] = []
     buf: List[str] = []
@@ -1925,35 +2142,68 @@ def parse_math_segments(text: str) -> List[Segment]:
     i = 0
     n = len(text)
     while i < n:
-        if text.startswith("$$", i):
+        if text.startswith("$$", i) and not _is_escaped(text, i):
             flush_text()
-            end = text.find("$$", i + 2)
+            end = _find_unescaped(text, "$$", i + 2)
             if end == -1:
                 buf.append(text[i:])
                 break
             latex = text[i + 2 : end]
-            segments.append(("display", latex.strip()))
+            if _looks_like_math_fragment(latex):
+                segments.append(("display", latex.strip()))
+            else:
+                buf.append(text[i : end + 2])
             i = end + 2
             continue
 
-        if text.startswith(r"\[", i):
+        if text.startswith(r"\[", i) and not _is_escaped(text, i):
             flush_text()
-            end = text.find(r"\]", i + 2)
+            end = _find_unescaped(text, r"\]", i + 2)
             if end == -1:
                 buf.append(text[i:])
                 break
             latex = text[i + 2 : end]
-            segments.append(("display", latex.strip()))
+            if _looks_like_math_fragment(latex):
+                segments.append(("display", latex.strip()))
+            else:
+                buf.append(text[i : end + 2])
             i = end + 2
             continue
 
-        if text[i] == "$":
+        if text.startswith(r"\(", i) and not _is_escaped(text, i):
             flush_text()
-            end = text.find("$", i + 1)
+            end = _find_unescaped(text, r"\)", i + 2)
+            if end == -1:
+                buf.append(text[i:])
+                break
+            latex = text[i + 2 : end]
+            if _looks_like_math_fragment(latex):
+                segments.append(("inline", latex.strip()))
+                i = end + 2
+                continue
+            buf.append(text[i : end + 2])
+            i = end + 2
+            continue
+
+        if text[i] == "$" and not _is_escaped(text, i):
+            if i + 1 < n and text[i + 1] == "$":
+                buf.append(text[i])
+                i += 1
+                continue
+            flush_text()
+            end = _find_unescaped(text, "$", i + 1)
             if end == -1:
                 buf.append(text[i:])
                 break
             latex = text[i + 1 : end]
+            if _is_probable_currency_span(text, i, end + 1, latex):
+                buf.append(text[i : end + 1])
+                i = end + 1
+                continue
+            if not _looks_like_math_fragment(latex):
+                buf.append(text[i : end + 1])
+                i = end + 1
+                continue
             segments.append(("inline", latex.strip()))
             i = end + 1
             continue
@@ -1962,7 +2212,13 @@ def parse_math_segments(text: str) -> List[Segment]:
         i += 1
 
     flush_text()
-    return segments
+    merged: List[Segment] = []
+    for kind, value in segments:
+        if kind == "text" and merged and merged[-1][0] == "text":
+            merged[-1] = ("text", merged[-1][1] + value)
+        else:
+            merged.append((kind, value))
+    return merged
 
 
 def split_into_paragraph_descriptors(text: str) -> List[Dict[str, Any]]:
@@ -2311,7 +2567,7 @@ def _solution_landing_context(lang: str, route_slug: str) -> Optional[Dict[str, 
         "og_type": "website",
         "og_title": current["title"],
         "og_description": current["description"],
-        "og_image": _abs_url("/static/og-image.svg"),
+        "og_image": _abs_url(OG_IMAGE_PATH),
         "schema_json": _build_schema_solution_page(
             current["title"],
             canonical_url,
@@ -2418,7 +2674,7 @@ def _solutions_hub_context(lang: str) -> Dict[str, Any]:
         "og_type": "website",
         "og_title": title,
         "og_description": description,
-        "og_image": _abs_url("/static/og-image.svg"),
+        "og_image": _abs_url(OG_IMAGE_PATH),
         "schema_json": _build_schema_simple_page("Soluciones" if lang == "es" else "Solutions", _abs_url(canonical_path), lang),
         "converter_href": _home_path(lang),
         "blog_index_href": _blog_index_path(lang),
@@ -2615,7 +2871,7 @@ def _legal_page_context(lang: str, page: str) -> Dict[str, Any]:
         "og_type": "website",
         "og_title": title,
         "og_description": description,
-        "og_image": _abs_url("/static/og-image.svg"),
+        "og_image": _abs_url(OG_IMAGE_PATH),
         "schema_json": _build_schema_simple_page(title, canonical_url, lang),
         "converter_href": _home_path(lang),
         "blog_index_href": _blog_index_path(lang),
@@ -2794,7 +3050,7 @@ async def blog_index_es() -> HTMLResponse:
         "og_type": "website",
         "og_title": "Blog | Ecuaciones a Word",
         "og_description": "Guías prácticas para llevar ecuaciones LaTeX a Word (OMML) de forma limpia y editable.",
-        "og_image": _abs_url("/static/og-image.svg"),
+        "og_image": _abs_url(OG_IMAGE_PATH),
         "schema_json": _build_schema_index(lang, canonical_url),
         "converter_href": "/",
         "blog_index_href": "/blog",
@@ -2867,7 +3123,7 @@ async def blog_index_en() -> HTMLResponse:
         "og_type": "website",
         "og_title": "Blog | Ecuaciones a Word",
         "og_description": "Practical guides for converting LaTeX equations to native Word (OMML) cleanly and reliably.",
-        "og_image": _abs_url("/static/og-image.svg"),
+        "og_image": _abs_url(OG_IMAGE_PATH),
         "schema_json": _build_schema_index(lang, canonical_url),
         "converter_href": "/en",
         "blog_index_href": "/en/blog",
@@ -2935,7 +3191,7 @@ def _build_blog_index_context_fallback_en(lang: str) -> Dict[str, Any]:
         "og_type": "website",
         "og_title": "Blog | Ecuaciones a Word",
         "og_description": "Practical guides for converting LaTeX equations to native Word (OMML) cleanly and reliably.",
-        "og_image": _abs_url("/static/og-image.svg"),
+        "og_image": _abs_url(OG_IMAGE_PATH),
         "schema_json": _build_schema_index(lang, canonical_url),
         "converter_href": _home_path(lang),
         "blog_index_href": _blog_index_path(lang),
@@ -3039,16 +3295,8 @@ async def blog_post_es(slug: str) -> HTMLResponse:
 
     canonical_path = post.get("canonical_path") or f"/blog/{post['slug']}"
     canonical_url = _abs_url(canonical_path)
-    translation_slug = (post.get("translation_slug") or "").strip()
-
-    en_path = f"/en/blog/{post['slug']}"
-    if translation_slug and translation_slug in BLOG_POSTS.get("en", {}):
-        en_path = BLOG_POSTS["en"][translation_slug].get("canonical_path") or f"/en/blog/{translation_slug}"
-
-    alt_paths = {
-        "es": canonical_path,
-        "en": en_path,
-    }
+    alt_paths = _blog_alternate_paths(lang, post)
+    en_path = alt_paths.get("en", "/en/blog")
 
     date_pub = post.get("date_published") or ""
     date_mod = post.get("date_modified") or ""
@@ -3072,7 +3320,7 @@ async def blog_post_es(slug: str) -> HTMLResponse:
         "og_type": "article",
         "og_title": post.get("title") or "",
         "og_description": post.get("description") or "",
-        "og_image": _abs_url("/static/og-image.svg"),
+        "og_image": _abs_url(OG_IMAGE_PATH),
         "schema_json": _build_schema_article(post, canonical_url),
         "related_posts": _get_related_posts(lang, post, limit=4),
         "related_title": _ui(lang, "related_title"),
@@ -3124,16 +3372,8 @@ async def blog_post_en(slug: str) -> HTMLResponse:
 
     canonical_path = post.get("canonical_path") or f"/en/blog/{post['slug']}"
     canonical_url = _abs_url(canonical_path)
-    translation_slug = (post.get("translation_slug") or "").strip()
-
-    es_path = f"/blog/{post['slug']}"
-    if translation_slug and translation_slug in BLOG_POSTS.get("es", {}):
-        es_path = BLOG_POSTS["es"][translation_slug].get("canonical_path") or f"/blog/{translation_slug}"
-
-    alt_paths = {
-        "es": es_path,
-        "en": canonical_path,
-    }
+    alt_paths = _blog_alternate_paths(lang, post)
+    es_path = alt_paths.get("es", "/blog")
 
     date_pub = post.get("date_published") or ""
     date_mod = post.get("date_modified") or ""
@@ -3157,7 +3397,7 @@ async def blog_post_en(slug: str) -> HTMLResponse:
         "og_type": "article",
         "og_title": post.get("title") or "",
         "og_description": post.get("description") or "",
-        "og_image": _abs_url("/static/og-image.svg"),
+        "og_image": _abs_url(OG_IMAGE_PATH),
         "schema_json": _build_schema_article(post, canonical_url),
         "related_posts": _get_related_posts(lang, post, limit=4),
         "related_title": _ui(lang, "related_title"),
@@ -3245,7 +3485,7 @@ def _blog_post_context_fallback_en(lang: str, post: Dict[str, Any], body_html: s
         "og_type": "article",
         "og_title": post.get("title") or "",
         "og_description": post.get("description") or "",
-        "og_image": _abs_url("/static/og-image.svg"),
+        "og_image": _abs_url(OG_IMAGE_PATH),
         "schema_json": _build_schema_article(post_schema, canonical_url),
         "related_posts": _get_related_posts(lang, post, limit=4),
         "related_title": _ui(lang, "related_title"),
@@ -3545,35 +3785,55 @@ def _find_math_spans(text: str) -> List[Tuple[str, int, int, str]]:
     n = len(text)
 
     while i < n:
-        if text.startswith("$$", i):
-            end = text.find("$$", i + 2)
+        if text.startswith("$$", i) and not _is_escaped(text, i):
+            end = _find_unescaped(text, "$$", i + 2)
             if end == -1:
                 break
             latex = text[i + 2 : end]
-            spans.append(("display", i, end + 2, latex))
-            i = end + 2
+            if _looks_like_math_fragment(latex):
+                spans.append(("display", i, end + 2, latex))
+                i = end + 2
+                continue
+            i += 2
             continue
 
-        if text.startswith(r"\[", i):
-            end = text.find(r"\]", i + 2)
+        if text.startswith(r"\[", i) and not _is_escaped(text, i):
+            end = _find_unescaped(text, r"\]", i + 2)
             if end == -1:
                 break
             latex = text[i + 2 : end]
-            spans.append(("display", i, end + 2, latex))
-            i = end + 2
+            if _looks_like_math_fragment(latex):
+                spans.append(("display", i, end + 2, latex))
+                i = end + 2
+                continue
+            i += 2
             continue
 
-        if text[i] == "$":
-            # avoid $$ (already handled)
+        if text.startswith(r"\(", i) and not _is_escaped(text, i):
+            end = _find_unescaped(text, r"\)", i + 2)
+            if end == -1:
+                break
+            latex = text[i + 2 : end]
+            if _looks_like_math_fragment(latex):
+                spans.append(("inline", i, end + 2, latex))
+                i = end + 2
+                continue
+            i += 2
+            continue
+
+        if text[i] == "$" and not _is_escaped(text, i):
             if i + 1 < n and text[i + 1] == "$":
                 i += 1
                 continue
-            end = text.find("$", i + 1)
+            end = _find_unescaped(text, "$", i + 1)
             if end == -1:
                 break
             latex = text[i + 1 : end]
-            spans.append(("inline", i, end + 1, latex))
-            i = end + 1
+            if _looks_like_math_fragment(latex) and not _is_probable_currency_span(text, i, end):
+                spans.append(("inline", i, end + 1, latex))
+                i = end + 1
+                continue
+            i += 1
             continue
 
         i += 1
@@ -4310,8 +4570,13 @@ async def convert_get() -> RedirectResponse:
     return RedirectResponse(url="/", status_code=301)
 
 
+def _download_filename(lang: str) -> str:
+    return "equations-to-word.docx" if lang == "en" else "ecuaciones-a-word.docx"
+
+
 @app.post("/convert")
-async def convert(file: UploadFile = File(...)) -> StreamingResponse:
+async def convert(file: UploadFile = File(...), lang: str = Form("es")) -> StreamingResponse:
+    lang = "en" if (lang or "").strip().lower() == "en" else "es"
     filename = (file.filename or "").lower().strip()
     if not filename:
         raise HTTPException(status_code=400, detail="Missing filename")
@@ -4348,9 +4613,9 @@ async def convert(file: UploadFile = File(...)) -> StreamingResponse:
     out_doc.save(out)
     out.seek(0)
 
-    download_name = "ecuaciones-a-word.docx"
+    download_name = _download_filename(lang)
     headers = {
-        "Content-Disposition": f'attachment; filename="{download_name}"',
+        "Content-Disposition": f'attachment; filename="{download_name}"; filename*=UTF-8\'\'{quote(download_name)}',
         "Cache-Control": "no-store",
     }
 
@@ -4368,19 +4633,36 @@ async def custom_http_exception_handler(request: Request, exc: StarletteHTTPExce
     if exc.status_code == 404:
         safe_path = html_escape(request.url.path)
         is_en = str(request.url.path).startswith("/en")
-        if is_en:
-            html = f"""
-            <h1>404 · Page not found</h1>
-            <p>The URL <code>{safe_path}</code> does not exist.</p>
-            <p><a href="/en">Go to the converter</a> · <a href="/en/blog">Read the guides</a></p>
-            """
-        else:
-            html = f"""
-            <h1>404 · Página no encontrada</h1>
-            <p>No existe la URL <code>{safe_path}</code>.</p>
-            <p><a href="/">Ir al conversor</a> · <a href="/blog">Ver las guías</a></p>
-            """
-        return HTMLResponse(html, status_code=404)
+        title = "404 | Page not found" if is_en else "404 | Página no encontrada"
+        h1 = "404 · Page not found" if is_en else "404 · Página no encontrada"
+        message = (
+            f'The URL <code>{safe_path}</code> does not exist.'
+            if is_en
+            else f'No existe la URL <code>{safe_path}</code>.'
+        )
+        links = (
+            '<a href="/en">Go to the converter</a> · <a href="/en/blog">Read the guides</a>'
+            if is_en
+            else '<a href="/">Ir al conversor</a> · <a href="/blog">Ver las guías</a>'
+        )
+        html = f"""<!doctype html>
+<html lang="{('en' if is_en else 'es')}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{title}</title>
+</head>
+<body>
+  <main style="max-width:760px;margin:48px auto;padding:0 20px;font:16px/1.6 system-ui,sans-serif;color:#0f172a;">
+    <h1>{h1}</h1>
+    <p>{message}</p>
+    <p>{links}</p>
+  </main>
+</body>
+</html>
+"""
+        return HTMLResponse(html, status_code=404, headers=_noindex_headers())
 
     return PlainTextResponse(str(exc.detail), status_code=exc.status_code)
 

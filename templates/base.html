@@ -39,17 +39,16 @@
   {% endif %}
 
   <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-GS589S9BG4"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id={{ GA_MEASUREMENT_ID }}"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    // Consent mode base hook. Defaults remain granted to avoid changing current measurement behavior.
-    gtag('consent', 'default', { analytics_storage: 'granted' });
-    gtag('config', 'G-GS589S9BG4');
+    gtag('consent', 'default', { analytics_storage: 'denied' });
+    gtag('config', '{{ GA_MEASUREMENT_ID }}');
     // Future CMP integration can call this global without changing templates.
     window.setAnalyticsConsent = function(granted) {
-      gtag('consent', 'update', { analytics_storage: granted ? 'granted' : 'denied' });
+      gtag('consent', 'update', { analytics_storage: granted ?'granted' : 'denied' });
     };
   </script>
 
