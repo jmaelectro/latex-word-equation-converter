@@ -22,9 +22,11 @@ from docx.opc.exceptions import PackageNotFoundError
 from docx.shared import Pt
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import (
     HTMLResponse,
+    JSONResponse,
     PlainTextResponse,
     Response,
     StreamingResponse,
@@ -135,6 +137,63 @@ USE_EXERCISE_TWEAKS = os.getenv("USE_EXERCISE_TWEAKS", "0").strip().lower() in {
 
 _RATE_LIMIT_BUCKETS: Dict[str, deque[float]] = defaultdict(deque)
 _RATE_LIMIT_LOCK = Lock()
+
+
+def _is_convert_request(request: Request) -> bool:
+    return request.url.path == "/convert"
+
+
+def _convert_error_payload(status_code: int, code: str, message: str) -> Dict[str, Any]:
+    return {
+        "ok": False,
+        "error": {
+            "code": code,
+            "message": message,
+            "status": status_code,
+        },
+    }
+
+
+def _convert_error_response(status_code: int, code: str, message: str) -> JSONResponse:
+    resp = JSONResponse(
+        _convert_error_payload(status_code=status_code, code=code, message=message),
+        status_code=status_code,
+    )
+    resp.headers["Cache-Control"] = "no-store"
+    resp.headers.update(_noindex_headers())
+    return _add_common_headers(resp)
+
+
+def _raise_convert_error(status_code: int, code: str, message: str) -> None:
+    raise HTTPException(
+        status_code=status_code,
+        detail={
+            "code": code,
+            "message": message,
+        },
+    )
+
+
+def _coerce_convert_error(status_code: int, detail: Any) -> Tuple[str, str]:
+    if isinstance(detail, dict):
+        code = str(detail.get("code") or "").strip() or "conversion_failed"
+        message = str(detail.get("message") or "").strip() or "The document could not be converted."
+        return code, message
+
+    detail_text = str(detail or "").strip().lower()
+    if status_code == 400 and "unsupported" in detail_text:
+        return "unsupported_file_type", "Unsupported file type. Use .docx or .txt."
+    if status_code == 400 and "missing filename" in detail_text:
+        return "missing_filename", "Uploaded file is missing a filename."
+    if status_code == 400 and "invalid .docx" in detail_text:
+        return "invalid_document", "Invalid .docx file. Upload a valid Word document."
+    if status_code == 413:
+        return "file_too_large", "File too large. Maximum size is 5 MB."
+    if status_code == 429:
+        return "rate_limited", "Too many conversion requests. Please try again shortly."
+    if status_code == 422:
+        return "invalid_request", "Invalid conversion request."
+    return "conversion_failed", "The document could not be converted."
 
 
 def _mojibake_score(value: str) -> int:
@@ -295,11 +354,19 @@ async def add_common_headers_mw(request: Request, call_next):
     if request.url.path == "/convert" and request.method == "POST":
         content_length = request.headers.get("content-length", "").strip()
         if content_length.isdigit() and int(content_length) > MAX_UPLOAD_CONTENT_LENGTH_BYTES:
-            resp = PlainTextResponse("File too large (max 5MB)", status_code=413)
-            return _add_common_headers(resp)
+            return _convert_error_response(
+                status_code=413,
+                code="file_too_large",
+                message="File too large. Maximum size is 5 MB.",
+            )
         if not _check_convert_rate_limit(request):
-            resp = PlainTextResponse("Too many conversion requests. Please try again shortly.", status_code=429)
-            return _add_common_headers(resp)
+            resp = _convert_error_response(
+                status_code=429,
+                code="rate_limited",
+                message="Too many conversion requests. Please try again shortly.",
+            )
+            resp.headers["Retry-After"] = str(RATE_LIMIT_WINDOW_SECONDS)
+            return resp
 
     resp = await call_next(request)
     if _request_is_https(request):
@@ -4579,39 +4646,67 @@ async def convert(file: UploadFile = File(...), lang: str = Form("es")) -> Strea
     lang = "en" if (lang or "").strip().lower() == "en" else "es"
     filename = (file.filename or "").lower().strip()
     if not filename:
-        raise HTTPException(status_code=400, detail="Missing filename")
+        _raise_convert_error(
+            status_code=400,
+            code="missing_filename",
+            message="Uploaded file is missing a filename.",
+        )
 
     content = await file.read()
     if len(content) > MAX_FILE_SIZE_BYTES:
-        raise HTTPException(status_code=413, detail="File too large (max 5MB)")
+        _raise_convert_error(
+            status_code=413,
+            code="file_too_large",
+            message="File too large. Maximum size is 5 MB.",
+        )
 
     if filename.endswith(".docx"):
         # IMPORTANT: preserve formatting and modify ONLY equations.
         try:
             out_doc = _convert_docx_in_place(content)
         except (BadZipFile, PackageNotFoundError):
-            raise HTTPException(
+            _raise_convert_error(
                 status_code=400,
-                detail="Invalid .docx file. Upload a valid Word document.",
-            ) from None
+                code="invalid_document",
+                message="Invalid .docx file. Upload a valid Word document.",
+            )
         except Exception:
             logger.exception("Unexpected error while converting .docx")
-            raise HTTPException(
+            _raise_convert_error(
                 status_code=500,
-                detail="Internal error while converting the document.",
-            ) from None
+                code="conversion_failed",
+                message="Internal error while converting the document.",
+            )
     elif filename.endswith(".txt"):
-        paragraph_texts = _extract_text_lines_from_txt(content)
-        cleaned = prettify_paragraphs(paragraph_texts)
-        out_doc = build_document_from_paragraphs(cleaned)
+        try:
+            paragraph_texts = _extract_text_lines_from_txt(content)
+            cleaned = prettify_paragraphs(paragraph_texts)
+            out_doc = build_document_from_paragraphs(cleaned)
+        except Exception:
+            logger.exception("Unexpected error while converting .txt")
+            _raise_convert_error(
+                status_code=500,
+                code="conversion_failed",
+                message="Internal error while converting the document.",
+            )
     else:
-        raise HTTPException(
-            status_code=400, detail="Unsupported file type. Use .docx or .txt"
+        _raise_convert_error(
+            status_code=400,
+            code="unsupported_file_type",
+            message="Unsupported file type. Use .docx or .txt.",
         )
 
-    out = io.BytesIO()
-    out_doc.save(out)
-    out.seek(0)
+    try:
+        out = io.BytesIO()
+        out_doc.save(out)
+        out.seek(0)
+    except Exception:
+        logger.exception("Unexpected error while serializing converted document")
+        _raise_convert_error(
+            status_code=500,
+            code="conversion_failed",
+            message="Internal error while converting the document.",
+        )
 
     download_name = _download_filename(lang)
     headers = {
@@ -4630,6 +4725,10 @@ async def convert(file: UploadFile = File(...), lang: str = Form("es")) -> Strea
 # ================================================================
 @app.exception_handler(StarletteHTTPException)
 async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
+    if _is_convert_request(request):
+        code, message = _coerce_convert_error(exc.status_code, exc.detail)
+        return _convert_error_response(exc.status_code, code, message)
+
     if exc.status_code == 404:
         safe_path = html_escape(request.url.path)
         is_en = str(request.url.path).startswith("/en")
@@ -4665,6 +4764,25 @@ async def custom_http_exception_handler(request: Request, exc: StarletteHTTPExce
         return HTMLResponse(html, status_code=404, headers=_noindex_headers())
 
     return PlainTextResponse(str(exc.detail), status_code=exc.status_code)
+
+
+@app.exception_handler(RequestValidationError)
+async def custom_validation_exception_handler(request: Request, exc: RequestValidationError):
+    if _is_convert_request(request):
+        errors = exc.errors()
+        missing_file = any("file" in [str(part) for part in error.get("loc", ())] for error in errors)
+        if missing_file:
+            return _convert_error_response(
+                status_code=400,
+                code="missing_file",
+                message="No file was uploaded.",
+            )
+        return _convert_error_response(
+            status_code=422,
+            code="invalid_request",
+            message="Invalid conversion request.",
+        )
+    return JSONResponse({"detail": exc.errors()}, status_code=422)
 
 def _get_related_posts(lang: str, current_post: Dict[str, Any], limit: int = 4) -> List[Dict[str, str]]:
     """Pick related posts by shared tags, with a recent-post fallback."""
