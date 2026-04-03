@@ -37,13 +37,7 @@
 
 <main>
   <section class="summary-box">
-    <div><strong>{{ "Keyword principal" if lang == "es" else "Primary keyword" }}:</strong> {{ primary_keyword }}</div>
-    <div><strong>{{ "Intención principal" if lang == "es" else "Primary intent" }}:</strong> {{ primary_intent }}</div>
-    <div><strong>{{ "Ángulo de problema" if lang == "es" else "Problem angle" }}:</strong> {{ problem_angle }}</div>
-  </section>
-
-  <section class="summary-box">
-    <div><strong>{{ "Qué problema resuelve esta solución" if lang == "es" else "What problem this solution solves" }}</strong></div>
+    <div><strong>{{ "Qué problema resuelve esta solución" if lang == "es" else "What this solution fixes" }}</strong></div>
     <p>{{ problem_statement }}</p>
     {% if extra_context %}<p>{{ extra_context }}</p>{% endif %}
     <ul>
@@ -64,7 +58,7 @@
   </section>
 
   <section class="related">
-    <h2>{{ "Paso a paso del flujo" if lang == "es" else "Step-by-step workflow" }}</h2>
+    <h2>{{ "Paso a paso" if lang == "es" else "Step-by-step workflow" }}</h2>
     <ol>
       {% for step in workflow_steps %}
         <li>{{ step }}</li>
@@ -73,16 +67,16 @@
   </section>
 
   <section class="related">
-    <h2>{{ "Ejemplo real de entrada y salida" if lang == "es" else "Real input/output example" }}</h2>
+    <h2>{{ "Ejemplo de entrada y salida" if lang == "es" else "Input and output example" }}</h2>
     <p><strong>{{ "Entrada" if lang == "es" else "Input" }}:</strong> {{ example_input }}</p>
     <p><strong>{{ "Salida esperada" if lang == "es" else "Expected output" }}:</strong> {{ example_output }}</p>
     <p><strong>{{ "Antes" if lang == "es" else "Before" }}:</strong> {{ before_text }}</p>
     <p><strong>{{ "Después" if lang == "es" else "After" }}:</strong> {{ after_text }}</p>
-    <p><strong>{{ "Mini caso de uso" if lang == "es" else "Mini use case" }}:</strong> {{ mini_case }}</p>
+    <p><strong>{{ "Caso práctico" if lang == "es" else "Use case" }}:</strong> {{ mini_case }}</p>
   </section>
 
   <section class="related">
-    <h2>{{ "Formatos, delimitadores y límites" if lang == "es" else "Formats, delimiters and limits" }}</h2>
+    <h2>{{ "Formatos y compatibilidad" if lang == "es" else "Formats and compatibility" }}</h2>
     <div class="grid">
       <article class="card half">
         <div class="title">{{ "Formatos soportados" if lang == "es" else "Supported formats" }}</div>
@@ -110,7 +104,7 @@
   </section>
 
   <section class="related">
-    <h2>{{ "Errores frecuentes y solución" if lang == "es" else "Common errors and fixes" }}</h2>
+    <h2>{{ "Errores frecuentes" if lang == "es" else "Common errors" }}</h2>
     <ul>
       {% for item in common_errors %}
         <li style="margin-bottom:.75rem;">
