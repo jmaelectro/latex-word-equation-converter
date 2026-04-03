@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import codecs
 import io
 import logging
 import os
@@ -3639,8 +3640,58 @@ async def healthz() -> PlainTextResponse:
 # ================================================================
 # Convert endpoint
 # ================================================================
+def _guess_utf16_txt_encoding(file_bytes: bytes) -> Optional[str]:
+    """Detect common UTF-16 TXT payloads that arrive without BOM."""
+    if len(file_bytes) < 2 or b"\x00" not in file_bytes:
+        return None
+
+    pair_count = max(len(file_bytes) // 2, 1)
+    even_null_ratio = file_bytes[0::2].count(0) / pair_count
+    odd_null_ratio = file_bytes[1::2].count(0) / pair_count
+
+    if odd_null_ratio >= 0.3 and even_null_ratio <= 0.05:
+        return "utf-16-le"
+    if even_null_ratio >= 0.3 and odd_null_ratio <= 0.05:
+        return "utf-16-be"
+    return None
+
+
+def _decode_txt_content(file_bytes: bytes) -> str:
+    """Decode TXT uploads without silently replacing undecodable bytes."""
+    if not file_bytes:
+        return ""
+
+    bom_encodings = (
+        (codecs.BOM_UTF8, "utf-8-sig"),
+        (codecs.BOM_UTF16_LE, "utf-16"),
+        (codecs.BOM_UTF16_BE, "utf-16"),
+    )
+    for bom, encoding in bom_encodings:
+        if file_bytes.startswith(bom):
+            return file_bytes.decode(encoding)
+
+    guessed_utf16 = _guess_utf16_txt_encoding(file_bytes)
+    if guessed_utf16:
+        logger.info("Decoded TXT upload using fallback encoding %s", guessed_utf16)
+        return file_bytes.decode(guessed_utf16)
+
+    for encoding in ("utf-8-sig", "cp1252", "latin-1"):
+        try:
+            text = file_bytes.decode(encoding)
+        except UnicodeDecodeError:
+            continue
+        if encoding != "utf-8-sig":
+            logger.info("Decoded TXT upload using fallback encoding %s", encoding)
+        return text
+
+    raise HTTPException(
+        status_code=400,
+        detail="Invalid .txt file. Upload a supported plain text encoding.",
+    )
+
+
 def _extract_text_lines_from_txt(file_bytes: bytes) -> List[str]:
-    text = file_bytes.decode("utf-8", errors="replace")
+    text = _decode_txt_content(file_bytes)
     return text.splitlines()
 
 
