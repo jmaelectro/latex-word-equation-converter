@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import codecs
 import io
+import ipaddress
 import logging
 import os
 import json
@@ -11,7 +13,7 @@ from html import escape as html_escape
 from threading import Lock
 from time import monotonic
 from urllib.parse import quote
-from zipfile import BadZipFile
+from zipfile import BadZipFile, ZipFile
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape
@@ -22,13 +24,15 @@ from docx.opc.exceptions import PackageNotFoundError
 from docx.shared import Pt
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import (
     HTMLResponse,
+    JSONResponse,
     PlainTextResponse,
     Response,
-    StreamingResponse,
     RedirectResponse,
+    StreamingResponse,
 )
 from fastapi.staticfiles import StaticFiles
 
@@ -121,8 +125,36 @@ if not logger.handlers:
 
 MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
 MAX_UPLOAD_CONTENT_LENGTH_BYTES = MAX_FILE_SIZE_BYTES + 64 * 1024
-RATE_LIMIT_WINDOW_SECONDS = int(os.getenv("CONVERT_RATE_LIMIT_WINDOW_SECONDS", "60"))
-RATE_LIMIT_MAX_REQUESTS = int(os.getenv("CONVERT_RATE_LIMIT_MAX_REQUESTS", "20"))
+UPLOAD_READ_CHUNK_SIZE = 64 * 1024
+MAX_DOCX_MEMBER_COUNT = int(os.getenv("MAX_DOCX_MEMBER_COUNT", "2048"))
+MAX_DOCX_ENTRY_UNCOMPRESSED_BYTES = int(
+    os.getenv("MAX_DOCX_ENTRY_UNCOMPRESSED_BYTES", str(12 * 1024 * 1024))
+)
+MAX_DOCX_TOTAL_UNCOMPRESSED_BYTES = int(
+    os.getenv("MAX_DOCX_TOTAL_UNCOMPRESSED_BYTES", str(40 * 1024 * 1024))
+)
+MAX_DOCX_COMPRESSION_RATIO = int(os.getenv("MAX_DOCX_COMPRESSION_RATIO", "120"))
+RATE_LIMIT_WINDOW_SECONDS = max(
+    1, int(os.getenv("CONVERT_RATE_LIMIT_WINDOW_SECONDS", "60"))
+)
+RATE_LIMIT_MAX_REQUESTS = max(
+    1, int(os.getenv("CONVERT_RATE_LIMIT_MAX_REQUESTS", "20"))
+)
+TRUSTED_PROXY_CIDRS = os.getenv(
+    "TRUSTED_PROXY_CIDRS",
+    ",".join(
+        [
+            "127.0.0.0/8",
+            "::1/128",
+            "10.0.0.0/8",
+            "172.16.0.0/12",
+            "192.168.0.0/16",
+            "169.254.0.0/16",
+            "fc00::/7",
+            "fe80::/10",
+        ]
+    ),
+)
 Segment = Tuple[str, str]  # ("text" | "inline" | "display", contenido)
 
 # Puedes desactivar reglas específicas del "ejercicio" si no las quieres:
@@ -135,6 +167,83 @@ USE_EXERCISE_TWEAKS = os.getenv("USE_EXERCISE_TWEAKS", "0").strip().lower() in {
 
 _RATE_LIMIT_BUCKETS: Dict[str, deque[float]] = defaultdict(deque)
 _RATE_LIMIT_LOCK = Lock()
+_RATE_LIMIT_LAST_SWEEP_AT = 0.0
+
+
+def _is_convert_request(request: Request) -> bool:
+    return request.url.path == "/convert"
+
+
+def _convert_error_payload(status_code: int, code: str, message: str) -> Dict[str, Any]:
+    return {
+        "ok": False,
+        "error": {
+            "code": code,
+            "message": message,
+            "status": status_code,
+        },
+    }
+
+
+def _convert_error_response(status_code: int, code: str, message: str) -> JSONResponse:
+    resp = JSONResponse(
+        _convert_error_payload(status_code=status_code, code=code, message=message),
+        status_code=status_code,
+    )
+    resp.headers["Cache-Control"] = "no-store"
+    resp.headers.update(_noindex_headers())
+    return _add_common_headers(resp)
+
+
+def _raise_convert_error(status_code: int, code: str, message: str) -> None:
+    raise HTTPException(
+        status_code=status_code,
+        detail={
+            "code": code,
+            "message": message,
+        },
+    )
+
+
+def _coerce_convert_error(status_code: int, detail: Any) -> Tuple[str, str]:
+    if isinstance(detail, dict):
+        code = str(detail.get("code") or "").strip() or "conversion_failed"
+        message = (
+            str(detail.get("message") or "").strip()
+            or "The document could not be converted."
+        )
+        return code, message
+
+    detail_text = str(detail or "").strip().lower()
+    if status_code == 400 and "unsupported" in detail_text:
+        return "unsupported_file_type", "Unsupported file type. Use .docx or .txt."
+    if status_code == 400 and "missing filename" in detail_text:
+        return "missing_filename", "Uploaded file is missing a filename."
+    if status_code == 400 and "invalid .docx" in detail_text:
+        return "invalid_document", "Invalid .docx file. Upload a valid Word document."
+    if status_code == 413:
+        return "file_too_large", "File too large. Maximum size is 5 MB."
+    if status_code == 429:
+        return "rate_limited", "Too many conversion requests. Please try again shortly."
+    if status_code == 422:
+        return "invalid_request", "Invalid conversion request."
+    return "conversion_failed", "The document could not be converted."
+
+
+def _parse_trusted_proxy_networks(value: str) -> List[ipaddress._BaseNetwork]:
+    networks: List[ipaddress._BaseNetwork] = []
+    for candidate in value.split(","):
+        candidate = candidate.strip()
+        if not candidate:
+            continue
+        try:
+            networks.append(ipaddress.ip_network(candidate, strict=False))
+        except ValueError:
+            logger.warning("Ignoring invalid TRUSTED_PROXY_CIDRS entry: %s", candidate)
+    return networks
+
+
+_TRUSTED_PROXY_NETWORKS = _parse_trusted_proxy_networks(TRUSTED_PROXY_CIDRS)
 
 
 def _mojibake_score(value: str) -> int:
@@ -235,19 +344,76 @@ def _request_is_https(request: Request) -> bool:
     return scheme == "https"
 
 
+def _parse_ip(value: str) -> Optional[ipaddress._BaseAddress]:
+    value = (value or "").strip()
+    if not value:
+        return None
+    try:
+        return ipaddress.ip_address(value)
+    except ValueError:
+        return None
+
+
+def _is_trusted_proxy_host(host: str) -> bool:
+    candidate = (host or "").strip().lower()
+    if candidate == "localhost":
+        return True
+    parsed = _parse_ip(candidate)
+    if parsed is None:
+        return False
+    return any(parsed in network for network in _TRUSTED_PROXY_NETWORKS)
+
+
+def _forwarded_client_ip(request: Request) -> Optional[str]:
+    peer_host = request.client.host if request.client else ""
+    if not _is_trusted_proxy_host(peer_host):
+        return None
+
+    forwarded = request.headers.get("x-forwarded-for", "").strip()
+    if not forwarded:
+        return None
+
+    chain = [part.strip() for part in forwarded.split(",") if part.strip()]
+    if not chain:
+        return None
+
+    for candidate in chain:
+        if _parse_ip(candidate) is None:
+            logger.warning("Ignoring malformed X-Forwarded-For header for /convert")
+            return None
+    return chain[0]
+
+
 def _client_ip(request: Request) -> str:
-    forwarded = request.headers.get("x-forwarded-for", "")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
+    forwarded_ip = _forwarded_client_ip(request)
+    if forwarded_ip:
+        return forwarded_ip
     if request.client and request.client.host:
         return request.client.host
     return "unknown"
+
+
+def _prune_rate_limit_buckets(now: float) -> None:
+    global _RATE_LIMIT_LAST_SWEEP_AT
+
+    if now - _RATE_LIMIT_LAST_SWEEP_AT < RATE_LIMIT_WINDOW_SECONDS:
+        return
+
+    for key in list(_RATE_LIMIT_BUCKETS.keys()):
+        bucket = _RATE_LIMIT_BUCKETS[key]
+        while bucket and now - bucket[0] > RATE_LIMIT_WINDOW_SECONDS:
+            bucket.popleft()
+        if not bucket:
+            del _RATE_LIMIT_BUCKETS[key]
+
+    _RATE_LIMIT_LAST_SWEEP_AT = now
 
 
 def _check_convert_rate_limit(request: Request) -> bool:
     now = monotonic()
     key = f"{_client_ip(request)}:convert"
     with _RATE_LIMIT_LOCK:
+        _prune_rate_limit_buckets(now)
         bucket = _RATE_LIMIT_BUCKETS[key]
         while bucket and now - bucket[0] > RATE_LIMIT_WINDOW_SECONDS:
             bucket.popleft()
@@ -295,11 +461,19 @@ async def add_common_headers_mw(request: Request, call_next):
     if request.url.path == "/convert" and request.method == "POST":
         content_length = request.headers.get("content-length", "").strip()
         if content_length.isdigit() and int(content_length) > MAX_UPLOAD_CONTENT_LENGTH_BYTES:
-            resp = PlainTextResponse("File too large (max 5MB)", status_code=413)
-            return _add_common_headers(resp)
+            return _convert_error_response(
+                status_code=413,
+                code="file_too_large",
+                message="File too large. Maximum size is 5 MB.",
+            )
         if not _check_convert_rate_limit(request):
-            resp = PlainTextResponse("Too many conversion requests. Please try again shortly.", status_code=429)
-            return _add_common_headers(resp)
+            resp = _convert_error_response(
+                status_code=429,
+                code="rate_limited",
+                message="Too many conversion requests. Please try again shortly.",
+            )
+            resp.headers["Retry-After"] = str(RATE_LIMIT_WINDOW_SECONDS)
+            return resp
 
     resp = await call_next(request)
     if _request_is_https(request):
@@ -3639,8 +3813,236 @@ async def healthz() -> PlainTextResponse:
 # ================================================================
 # Convert endpoint
 # ================================================================
+def _normalize_upload_filename(upload: UploadFile) -> str:
+    filename = Path((upload.filename or "").strip()).name.strip()
+    if not filename:
+        _raise_convert_error(
+            status_code=400,
+            code="missing_filename",
+            message="Uploaded file is missing a filename.",
+        )
+    if len(filename) > 255:
+        _raise_convert_error(
+            status_code=400,
+            code="invalid_request",
+            message="Filename is too long.",
+        )
+    return filename
+
+
+def _detect_upload_kind(filename: str) -> str:
+    suffix = Path(filename).suffix.lower()
+    if suffix == ".docx":
+        return "docx"
+    if suffix == ".txt":
+        return "txt"
+    _raise_convert_error(
+        status_code=400,
+        code="unsupported_file_type",
+        message="Unsupported file type. Use .docx or .txt.",
+    )
+
+
+async def _read_upload_limited(upload: UploadFile) -> bytes:
+    content = bytearray()
+
+    while True:
+        chunk = await upload.read(UPLOAD_READ_CHUNK_SIZE)
+        if not chunk:
+            break
+        content.extend(chunk)
+        if len(content) > MAX_FILE_SIZE_BYTES:
+            _raise_convert_error(
+                status_code=413,
+                code="file_too_large",
+                message="File too large. Maximum size is 5 MB.",
+            )
+
+    if not content:
+        _raise_convert_error(
+            status_code=400,
+            code="invalid_document",
+            message="The uploaded file is empty or invalid.",
+        )
+
+    return bytes(content)
+
+
+def _validate_docx_file_bytes(file_bytes: bytes) -> None:
+    try:
+        with ZipFile(io.BytesIO(file_bytes)) as zf:
+            infos = zf.infolist()
+    except BadZipFile:
+        _raise_convert_error(
+            status_code=400,
+            code="invalid_document",
+            message="Invalid .docx file. Upload a valid Word document.",
+        )
+
+    if not infos or len(infos) > MAX_DOCX_MEMBER_COUNT:
+        _raise_convert_error(
+            status_code=400,
+            code="invalid_document",
+            message="Invalid .docx file. Upload a valid Word document.",
+        )
+
+    total_uncompressed = 0
+    names = set()
+    required_members = {"[Content_Types].xml", "word/document.xml"}
+
+    for info in infos:
+        name = (info.filename or "").strip()
+        if not name:
+            _raise_convert_error(
+                status_code=400,
+                code="invalid_document",
+                message="Invalid .docx file. Upload a valid Word document.",
+            )
+        if name.startswith("/") or name.startswith("\\") or ".." in Path(name).parts:
+            _raise_convert_error(
+                status_code=400,
+                code="invalid_document",
+                message="Invalid .docx file. Upload a valid Word document.",
+            )
+        if info.flag_bits & 0x1:
+            _raise_convert_error(
+                status_code=400,
+                code="invalid_document",
+                message="Invalid .docx file. Upload a valid Word document.",
+            )
+
+        names.add(name)
+        total_uncompressed += info.file_size
+        if info.file_size > MAX_DOCX_ENTRY_UNCOMPRESSED_BYTES:
+            _raise_convert_error(
+                status_code=413,
+                code="file_too_large",
+                message="The .docx file exceeds safe size limits.",
+            )
+        if total_uncompressed > MAX_DOCX_TOTAL_UNCOMPRESSED_BYTES:
+            _raise_convert_error(
+                status_code=413,
+                code="file_too_large",
+                message="The .docx file exceeds safe size limits.",
+            )
+        if info.compress_size > 0:
+            compression_ratio = info.file_size / info.compress_size
+            if compression_ratio > MAX_DOCX_COMPRESSION_RATIO:
+                _raise_convert_error(
+                    status_code=413,
+                    code="file_too_large",
+                    message="The .docx file exceeds safe size limits.",
+                )
+
+    if not required_members.issubset(names):
+        _raise_convert_error(
+            status_code=400,
+            code="invalid_document",
+            message="Invalid .docx file. Upload a valid Word document.",
+        )
+
+
+def _looks_like_binary_payload(file_bytes: bytes) -> bool:
+    if file_bytes.startswith(codecs.BOM_UTF16_LE) or file_bytes.startswith(
+        codecs.BOM_UTF16_BE
+    ):
+        return False
+
+    if _guess_utf16_txt_encoding(file_bytes):
+        return False
+
+    if b"\x00" in file_bytes:
+        return True
+
+    sample = file_bytes[:4096]
+    if not sample:
+        return False
+
+    control_bytes = sum(
+        1 for byte in sample if byte < 32 and byte not in {9, 10, 13}
+    )
+    return control_bytes > max(8, len(sample) // 20)
+
+
+def _decoded_text_looks_safe(text: str) -> bool:
+    if not text:
+        return True
+
+    control_chars = sum(
+        1 for ch in text if ord(ch) < 32 and ch not in {"\t", "\n", "\r"}
+    )
+    if control_chars > max(4, len(text) // 20):
+        return False
+
+    printable_chars = sum(1 for ch in text if ch.isprintable() or ch in "\t\n\r")
+    return printable_chars >= max(1, int(len(text) * 0.85))
+
+
+def _guess_utf16_txt_encoding(file_bytes: bytes) -> Optional[str]:
+    if len(file_bytes) < 8 or b"\x00" not in file_bytes:
+        return None
+
+    pair_count = max(len(file_bytes) // 2, 1)
+    even_null_ratio = file_bytes[0::2].count(0) / pair_count
+    odd_null_ratio = file_bytes[1::2].count(0) / pair_count
+
+    guessed = None
+    if odd_null_ratio >= 0.3 and even_null_ratio <= 0.05:
+        guessed = "utf-16-le"
+    elif even_null_ratio >= 0.3 and odd_null_ratio <= 0.05:
+        guessed = "utf-16-be"
+
+    if not guessed:
+        return None
+
+    try:
+        decoded = file_bytes.decode(guessed)
+    except UnicodeDecodeError:
+        return None
+
+    return guessed if _decoded_text_looks_safe(decoded) else None
+
+
+def _decode_txt_content(file_bytes: bytes) -> str:
+    if not file_bytes:
+        return ""
+
+    bom_encodings = (
+        (codecs.BOM_UTF8, "utf-8-sig"),
+        (codecs.BOM_UTF16_LE, "utf-16"),
+        (codecs.BOM_UTF16_BE, "utf-16"),
+    )
+    for bom, encoding in bom_encodings:
+        if file_bytes.startswith(bom):
+            return file_bytes.decode(encoding)
+
+    guessed_utf16 = _guess_utf16_txt_encoding(file_bytes)
+    if guessed_utf16:
+        logger.info("Decoded TXT upload using fallback encoding %s", guessed_utf16)
+        return file_bytes.decode(guessed_utf16)
+
+    for encoding in ("utf-8-sig", "cp1252", "latin-1"):
+        try:
+            text = file_bytes.decode(encoding)
+        except UnicodeDecodeError:
+            continue
+        if not _decoded_text_looks_safe(text):
+            continue
+        if encoding != "utf-8-sig":
+            logger.info("Decoded TXT upload using fallback encoding %s", encoding)
+        return text
+
+    raise HTTPException(
+        status_code=400,
+        detail="Invalid .txt file. Upload a supported plain text encoding.",
+    )
+
+
 def _extract_text_lines_from_txt(file_bytes: bytes) -> List[str]:
-    text = file_bytes.decode("utf-8", errors="replace")
+    if _looks_like_binary_payload(file_bytes):
+        raise HTTPException(status_code=400, detail="Invalid .txt file. Upload plain text.")
+
+    text = _decode_txt_content(file_bytes)
     return text.splitlines()
 
 
@@ -3829,7 +4231,9 @@ def _find_math_spans(text: str) -> List[Tuple[str, int, int, str]]:
             if end == -1:
                 break
             latex = text[i + 1 : end]
-            if _looks_like_math_fragment(latex) and not _is_probable_currency_span(text, i, end):
+            if _looks_like_math_fragment(latex) and not _is_probable_currency_span(
+                text, i, end + 1, latex
+            ):
                 spans.append(("inline", i, end + 1, latex))
                 i = end + 1
                 continue
@@ -4577,41 +4981,60 @@ def _download_filename(lang: str) -> str:
 @app.post("/convert")
 async def convert(file: UploadFile = File(...), lang: str = Form("es")) -> StreamingResponse:
     lang = "en" if (lang or "").strip().lower() == "en" else "es"
-    filename = (file.filename or "").lower().strip()
-    if not filename:
-        raise HTTPException(status_code=400, detail="Missing filename")
+    filename = _normalize_upload_filename(file)
+    upload_kind = _detect_upload_kind(filename)
 
-    content = await file.read()
-    if len(content) > MAX_FILE_SIZE_BYTES:
-        raise HTTPException(status_code=413, detail="File too large (max 5MB)")
+    try:
+        content = await _read_upload_limited(file)
 
-    if filename.endswith(".docx"):
-        # IMPORTANT: preserve formatting and modify ONLY equations.
-        try:
-            out_doc = _convert_docx_in_place(content)
-        except (BadZipFile, PackageNotFoundError):
-            raise HTTPException(
-                status_code=400,
-                detail="Invalid .docx file. Upload a valid Word document.",
-            ) from None
-        except Exception:
-            logger.exception("Unexpected error while converting .docx")
-            raise HTTPException(
-                status_code=500,
-                detail="Internal error while converting the document.",
-            ) from None
-    elif filename.endswith(".txt"):
-        paragraph_texts = _extract_text_lines_from_txt(content)
-        cleaned = prettify_paragraphs(paragraph_texts)
-        out_doc = build_document_from_paragraphs(cleaned)
-    else:
-        raise HTTPException(
-            status_code=400, detail="Unsupported file type. Use .docx or .txt"
+        if upload_kind == "docx":
+            _validate_docx_file_bytes(content)
+            # IMPORTANT: preserve formatting and modify ONLY equations.
+            try:
+                out_doc = _convert_docx_in_place(content)
+            except HTTPException:
+                raise
+            except (BadZipFile, PackageNotFoundError):
+                _raise_convert_error(
+                    status_code=400,
+                    code="invalid_document",
+                    message="Invalid .docx file. Upload a valid Word document.",
+                )
+            except Exception:
+                logger.exception("Unexpected error while converting .docx")
+                _raise_convert_error(
+                    status_code=500,
+                    code="conversion_failed",
+                    message="Internal error while converting the document.",
+                )
+        else:
+            try:
+                paragraph_texts = _extract_text_lines_from_txt(content)
+                cleaned = prettify_paragraphs(paragraph_texts)
+                out_doc = build_document_from_paragraphs(cleaned)
+            except HTTPException:
+                raise
+            except Exception:
+                logger.exception("Unexpected error while converting .txt")
+                _raise_convert_error(
+                    status_code=500,
+                    code="conversion_failed",
+                    message="Internal error while converting the document.",
+                )
+    finally:
+        await file.close()
+
+    try:
+        out = io.BytesIO()
+        out_doc.save(out)
+        out.seek(0)
+    except Exception:
+        logger.exception("Unexpected error while serializing converted document")
+        _raise_convert_error(
+            status_code=500,
+            code="conversion_failed",
+            message="Internal error while converting the document.",
         )
-
-    out = io.BytesIO()
-    out_doc.save(out)
-    out.seek(0)
 
     download_name = _download_filename(lang)
     headers = {
@@ -4630,6 +5053,10 @@ async def convert(file: UploadFile = File(...), lang: str = Form("es")) -> Strea
 # ================================================================
 @app.exception_handler(StarletteHTTPException)
 async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
+    if _is_convert_request(request):
+        code, message = _coerce_convert_error(exc.status_code, exc.detail)
+        return _convert_error_response(exc.status_code, code, message)
+
     if exc.status_code == 404:
         safe_path = html_escape(request.url.path)
         is_en = str(request.url.path).startswith("/en")
@@ -4665,6 +5092,28 @@ async def custom_http_exception_handler(request: Request, exc: StarletteHTTPExce
         return HTMLResponse(html, status_code=404, headers=_noindex_headers())
 
     return PlainTextResponse(str(exc.detail), status_code=exc.status_code)
+
+
+@app.exception_handler(RequestValidationError)
+async def custom_validation_exception_handler(request: Request, exc: RequestValidationError):
+    if _is_convert_request(request):
+        errors = exc.errors()
+        missing_file = any(
+            "file" in [str(part) for part in error.get("loc", ())]
+            for error in errors
+        )
+        if missing_file:
+            return _convert_error_response(
+                status_code=400,
+                code="missing_file",
+                message="No file was uploaded.",
+            )
+        return _convert_error_response(
+            status_code=422,
+            code="invalid_request",
+            message="Invalid conversion request.",
+        )
+    return JSONResponse({"detail": exc.errors()}, status_code=422)
 
 def _get_related_posts(lang: str, current_post: Dict[str, Any], limit: int = 4) -> List[Dict[str, str]]:
     """Pick related posts by shared tags, with a recent-post fallback."""
