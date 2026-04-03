@@ -11,12 +11,14 @@ from threading import Lock
 from time import monotonic
 from urllib.parse import quote
 
+from docx import Document
 from docx.opc.exceptions import PackageNotFoundError
 from fastapi import FastAPI, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
+from starlette.concurrency import run_in_threadpool
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.requests import Request
@@ -341,16 +343,7 @@ def _download_filename(lang: str) -> str:
     return "equations-to-word.docx" if lang == "en" else "ecuaciones-a-word.docx"
 
 
-async def convert(file: UploadFile, lang: str = Form("es")):
-    lang = "en" if (lang or "").strip().lower() == "en" else "es"
-    filename = _normalize_upload_filename(file)
-    upload_kind = _detect_upload_kind(filename)
-    content = await file.read()
-    await file.close()
-
-    if len(content) > MAX_FILE_SIZE_BYTES:
-        _raise_convert_error(413, "file_too_large", "File too large. Maximum size is 5 MB.")
-
+def _convert_upload_to_docx_bytes(upload_kind: str, content: bytes) -> bytes:
     if upload_kind == "docx":
         _validate_docx_file_bytes(content)
         try:
@@ -363,7 +356,21 @@ async def convert(file: UploadFile, lang: str = Form("es")):
 
     out = io.BytesIO()
     out_doc.save(out)
-    out.seek(0)
+    return out.getvalue()
+
+
+async def convert(file: UploadFile, lang: str = Form("es")):
+    lang = "en" if (lang or "").strip().lower() == "en" else "es"
+    filename = _normalize_upload_filename(file)
+    upload_kind = _detect_upload_kind(filename)
+    content = await file.read()
+    await file.close()
+
+    if len(content) > MAX_FILE_SIZE_BYTES:
+        _raise_convert_error(413, "file_too_large", "File too large. Maximum size is 5 MB.")
+
+    out_bytes = await run_in_threadpool(_convert_upload_to_docx_bytes, upload_kind, content)
+    out = io.BytesIO(out_bytes)
     download_name = _download_filename(lang)
     headers = {
         "Content-Disposition": f'attachment; filename="{download_name}"; filename*=UTF-8\'\'{quote(download_name)}',
