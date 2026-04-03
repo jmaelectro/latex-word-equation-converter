@@ -1,5 +1,5 @@
-import unittest
 import asyncio
+import unittest
 
 import main
 
@@ -22,8 +22,18 @@ class SeoAndTextTests(unittest.TestCase):
         xml = main.generate_sitemap_xml()
         self.assertNotIn("<loc>https://www.ecuacionesaword.com/de</loc>", xml)
         self.assertNotIn("/blog/convertidor-formulas-chatgpt-a-word</loc>", xml)
+        self.assertNotIn("/en/blog/simbolos-raros-ecuaciones-word-cambria-math</loc>", xml)
         self.assertIn("/soluciones</loc>", xml)
         self.assertIn("/en/solutions</loc>", xml)
+
+    def test_home_has_only_primary_hreflang(self):
+        html = main.read_html_file("index.html")
+        self.assertIn('hreflang="es"', html)
+        self.assertIn('hreflang="en"', html)
+        self.assertNotIn('hreflang="de"', html)
+        self.assertNotIn('hreflang="fr"', html)
+        self.assertNotIn('hreflang="it"', html)
+        self.assertNotIn('hreflang="pt"', html)
 
     def test_solutions_hub_is_200_not_redirect(self):
         resp = asyncio.run(main.solutions_es())
@@ -42,6 +52,22 @@ class SeoAndTextTests(unittest.TestCase):
             'name="robots" content="noindex,follow,max-image-preview:large"',
             resp.body.decode("utf-8", errors="ignore"),
         )
+
+    def test_home_tracking_events_are_consistent(self):
+        html = main.read_html_file("index.html")
+        required_events = [
+            "file_selected",
+            "convert_clicked",
+            "convert_started",
+            "convert_success",
+            "download_completed",
+            "error_conversion",
+            "language_selected",
+            "landing_cta_clicked",
+        ]
+        for event_name in required_events:
+            self.assertIn(event_name, html)
+        self.assertNotIn("convert_error", html)
 
 
 if __name__ == "__main__":
