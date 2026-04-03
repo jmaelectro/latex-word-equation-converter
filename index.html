@@ -1417,6 +1417,73 @@
     return fallbackName;
   }
 
+  const MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024;
+  const SUPPORTED_UPLOAD_EXTENSIONS = new Set(["docx", "txt"]);
+
+  function getConvertErrorMessage(errorCode) {
+    const messages = {
+      missing_file: {
+        es: "Selecciona un archivo .docx o .txt antes de convertir.",
+        en: "Please select a .docx or .txt file before converting.",
+      },
+      missing_filename: {
+        es: "El archivo seleccionado no es valido. Vuelve a elegirlo e intentalo otra vez.",
+        en: "The selected file is invalid. Please choose it again and retry.",
+      },
+      unsupported_file_type: {
+        es: "Formato no compatible. Sube un archivo .docx o .txt.",
+        en: "Unsupported format. Upload a .docx or .txt file.",
+      },
+      file_too_large: {
+        es: "El archivo supera el limite de 5 MB.",
+        en: "The file exceeds the 5 MB limit.",
+      },
+      invalid_document: {
+        es: "El documento no es valido. Reexportalo como .docx o revisa el archivo antes de subirlo.",
+        en: "The document is invalid. Re-export it as .docx or check the file before uploading.",
+      },
+      rate_limited: {
+        es: "Hay demasiadas conversiones ahora mismo. Espera un momento y vuelve a intentarlo.",
+        en: "Too many conversions are running right now. Please wait a moment and try again.",
+      },
+      network: {
+        es: "Error de conexion al convertir. Revisa tu red e intentalo otra vez.",
+        en: "Connection error while converting. Check your network and try again.",
+      },
+      invalid_request: {
+        es: "La solicitud no es valida. Recarga la pagina y vuelve a intentarlo.",
+        en: "The request is invalid. Refresh the page and try again.",
+      },
+      conversion_failed: {
+        es: "No se pudo convertir el documento. Intentalo de nuevo.",
+        en: "The document could not be converted. Please try again.",
+      },
+    };
+    return messages[errorCode] || messages.conversion_failed;
+  }
+
+  async function readConvertError(res) {
+    const fallbackCode = res.status === 413
+      ? "file_too_large"
+      : res.status === 429
+        ? "rate_limited"
+        : res.status === 400
+          ? "invalid_request"
+          : "conversion_failed";
+
+    try {
+      const payload = await res.json();
+      if (payload && payload.error && typeof payload.error === "object") {
+        return {
+          code: payload.error.code || fallbackCode,
+          message: payload.error.message || "",
+        };
+      }
+    } catch {}
+
+    return { code: fallbackCode, message: "" };
+  }
+
   function currentDurationMs() {
     if (!convertStartMs) return 0;
     const now = (window.performance && typeof window.performance.now === "function")
@@ -1459,6 +1526,20 @@
       file_size_bytes: file.size,
     };
 
+    if (!SUPPORTED_UPLOAD_EXTENSIONS.has(commonFileParams.file_type)) {
+      const uiError = getConvertErrorMessage("unsupported_file_type");
+      setStatus("error", uiError.es, uiError.en);
+      trackConversionError(commonFileParams, "unsupported_file_type");
+      return;
+    }
+
+    if (file.size > MAX_UPLOAD_SIZE_BYTES) {
+      const uiError = getConvertErrorMessage("file_too_large");
+      setStatus("error", uiError.es, uiError.en);
+      trackConversionError(commonFileParams, "file_too_large");
+      return;
+    }
+
     inFlight = true;
     attemptId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     convertStartMs = (window.performance && typeof window.performance.now === "function")
@@ -1481,24 +1562,21 @@
       inFlight = false;
       if (convertBtn) convertBtn.disabled = false;
       trackConversionError(commonFileParams, "network");
-      setStatus(
-        "error",
-        "Error de conexion al convertir. Revisa que el servidor este activo.",
-        "Connection error while converting. Check the server is running."
-      );
+      {
+        const uiError = getConvertErrorMessage("network");
+        setStatus("error", uiError.es, uiError.en);
+      }
       return;
     }
 
     if (!res.ok) {
-      trackConversionError(commonFileParams, "http", { http_status: res.status });
-      let detail = "";
-      try {
-        const txt = await res.text();
-        detail = txt ?` (${txt.slice(0, 200)})` : "";
-      } catch {}
+      const errorInfo = await readConvertError(res);
+      const errorCode = errorInfo.code || "conversion_failed";
+      const uiError = getConvertErrorMessage(errorCode);
+      trackConversionError(commonFileParams, errorCode, { http_status: res.status });
       inFlight = false;
       if (convertBtn) convertBtn.disabled = false;
-      setStatus("error", "Error al convertir el documento" + detail, "Conversion failed" + detail);
+      setStatus("error", uiError.es, uiError.en);
       return;
     }
 
