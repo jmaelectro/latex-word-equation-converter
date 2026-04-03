@@ -30,6 +30,7 @@ from app_core.converter import (
     CanonicalHostRedirectMiddleware,
     _add_common_headers,
     _fix_text_mojibake,
+    _extract_text_lines_from_txt,
     _request_is_https,
     _convert_docx_in_place,
     add_math_safe,

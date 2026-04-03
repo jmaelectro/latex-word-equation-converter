@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import codecs
 import logging
 import os
 import json
@@ -862,8 +863,49 @@ def build_document_from_paragraphs(paragraph_texts: List[str]) -> Document:
 # Convert endpoint
 # ================================================================
 def _extract_text_lines_from_txt(file_bytes: bytes) -> List[str]:
-    text = file_bytes.decode("utf-8", errors="replace")
-    return text.splitlines()
+    if not file_bytes:
+        return []
+
+    encodings: List[str] = []
+    if file_bytes.startswith(codecs.BOM_UTF8):
+        encodings.append("utf-8-sig")
+    elif file_bytes.startswith(codecs.BOM_UTF16_LE) or file_bytes.startswith(codecs.BOM_UTF16_BE):
+        encodings.append("utf-16")
+
+    guessed_utf16 = _guess_utf16_txt_encoding(file_bytes)
+    if guessed_utf16:
+        encodings.append(guessed_utf16)
+
+    encodings.extend(["utf-8", "cp1252", "latin-1"])
+
+    for encoding in encodings:
+        try:
+            text = file_bytes.decode(encoding)
+        except UnicodeDecodeError:
+            continue
+        if encoding != "utf-8":
+            logger.info("Decoded TXT upload using fallback encoding %s", encoding)
+        return text.splitlines()
+
+    raise HTTPException(
+        status_code=400,
+        detail="Invalid .txt file. Upload a supported plain text encoding.",
+    )
+
+
+def _guess_utf16_txt_encoding(file_bytes: bytes) -> Optional[str]:
+    if len(file_bytes) < 2 or b"\x00" not in file_bytes:
+        return None
+
+    pair_count = max(len(file_bytes) // 2, 1)
+    even_zeros = sum(1 for idx in range(0, len(file_bytes), 2) if file_bytes[idx] == 0)
+    odd_zeros = sum(1 for idx in range(1, len(file_bytes), 2) if file_bytes[idx] == 0)
+
+    if odd_zeros / pair_count > 0.3:
+        return "utf-16-le"
+    if even_zeros / pair_count > 0.3:
+        return "utf-16-be"
+    return None
 
 
 # ----------------------------
