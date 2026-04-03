@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block content %}
 <header>
   <div class="topbar">
@@ -9,7 +9,7 @@
     <nav class="nav">
       <a href="{{ converter_href }}">{{ nav_converter }}</a>
       <a href="{{ blog_index_href }}" aria-current="page">{{ nav_blog }}</a>
-      <select id="lang-switch-nav" class="lang-select" aria-label="Language selector">
+      <select id="lang-switch-nav" class="lang-select" aria-label="{{ 'Selector de idioma' if lang == 'es' else 'Language selector' }}">
         {% for opt in lang_options %}
         <option value="{{ opt.href }}" {% if opt.code == lang %}selected{% endif %}>{{ opt.label }}</option>
         {% endfor %}

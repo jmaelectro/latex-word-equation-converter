@@ -14,3 +14,15 @@ services:
         value: 3.11.14
       - key: ENVIRONMENT
         value: production
+      - key: CANONICAL_HOST
+        value: www.ecuacionesaword.com
+      - key: CANONICAL_SCHEME
+        value: https
+      - key: CANONICAL_SITE_ORIGIN
+        value: https://www.ecuacionesaword.com
+      - key: USE_EXERCISE_TWEAKS
+        value: "0"
+      - key: CONVERT_RATE_LIMIT_WINDOW_SECONDS
+        value: "60"
+      - key: CONVERT_RATE_LIMIT_MAX_REQUESTS
+        value: "20"

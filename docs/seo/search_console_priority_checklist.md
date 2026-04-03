@@ -1,4 +1,4 @@
-﻿# Checklist final para solicitud de indexación (Search Console)
+# Checklist final para solicitud de indexación (Search Console)
 
 ## Alcance
 Solicitar indexación **solo de URLs prioritarias** ya corregidas (200, canónica autorreferente, indexables, enlazadas internamente y presentes en sitemap).

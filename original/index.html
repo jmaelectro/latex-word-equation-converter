@@ -1044,10 +1044,10 @@
   const langSelect = document.getElementById("lang-select");
   if (langSelect) {
     // Set initial state based on current URL
-    langSelect.value = isEnglish ? "en" : "es";
+    langSelect.value = isEnglish ?"en" : "es";
 
     langSelect.addEventListener("change", () => {
-      const target = langSelect.value === "en" ? "en" : "es";
+      const target = langSelect.value === "en" ?"en" : "es";
 
       // Persist preference (best-effort)
       try { localStorage.setItem("preferredLang", target); } catch {}
@@ -1069,15 +1069,15 @@
 
   const fileInput =
     document.getElementById("file-input") ||
-    (uploadForm ? uploadForm.querySelector('input[type="file"]') : document.querySelector('input[type="file"]'));
+    (uploadForm ?uploadForm.querySelector('input[type="file"]') : document.querySelector('input[type="file"]'));
 
   const fileNameDisplay =
     document.getElementById("file-name-display") ||
-    (uploadForm ? uploadForm.querySelector("#file-name-display") : null);
+    (uploadForm ?uploadForm.querySelector("#file-name-display") : null);
 
   const convertBtn =
     document.getElementById("convert-btn") ||
-    (uploadForm ? uploadForm.querySelector("button") : document.querySelector("button"));
+    (uploadForm ?uploadForm.querySelector("button") : document.querySelector("button"));
 
   const statusDot = document.getElementById("status-dot");
   const statusTextEs = document.getElementById("status-text");
@@ -1148,7 +1148,7 @@
       let detail = "";
       try {
         const txt = await res.text();
-        detail = txt ? ` (${txt.slice(0, 200)})` : "";
+        detail = txt ?` (${txt.slice(0, 200)})` : "";
       } catch {}
       if (convertBtn) convertBtn.disabled = false;
       setStatus(
@@ -1160,7 +1160,7 @@
     }
 
     const blob = await res.blob();
-    const fallbackName = isEnglish ? "converted.docx" : "convertido.docx";
+    const fallbackName = isEnglish ?"converted.docx" : "convertido.docx";
     const filename = parseFilename(res.headers.get("content-disposition"), fallbackName);
 
     const url = URL.createObjectURL(blob);
@@ -1178,7 +1178,7 @@
 
   if (fileInput && fileNameDisplay) {
     fileInput.addEventListener("change", () => {
-      fileNameDisplay.textContent = (fileInput.files && fileInput.files[0]) ? fileInput.files[0].name : "";
+      fileNameDisplay.textContent = (fileInput.files && fileInput.files[0]) ?fileInput.files[0].name : "";
     });
   }
 

@@ -187,7 +187,7 @@
       "slug": "signos-interrogacion-ecuaciones-chatgpt-word",
       "title": "Signos de interrogación al pegar ecuaciones de ChatGPT a Word: por qué pasa y cómo solucionarlo",
       "seo_title": "Signos de interrogación al pegar ecuaciones de ChatGPT a Word: por qué pasa y cómo solucionarlo | Ecuaciones a Word",
-      "description": "Cuando copias fórmulas en LaTeX desde ChatGPT y las pegas en Word, pueden aparecer \"??\", rombos o símbolos raros. Te explico la causa y las soluciones más fiables.",
+      "description": "Cuando copias fórmulas en LaTeX desde ChatGPT y las pegas en Word, pueden aparecer \"?\", rombos o símbolos raros. Te explico la causa y las soluciones más fiables.",
       "keywords": [],
       "canonical_path": "/blog/signos-interrogacion-ecuaciones-chatgpt-word",
       "date_published": "2025-12-14",
@@ -200,7 +200,7 @@
         "Word"
       ],
       "intro_html": [
-        "<p class=\"intro\">Cuando copias fórmulas en LaTeX desde ChatGPT y las pegas en Word, pueden aparecer \"??\", rombos o símbolos raros. Te explico la causa y las soluciones más fiables.</p>\n      "
+        "<p class=\"intro\">Cuando copias fórmulas en LaTeX desde ChatGPT y las pegas en Word, pueden aparecer \"?\", rombos o símbolos raros. Te explico la causa y las soluciones más fiables.</p>\n      "
       ],
       "translation_slug": "question-marks-chatgpt-equations-word"
     },
@@ -407,7 +407,7 @@
       "lang": "en",
       "slug": "what-is-omml-word-equations",
       "title": "What is OMML (Word equations) and why equations break when you paste from ChatGPT",
-      "seo_title": "What Is OMML? Word's Equation Format (and how to convert LaTeX)",
+      "seo_title": "What Is OMML?Word's Equation Format (and how to convert LaTeX)",
       "description": "OMML is Word's native equation format. See how it differs from LaTeX, why it matters, and how to convert LaTeX into editable Word equations.",
       "keywords": [
         "OMML",
@@ -491,7 +491,7 @@
         "word"
       ],
       "intro_html": [
-        "<p class=\"intro\">If Word shows \"??\", diamonds, or broken symbols when you paste LaTeX from ChatGPT, here's why it happens and the most reliable ways to fix it.</p>\n      "
+        "<p class=\"intro\">If Word shows \"?\", diamonds, or broken symbols when you paste LaTeX from ChatGPT, here's why it happens and the most reliable ways to fix it.</p>\n      "
       ],
       "translation_slug": "signos-interrogacion-ecuaciones-chatgpt-word"
     },
@@ -1157,7 +1157,7 @@
       "lang": "de",
       "slug": "what-is-omml-word-equations",
       "title": "Was ist OMML (Word-Gleichungen) und warum gehen Gleichungen kaputt, wenn Sie sie aus ChatGPT einfügen?",
-      "seo_title": "Was ist OMML? Das Gleichungsformat von Word (und wie man LaTeX konvertiert)",
+      "seo_title": "Was ist OMML?Das Gleichungsformat von Word (und wie man LaTeX konvertiert)",
       "description": "OMML ist das native Gleichungsformat von Word. Erfahren Sie, wie es sich von LaTeX unterscheidet, warum es wichtig ist und wie Sie LaTeX in bearbeitbare Word-Gleichungen umwandeln.",
       "keywords": [
         "OMML",
@@ -1224,7 +1224,7 @@
       "slug": "question-marks-chatgpt-equations-word",
       "title": "Fragezeichen beim Einfügen von ChatGPT-Gleichungen in Word: Ursachen und Lösungen",
       "seo_title": "Fragezeichen in Wortgleichungen von ChatGPT: Ursachen und Lösungen",
-      "description": "Warum zeigt Word \"?\" an? oder seltsame Symbole nach dem Einfügen von LaTeX. Korrigieren Sie Schriftarten und versteckte Zeichen und konvertieren Sie sie in natives OMML, um bearbeitbare Gleichungen zu erhalten.",
+      "description": "Warum zeigt Word \"?\" an?oder seltsame Symbole nach dem Einfügen von LaTeX. Korrigieren Sie Schriftarten und versteckte Zeichen und konvertieren Sie sie in natives OMML, um bearbeitbare Gleichungen zu erhalten.",
       "keywords": [],
       "canonical_path": "/de/blog/question-marks-chatgpt-equations-word",
       "date_published": "2025-12-14",
@@ -1241,7 +1241,7 @@
         "Wort"
       ],
       "intro_html": [
-        "<p class=\"intro\">Wenn Word beim Einfügen von LaTeX aus ChatGPT \"??\", Rauten oder gebrochene Symbole anzeigt, erfahren Sie hier, warum das passiert und wie Sie es am zuverlässigsten beheben können.</p>\n"
+        "<p class=\"intro\">Wenn Word beim Einfügen von LaTeX aus ChatGPT \"?\", Rauten oder gebrochene Symbole anzeigt, erfahren Sie hier, warum das passiert und wie Sie es am zuverlässigsten beheben können.</p>\n"
       ],
       "translation_slug": ""
     },
@@ -1908,7 +1908,7 @@
       "lang": "fr",
       "slug": "what-is-omml-word-equations",
       "title": "Qu'est-ce que OMML (équations Word) et pourquoi les équations se cassent lorsque vous collez depuis ChatGPT",
-      "seo_title": "Qu'est-ce qu'OMML ? Format d'équation de Word (et comment convertir LaTeX)",
+      "seo_title": "Qu'est-ce qu'OMML ?Format d'équation de Word (et comment convertir LaTeX)",
       "description": "OMML est le format d'équation natif de Word. Découvrez en quoi il diffère de LaTeX, pourquoi c'est important et comment convertir LaTeX en équations Word modifiables.",
       "keywords": [
         "OMML",
@@ -1992,7 +1992,7 @@
         "mot"
       ],
       "intro_html": [
-        "<p class=\"intro\">Si Word affiche « ?? », des losanges ou des symboles brisés lorsque vous collez du LaTeX à partir de ChatGPT, voici pourquoi cela se produit et les moyens les plus fiables pour y remédier.</p>\n"
+        "<p class=\"intro\">Si Word affiche « ?», des losanges ou des symboles brisés lorsque vous collez du LaTeX à partir de ChatGPT, voici pourquoi cela se produit et les moyens les plus fiables pour y remédier.</p>\n"
       ],
       "translation_slug": ""
     },
@@ -2659,7 +2659,7 @@
       "lang": "it",
       "slug": "what-is-omml-word-equations",
       "title": "Cos'è OMML (equazioni di Word) e perché le equazioni si interrompono quando le incolli da ChatGPT",
-      "seo_title": "Cos'è l'OMML? Formato delle equazioni di Word (e come convertire LaTeX)",
+      "seo_title": "Cos'è l'OMML?Formato delle equazioni di Word (e come convertire LaTeX)",
       "description": "OMML è il formato nativo delle equazioni di Word. Scopri in cosa differisce da LaTeX, perché è importante e come convertire LaTeX in equazioni Word modificabili.",
       "keywords": [
         "OMML",
@@ -2743,7 +2743,7 @@
         "parola"
       ],
       "intro_html": [
-        "<p class=\"intro\">Se Word mostra \"??\", diamanti o simboli rotti quando incolli LaTeX da ChatGPT, ecco perché succede e i modi più affidabili per risolverlo.</p>\n"
+        "<p class=\"intro\">Se Word mostra \"?\", diamanti o simboli rotti quando incolli LaTeX da ChatGPT, ecco perché succede e i modi più affidabili per risolverlo.</p>\n"
       ],
       "translation_slug": ""
     },
@@ -3410,7 +3410,7 @@
       "lang": "pt",
       "slug": "what-is-omml-word-equations",
       "title": "O que é OMML (equações do Word) e por que as equações quebram quando você cola do ChatGPT",
-      "seo_title": "O que é OML? Formato de equação do Word (e como converter LaTeX)",
+      "seo_title": "O que é OML?Formato de equação do Word (e como converter LaTeX)",
       "description": "OMML é o formato de equação nativo do Word. Veja como ele difere do LaTeX, por que é importante e como converter LaTeX em equações editáveis ​​do Word.",
       "keywords": [
         "OMML",
@@ -3494,7 +3494,7 @@
         "palavra"
       ],
       "intro_html": [
-        "<p class=\"intro\">Se o Word mostrar \"??\", losangos ou símbolos quebrados quando você cola o LaTeX do ChatGPT, veja por que isso acontece e as maneiras mais confiáveis ​​de consertar.</p>\n"
+        "<p class=\"intro\">Se o Word mostrar \"?\", losangos ou símbolos quebrados quando você cola o LaTeX do ChatGPT, veja por que isso acontece e as maneiras mais confiáveis ​​de consertar.</p>\n"
       ],
       "translation_slug": ""
     },

@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block content %}
 <header>
   <div class="topbar">
@@ -9,7 +9,7 @@
     <nav class="nav">
       <a href="{{ converter_href }}">{{ nav_converter }}</a>
       <a href="{{ blog_index_href }}" aria-current="page">{{ nav_blog }}</a>
-      <select id="lang-switch-nav" class="lang-select" aria-label="Language selector">
+      <select id="lang-switch-nav" class="lang-select" aria-label="{{ 'Selector de idioma' if lang == 'es' else 'Language selector' }}">
         {% for opt in lang_options %}
         <option value="{{ opt.href }}" {% if opt.code == lang %}selected{% endif %}>{{ opt.label }}</option>
         {% endfor %}
@@ -57,6 +57,9 @@
       </a>
     {% endfor %}
   </div>
+  <p id="postGridEmpty" class="desc" style="display:none;margin-top:1rem;">
+    {{ 'No hay artículos que coincidan con tu búsqueda o filtro.' if lang == 'es' else 'No articles match your search or filter.' }}
+  </p>
 
   <section class="summary-box" style="margin-top:1.2rem;">
     <div><strong>{{ trust_title }}</strong> {{ trust_intro }}</div>
@@ -103,6 +106,7 @@
 (() => {
   const q = document.getElementById('postSearch');
   const grid = document.getElementById('postGrid');
+  const empty = document.getElementById('postGridEmpty');
   const chips = Array.from(document.querySelectorAll('.chip'));
 
   let activeTag = '';
@@ -112,6 +116,7 @@
   function applyFilter(){
     const needle = normalize(q && q.value);
     const cards = Array.from(grid.querySelectorAll('.card'));
+    let visibleCount = 0;
 
     for (const c of cards){
       const title = c.getAttribute('data-title') || '';
@@ -121,14 +126,20 @@
       const matchText = !needle || title.includes(needle) || desc.includes(needle) || tags.includes(needle);
       const matchTag  = !activeTag || tags.split(/\s+/).includes(activeTag);
 
-      c.style.display = (matchText && matchTag) ? '' : 'none';
+      const visible = matchText && matchTag;
+      c.style.display = visible ?'' : 'none';
+      if (visible) visibleCount += 1;
     }
+
+    if (empty) empty.style.display = visibleCount ?'none' : 'block';
   }
 
   chips.forEach(btn => {
     btn.addEventListener('click', () => {
       chips.forEach(b => b.classList.remove('is-active'));
+      chips.forEach(b => b.setAttribute('aria-pressed', 'false'));
       btn.classList.add('is-active');
+      btn.setAttribute('aria-pressed', 'true');
       activeTag = normalize(btn.getAttribute('data-tag'));
       applyFilter();
     });
@@ -137,6 +148,10 @@
   if (q){
     q.addEventListener('input', applyFilter);
   }
+
+  chips.forEach(btn => {
+    btn.setAttribute('aria-pressed', btn.classList.contains('is-active') ?'true' : 'false');
+  });
 
   const langSelect = document.getElementById('lang-switch-nav');
   if (langSelect) {
