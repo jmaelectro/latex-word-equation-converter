@@ -158,7 +158,7 @@
   <a href="{{ legal_links.contact }}">{{ "Contacto" if lang=="es" else "Contact" }}</a>
 </div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 (() => {
   const langSelect = document.getElementById('lang-switch-nav');
   if (langSelect) {

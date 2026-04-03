@@ -1,5 +1,6 @@
 import asyncio
 import io
+import re
 import unittest
 import zipfile
 from unittest.mock import patch
@@ -18,6 +19,45 @@ class SeoAndTextTests(unittest.TestCase):
         with zipfile.ZipFile(buf) as zf:
             document_xml = zf.read("word/document.xml").decode("utf-8", errors="ignore")
         return document_xml.count("<m:oMath") + document_xml.count("<m:oMathPara")
+
+    async def _asgi_get(self, path: str):
+        response_start = {}
+        body_chunks = []
+        receive_messages = iter([{"type": "http.request", "body": b"", "more_body": False}])
+
+        async def receive():
+            return next(receive_messages, {"type": "http.disconnect"})
+
+        async def send(message):
+            nonlocal response_start
+            if message["type"] == "http.response.start":
+                response_start = message
+            elif message["type"] == "http.response.body":
+                body_chunks.append(message.get("body", b""))
+
+        scope = {
+            "type": "http",
+            "asgi": {"version": "3.0"},
+            "http_version": "1.1",
+            "method": "GET",
+            "scheme": "https",
+            "path": path,
+            "raw_path": path.encode("utf-8"),
+            "query_string": b"",
+            "headers": [(b"host", b"www.ecuacionesaword.com")],
+            "client": ("127.0.0.1", 12345),
+            "server": ("www.ecuacionesaword.com", 443),
+            "root_path": "",
+            "app": main.app,
+        }
+
+        await main.app(scope, receive, send)
+        headers = {
+            key.decode("latin1").lower(): value.decode("latin1")
+            for key, value in response_start.get("headers", [])
+        }
+        body = b"".join(body_chunks).decode("utf-8", errors="ignore")
+        return response_start.get("status", 500), headers, body
 
     def test_fix_text_mojibake(self):
         raw = "GuÃƒÂ­a rÃƒÂ¡pida Ã¢â€ â€™ Word con fÃƒÂ³rmulas"
@@ -165,6 +205,44 @@ class SeoAndTextTests(unittest.TestCase):
         self.assertIn('role="status"', html)
         self.assertIn('aria-live="polite"', html)
         self.assertNotIn('role="link"', html)
+
+    def test_trusted_html_sanitizer_removes_active_content(self):
+        raw = (
+            '<p class="intro" onclick="alert(1)">Texto '
+            '<a href="javascript:alert(1)" class="cta">enlace</a>'
+            "<script>alert(1)</script></p>"
+        )
+        sanitized = main.site_module._sanitize_trusted_html(raw, "test")
+        self.assertIn('<p class="intro">Texto <a class="cta">enlace</a></p>', sanitized)
+        self.assertNotIn("onclick", sanitized)
+        self.assertNotIn("javascript:", sanitized)
+        self.assertNotIn("<script", sanitized)
+
+    def test_home_csp_uses_nonce_for_raw_html_scripts(self):
+        status_code, headers, body = asyncio.run(self._asgi_get("/"))
+        self.assertEqual(status_code, 200)
+
+        csp = headers.get("content-security-policy", "")
+        self.assertIn("script-src 'self' 'nonce-", csp)
+        self.assertNotRegex(csp, r"script-src[^;]*'unsafe-inline'")
+        self.assertIn("script-src-attr 'none'", csp)
+
+        nonces = re.findall(r'<script nonce="([^"]+)"', body)
+        self.assertGreaterEqual(len(nonces), 3)
+        self.assertEqual(len(set(nonces)), 1)
+        self.assertIn(f"'nonce-{nonces[0]}'", csp)
+
+    def test_blog_and_legal_pages_render_expected_content(self):
+        blog_status, _, blog_body = asyncio.run(self._asgi_get("/en/blog/markdown-latex-to-word-docx"))
+        self.assertEqual(blog_status, 200)
+        self.assertIn("Markdown with LaTeX to Word", blog_body)
+        self.assertIn("<h2>1) Common export paths</h2>", blog_body)
+        self.assertNotIn("javascript:", blog_body)
+
+        legal_status, _, legal_body = asyncio.run(self._asgi_get("/privacy"))
+        self.assertEqual(legal_status, 200)
+        self.assertIn("Política de privacidad", legal_body)
+        self.assertIn("mailto:ecuacionesaword@gmail.com", legal_body)
 
     def test_convert_upload_to_docx_bytes_txt_flow(self):
         out_bytes = main._convert_upload_to_docx_bytes("txt", b"Equation: $x+1$\n")

@@ -5,6 +5,7 @@ import io
 import ipaddress
 import json
 import os
+import secrets
 import zipfile
 from collections import defaultdict, deque
 from pathlib import Path
@@ -182,22 +183,30 @@ if CANONICAL_HOST:
 
 @app.middleware("http")
 async def add_common_headers_mw(request: Request, call_next):
-    if request.url.path == "/convert" and request.method == "POST":
-        content_length = request.headers.get("content-length", "").strip()
-        if content_length.isdigit() and int(content_length) > MAX_UPLOAD_CONTENT_LENGTH_BYTES:
-            return _convert_error_response(413, "file_too_large", "File too large. Maximum size is 5 MB.")
-        if not _check_convert_rate_limit(request):
-            resp = _convert_error_response(429, "rate_limited", "Too many conversion requests. Please try again shortly.")
-            resp.headers["Retry-After"] = str(RATE_LIMIT_WINDOW_SECONDS)
-            return resp
+    nonce = secrets.token_urlsafe(18)
+    nonce_token = site_module._CURRENT_CSP_NONCE.set(nonce)
+    request.state.csp_nonce = nonce
+    try:
+        if request.url.path == "/convert" and request.method == "POST":
+            content_length = request.headers.get("content-length", "").strip()
+            if content_length.isdigit() and int(content_length) > MAX_UPLOAD_CONTENT_LENGTH_BYTES:
+                return _convert_error_response(413, "file_too_large", "File too large. Maximum size is 5 MB.")
+            if not _check_convert_rate_limit(request):
+                resp = _convert_error_response(429, "rate_limited", "Too many conversion requests. Please try again shortly.")
+                resp.headers["Retry-After"] = str(RATE_LIMIT_WINDOW_SECONDS)
+                return resp
 
-    resp = await call_next(request)
-    if _request_is_https(request):
-        resp.headers.setdefault(
-            "Strict-Transport-Security",
-            "max-age=31536000; includeSubDomains",
-        )
-    return _add_common_headers(resp)
+        resp = await call_next(request)
+        if _request_is_https(request):
+            resp.headers.setdefault(
+                "Strict-Transport-Security",
+                "max-age=31536000; includeSubDomains",
+            )
+        resp = _add_common_headers(resp)
+        resp.headers["Content-Security-Policy"] = site_module._build_csp_header(nonce)
+        return resp
+    finally:
+        site_module._CURRENT_CSP_NONCE.reset(nonce_token)
 
 
 _static_dir = os.path.join(BASE_DIR, "static")
