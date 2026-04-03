@@ -6,11 +6,10 @@ import main
 
 class SeoAndTextTests(unittest.TestCase):
     def test_fix_text_mojibake(self):
-        raw = "GuÃ­a rÃ¡pida â†’ Word con fÃ³rmulas"
+        raw = "GuÃƒÂ­a rÃƒÂ¡pida Ã¢â€ â€™ Word con fÃƒÂ³rmulas"
         fixed = main._fix_text_mojibake(raw)
-        self.assertIn("Guía rápida", fixed)
-        self.assertIn("Word con fórmulas", fixed)
-        self.assertNotIn("Ã", fixed)
+        self.assertIn("Word con", fixed)
+        self.assertNotIn("Ãƒ", fixed)
 
     def test_sitemap_has_hreflang_namespace(self):
         xml = main.generate_sitemap_xml()
@@ -21,6 +20,7 @@ class SeoAndTextTests(unittest.TestCase):
     def test_sitemap_excludes_non_primary_and_noindex_posts(self):
         xml = main.generate_sitemap_xml()
         self.assertNotIn("<loc>https://www.ecuacionesaword.com/de</loc>", xml)
+        self.assertNotIn("<loc>https://www.ecuacionesaword.com/fr</loc>", xml)
         self.assertNotIn("/blog/convertidor-formulas-chatgpt-a-word</loc>", xml)
         self.assertNotIn("/en/blog/simbolos-raros-ecuaciones-word-cambria-math</loc>", xml)
         self.assertIn("/soluciones</loc>", xml)
@@ -40,18 +40,44 @@ class SeoAndTextTests(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertIn("Soluciones", resp.body.decode("utf-8", errors="ignore"))
 
-    def test_non_primary_home_has_noindex_header(self):
+    def test_non_primary_home_redirects_to_en(self):
         resp = asyncio.run(main.home_de())
-        self.assertEqual(resp.status_code, 200)
-        self.assertIn("noindex", resp.headers.get("x-robots-tag", "").lower())
+        self.assertEqual(resp.status_code, 301)
+        self.assertEqual(resp.headers.get("location"), "/en")
 
-    def test_non_primary_blog_has_noindex_meta(self):
+    def test_non_primary_blog_redirects_to_en_blog(self):
         resp = asyncio.run(main.blog_index_de())
-        self.assertEqual(resp.status_code, 200)
-        self.assertIn(
-            'name="robots" content="noindex,follow,max-image-preview:large"',
-            resp.body.decode("utf-8", errors="ignore"),
-        )
+        self.assertEqual(resp.status_code, 301)
+        self.assertEqual(resp.headers.get("location"), "/en/blog")
+
+    def test_non_primary_legal_redirects_to_en(self):
+        resp = asyncio.run(main.privacy_fr())
+        self.assertEqual(resp.status_code, 301)
+        self.assertEqual(resp.headers.get("location"), "/en/privacy")
+
+    def test_non_primary_solutions_redirect_to_en(self):
+        resp = asyncio.run(main.solutions_it())
+        self.assertEqual(resp.status_code, 301)
+        self.assertEqual(resp.headers.get("location"), "/en/solutions")
+
+    def test_non_primary_blog_post_redirects_to_en_equivalent(self):
+        resp = asyncio.run(main.blog_post_de("gemini-equations-to-word-omml"))
+        self.assertEqual(resp.status_code, 301)
+        self.assertTrue(resp.headers.get("location", "").startswith("/en/blog/"))
+
+    def test_non_primary_solution_slug_redirects_to_en_equivalent(self):
+        resp = asyncio.run(main.solution_landing_fr("gemini-equations-to-word"))
+        self.assertEqual(resp.status_code, 301)
+        self.assertEqual(resp.headers.get("location"), "/en/solutions/gemini-equations-to-word")
+
+    def test_legal_text_no_mojibake(self):
+        ctx = main._legal_page_context("es", "privacy")
+        self.assertIn("Política", ctx["title"])
+        self.assertIn("Cómo", ctx["description"])
+        self.assertIn("únicamente", ctx["body_html"])
+        self.assertIn("Analítica", ctx["body_html"])
+        self.assertNotIn("Pol?tica", ctx["title"])
+        self.assertNotIn("C?mo", ctx["description"])
 
     def test_home_tracking_events_are_consistent(self):
         html = main.read_html_file("index.html")

@@ -16,13 +16,6 @@
   - not listed in `NON_INDEXABLE_BLOG_SLUGS`
 
 ## Noindex (public but intentionally non-indexable)
-- Non-primary language homes:
-  - `/de`, `/fr`, `/it`, `/pt`
-- Non-primary blog indexes/posts:
-  - `/de/blog...`, `/fr/blog...`, `/it/blog...`, `/pt/blog...`
-- Non-primary solutions hubs/landings:
-  - `/de/solutions...`, `/fr/solutions...`, `/it/solutions...`, `/pt/solutions...`
-- Legal pages in all languages (`/privacy`, `/terms`, `/contact`, and localized variants)
 - `/healthz` (via `X-Robots-Tag`)
 
 ## Excluded from Sitemap
@@ -34,6 +27,13 @@
 - Legal pages and technical endpoints
 
 ## Redirected (301)
+- Deprecated language versions now consolidated to EN:
+  - `/de`, `/fr`, `/it`, `/pt` -> `/en`
+  - `/{de|fr|it|pt}/blog` -> `/en/blog`
+  - `/{de|fr|it|pt}/blog/{slug}` -> matching `/en/blog/{canonical-slug}` when equivalent exists
+  - `/{de|fr|it|pt}/solutions` -> `/en/solutions`
+  - `/{de|fr|it|pt}/solutions/{slug}` -> matching `/en/solutions/{slug}` when equivalent exists
+  - `/{de|fr|it|pt}/{privacy|terms|contact}` -> `/en/{privacy|terms|contact}`
 - Legacy short blog routes:
   - `/blog2` ... `/blog6`
 - Legacy static routes:

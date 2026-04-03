@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="en">
 <head>
@@ -848,12 +848,8 @@
 <div class="nav-right">
 <div class="lang-switch">
 <select class="lang-select" id="lang-select">
-<option value="es">EspaÃ±ol</option>
+<option value="es">Español</option>
 <option value="en">English</option>
-<option value="de">Deutsch</option>
-<option value="fr">FranÃ§ais</option>
-<option value="it">Italiano</option>
-<option value="pt">PortuguÃªs</option>
 </select>
 </div>
 </div>
@@ -1227,7 +1223,7 @@
 <script>
 (() => {
   const endpoint = "/convert";
-  const supportedLangs = ["es", "en", "de", "fr", "it", "pt"];
+  const supportedLangs = ["es", "en"];
   const firstSegment = (window.location.pathname.split("/").filter(Boolean)[0] || "es").toLowerCase();
   const currentLang = supportedLangs.includes(firstSegment) ? firstSegment : "es";
   const isEnglish = currentLang !== "es";
@@ -1547,5 +1543,6 @@
 </script>
 </body>
 </html>
+
 
 

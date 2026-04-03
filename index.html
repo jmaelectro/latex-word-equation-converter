@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="es">
 <head>
@@ -848,12 +848,8 @@
 <div class="nav-right">
 <div class="lang-switch">
 <select class="lang-select" id="lang-select">
-<option value="es">EspaÃ±ol</option>
+<option value="es">Español</option>
 <option value="en">English</option>
-<option value="de">Deutsch</option>
-<option value="fr">FranÃ§ais</option>
-<option value="it">Italiano</option>
-<option value="pt">PortuguÃªs</option>
 </select>
 </div>
 </div>
@@ -1057,7 +1053,7 @@
 </div>
 <div class="how-card">
 <h2>Soluciones por caso de uso</h2>
-<p>Cada landing ataca una intencion distinta para evitar canibalizacion y mejorar el encaje con la busqueda.</p>
+<p>Cada pagina de solucion esta enfocada en un caso real: ChatGPT, Gemini, Pandoc, Overleaf u OMML.</p>
 <div class="support-grid">
 <div class="support-card">
 <h3>ChatGPT a Word</h3>
@@ -1264,7 +1260,7 @@
 <script>
 (() => {
   const endpoint = "/convert";
-  const supportedLangs = ["es", "en", "de", "fr", "it", "pt"];
+  const supportedLangs = ["es", "en"];
   const firstSegment = (window.location.pathname.split("/").filter(Boolean)[0] || "es").toLowerCase();
   const currentLang = supportedLangs.includes(firstSegment) ? firstSegment : "es";
   const isEnglish = currentLang !== "es";
@@ -1584,5 +1580,6 @@
 </script>
 </body>
 </html>
+
 
 

@@ -236,6 +236,7 @@ JINJA_ENV = Environment(
 
 SUPPORTED_LANGS: Tuple[str, ...] = ("es", "en", "de", "fr", "it", "pt")
 PRIMARY_CONTENT_LANGS: Tuple[str, ...] = ("es", "en")
+SECONDARY_LANGS: Tuple[str, ...] = tuple(lang for lang in SUPPORTED_LANGS if lang not in PRIMARY_CONTENT_LANGS)
 SITEMAP_LANGS: Tuple[str, ...] = PRIMARY_CONTENT_LANGS
 
 # Posts kept live for users but intentionally excluded from index/sitemap to reduce cannibalization.
@@ -2175,42 +2176,22 @@ async def home_en() -> HTMLResponse:
 
 @app.get("/de", response_class=HTMLResponse)
 async def home_de() -> HTMLResponse:
-    try:
-        resp = HTMLResponse(_force_meta_robots_noindex(read_html_file("index-de.html")))
-    except FileNotFoundError:
-        resp = HTMLResponse(_force_meta_robots_noindex(read_html_file("index-en.html")))
-    resp.headers.update(_noindex_headers(follow=True))
-    return resp
+    return RedirectResponse(url="/en", status_code=301)
 
 
 @app.get("/fr", response_class=HTMLResponse)
 async def home_fr() -> HTMLResponse:
-    try:
-        resp = HTMLResponse(_force_meta_robots_noindex(read_html_file("index-fr.html")))
-    except FileNotFoundError:
-        resp = HTMLResponse(_force_meta_robots_noindex(read_html_file("index-en.html")))
-    resp.headers.update(_noindex_headers(follow=True))
-    return resp
+    return RedirectResponse(url="/en", status_code=301)
 
 
 @app.get("/it", response_class=HTMLResponse)
 async def home_it() -> HTMLResponse:
-    try:
-        resp = HTMLResponse(_force_meta_robots_noindex(read_html_file("index-it.html")))
-    except FileNotFoundError:
-        resp = HTMLResponse(_force_meta_robots_noindex(read_html_file("index-en.html")))
-    resp.headers.update(_noindex_headers(follow=True))
-    return resp
+    return RedirectResponse(url="/en", status_code=301)
 
 
 @app.get("/pt", response_class=HTMLResponse)
 async def home_pt() -> HTMLResponse:
-    try:
-        resp = HTMLResponse(_force_meta_robots_noindex(read_html_file("index-pt.html")))
-    except FileNotFoundError:
-        resp = HTMLResponse(_force_meta_robots_noindex(read_html_file("index-en.html")))
-    resp.headers.update(_noindex_headers(follow=True))
-    return resp
+    return RedirectResponse(url="/en", status_code=301)
 
 
 def _landing_from_slug(lang: str, slug: str) -> Optional[Dict[str, Any]]:
@@ -2246,6 +2227,52 @@ def _all_landing_pairs() -> List[Tuple[str, str]]:
     return pairs
 
 
+def _secondary_solution_redirect_target(source_lang: str, route_slug: str) -> Optional[str]:
+    """Map a secondary-language solution slug to its EN canonical path."""
+    landing_key = _landing_key_from_route_slug(source_lang, route_slug)
+    if not landing_key:
+        return None
+    en_page = _landing_from_slug("en", landing_key)
+    if not en_page:
+        return None
+    path = (en_page.get("path") or "").strip()
+    return path or None
+
+
+def _secondary_blog_redirect_target(source_lang: str, slug: str) -> Optional[str]:
+    """Map a secondary-language blog slug to EN canonical path when equivalent exists."""
+    clean_slug = (slug or "").strip()
+    if not clean_slug:
+        return None
+
+    # Resolve aliases in the incoming language first.
+    clean_slug = BLOG_ALIASES.get(source_lang, {}).get(clean_slug, clean_slug)
+
+    en_alias_target = BLOG_ALIASES.get("en", {}).get(clean_slug)
+    if en_alias_target:
+        clean_slug = en_alias_target
+
+    en_post = BLOG_POSTS.get("en", {}).get(clean_slug)
+    if en_post:
+        return (en_post.get("canonical_path") or f"/en/blog/{clean_slug}").strip()
+
+    source_post = BLOG_POSTS.get(source_lang, {}).get(clean_slug)
+    translation_slug = (source_post or {}).get("translation_slug")
+    if translation_slug:
+        en_post = BLOG_POSTS.get("en", {}).get(translation_slug)
+        if en_post:
+            return (en_post.get("canonical_path") or f"/en/blog/{translation_slug}").strip()
+
+    es_post = BLOG_POSTS.get("es", {}).get(clean_slug)
+    es_translation = (es_post or {}).get("translation_slug")
+    if es_translation:
+        en_post = BLOG_POSTS.get("en", {}).get(es_translation)
+        if en_post:
+            return (en_post.get("canonical_path") or f"/en/blog/{es_translation}").strip()
+
+    return None
+
+
 def _solution_landing_context(lang: str, route_slug: str) -> Optional[Dict[str, Any]]:
     source_lang = lang if lang in PRIMARY_CONTENT_LANGS else "en"
     landing_key = _landing_key_from_route_slug(lang, route_slug)
@@ -2270,10 +2297,6 @@ def _solution_landing_context(lang: str, route_slug: str) -> Optional[Dict[str, 
     alt_paths = {
         "es": es_page["path"],
         "en": en_page["path"],
-        "de": f"/de/solutions/{route_slug}",
-        "fr": f"/fr/solutions/{route_slug}",
-        "it": f"/it/solutions/{route_slug}",
-        "pt": f"/pt/solutions/{route_slug}",
     }
 
     return {
@@ -2355,7 +2378,7 @@ def _solution_landing_context(lang: str, route_slug: str) -> Optional[Dict[str, 
 def _solutions_hub_context(lang: str) -> Dict[str, Any]:
     source_lang = lang if lang in PRIMARY_CONTENT_LANGS else "en"
     canonical_path = _solutions_path(lang)
-    alt_paths = {code: _solutions_path(code) for code in SUPPORTED_LANGS}
+    alt_paths = {code: _solutions_path(code) for code in PRIMARY_CONTENT_LANGS}
     cards: List[Dict[str, str]] = []
     for key, langs in LANDING_PAGES.items():
         current = langs.get(source_lang) or langs.get("en") or langs.get("es")
@@ -2410,9 +2433,9 @@ def _solutions_hub_context(lang: str) -> Dict[str, Any]:
         "intro": description,
         "cluster_title": "Arquitectura de soluciones por intencion" if lang == "es" else "Intent-based solution architecture",
         "cluster_intro": (
-            "Cada landing ataca una keyword principal y un problema diferente para evitar canibalizacion y mejorar relevancia."
+            "Cada landing responde a un caso de uso distinto para ayudarte a elegir el flujo de conversión adecuado."
             if lang == "es"
-            else "Each landing targets one primary keyword and one distinct problem to avoid cannibalization."
+            else "Each landing is built for a distinct use case so you can pick the right conversion workflow."
         ),
         "cards": cards,
         "cta_strong": _ui(lang, "cta_strong"),
@@ -2446,34 +2469,34 @@ async def solution_landing_en(slug: str) -> HTMLResponse:
 
 @app.get("/de/solutions/{slug}", response_class=HTMLResponse)
 async def solution_landing_de(slug: str) -> HTMLResponse:
-    ctx = _solution_landing_context("de", slug)
-    if not ctx:
+    target = _secondary_solution_redirect_target("de", slug)
+    if not target:
         raise HTTPException(status_code=404, detail="Landing not found")
-    return HTMLResponse(_render_template("solution_landing.html", ctx))
+    return RedirectResponse(url=target, status_code=301)
 
 
 @app.get("/fr/solutions/{slug}", response_class=HTMLResponse)
 async def solution_landing_fr(slug: str) -> HTMLResponse:
-    ctx = _solution_landing_context("fr", slug)
-    if not ctx:
+    target = _secondary_solution_redirect_target("fr", slug)
+    if not target:
         raise HTTPException(status_code=404, detail="Landing not found")
-    return HTMLResponse(_render_template("solution_landing.html", ctx))
+    return RedirectResponse(url=target, status_code=301)
 
 
 @app.get("/it/solutions/{slug}", response_class=HTMLResponse)
 async def solution_landing_it(slug: str) -> HTMLResponse:
-    ctx = _solution_landing_context("it", slug)
-    if not ctx:
+    target = _secondary_solution_redirect_target("it", slug)
+    if not target:
         raise HTTPException(status_code=404, detail="Landing not found")
-    return HTMLResponse(_render_template("solution_landing.html", ctx))
+    return RedirectResponse(url=target, status_code=301)
 
 
 @app.get("/pt/solutions/{slug}", response_class=HTMLResponse)
 async def solution_landing_pt(slug: str) -> HTMLResponse:
-    ctx = _solution_landing_context("pt", slug)
-    if not ctx:
+    target = _secondary_solution_redirect_target("pt", slug)
+    if not target:
         raise HTTPException(status_code=404, detail="Landing not found")
-    return HTMLResponse(_render_template("solution_landing.html", ctx))
+    return RedirectResponse(url=target, status_code=301)
 
 
 @app.get("/soluciones", response_class=HTMLResponse)
@@ -2488,22 +2511,22 @@ async def solutions_en() -> HTMLResponse:
 
 @app.get("/de/solutions", response_class=HTMLResponse)
 async def solutions_de() -> HTMLResponse:
-    return HTMLResponse(_render_template("solutions_hub.html", _solutions_hub_context("de")))
+    return RedirectResponse(url="/en/solutions", status_code=301)
 
 
 @app.get("/fr/solutions", response_class=HTMLResponse)
 async def solutions_fr() -> HTMLResponse:
-    return HTMLResponse(_render_template("solutions_hub.html", _solutions_hub_context("fr")))
+    return RedirectResponse(url="/en/solutions", status_code=301)
 
 
 @app.get("/it/solutions", response_class=HTMLResponse)
 async def solutions_it() -> HTMLResponse:
-    return HTMLResponse(_render_template("solutions_hub.html", _solutions_hub_context("it")))
+    return RedirectResponse(url="/en/solutions", status_code=301)
 
 
 @app.get("/pt/solutions", response_class=HTMLResponse)
 async def solutions_pt() -> HTMLResponse:
-    return HTMLResponse(_render_template("solutions_hub.html", _solutions_hub_context("pt")))
+    return RedirectResponse(url="/en/solutions", status_code=301)
 
 
 # ================================================================
@@ -2515,14 +2538,14 @@ def _legal_page_context(lang: str, page: str) -> Dict[str, Any]:
     legal_copy: Dict[str, Dict[str, Dict[str, str]]] = {
         "es": {
             "privacy": {
-                "title": "Pol?tica de privacidad",
-                "description": "C?mo tratamos tus archivos y datos al convertir LaTeX a Word.",
-                "body": "<h2>Tratamiento de archivos</h2><p>Procesamos tu archivo ?nicamente para realizar la conversi?n. No vendemos tus datos.</p><h2>Almacenamiento</h2><p>No almacenamos permanentemente tus documentos. Puede existir procesamiento temporal en memoria durante la conversi?n.</p><h2>Anal?tica</h2><p>Usamos anal?tica agregada para mejorar el producto. El contenido de tus documentos no se env?a a herramientas de anal?tica.</p><h2>Contacto</h2><p>Si tienes dudas, escr?benos a <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a>.</p>",
+                "title": "Política de privacidad",
+                "description": "Cómo tratamos tus archivos y datos al convertir LaTeX a Word.",
+                "body": "<h2>Tratamiento de archivos</h2><p>Procesamos tu archivo únicamente para realizar la conversión. No vendemos tus datos.</p><h2>Almacenamiento</h2><p>No almacenamos permanentemente tus documentos. Puede existir procesamiento temporal en memoria durante la conversión.</p><h2>Analítica</h2><p>Usamos analítica agregada para mejorar el producto. El contenido de tus documentos no se envía a herramientas de analítica.</p><h2>Contacto</h2><p>Si tienes dudas, escríbenos a <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a>.</p>",
             },
             "terms": {
-                "title": "T?rminos de uso",
+                "title": "Términos de uso",
                 "description": "Normas y limitaciones de uso del conversor.",
-                "body": "<h2>Herramienta gratuita</h2><p>Este conversor se ofrece de forma gratuita. Puede haber l?mites de tama?o de archivo.</p><h2>Sin garant?as</h2><p>El servicio se ofrece tal cual. Hacemos lo posible, pero no garantizamos una conversi?n perfecta en todos los documentos.</p><h2>Uso aceptable</h2><p>No subas contenido ilegal, malware o documentos sensibles que no est?s autorizado a compartir.</p>",
+                "body": "<h2>Herramienta gratuita</h2><p>Este conversor se ofrece de forma gratuita. Puede haber límites de tamaño de archivo.</p><h2>Sin garantías</h2><p>El servicio se ofrece tal cual. Hacemos lo posible, pero no garantizamos una conversión perfecta en todos los documentos.</p><h2>Uso aceptable</h2><p>No subas contenido ilegal, malware o documentos sensibles que no estás autorizado a compartir.</p>",
             },
             "contact": {
                 "title": "Contacto",
@@ -2578,7 +2601,7 @@ def _legal_page_context(lang: str, page: str) -> Dict[str, Any]:
 
     canonical_path = _legal_path(lang, page) if page in {"privacy", "terms", "contact"} else _home_path(lang)
     canonical_url = _abs_url(canonical_path)
-    alt_paths = {code: _legal_path(code, page) for code in SUPPORTED_LANGS}
+    alt_paths = {code: _legal_path(code, page) for code in PRIMARY_CONTENT_LANGS}
 
     return {
         "lang": lang,
@@ -2665,62 +2688,62 @@ async def contact_en() -> HTMLResponse:
 
 @app.get("/de/privacy", response_class=HTMLResponse)
 async def privacy_de() -> HTMLResponse:
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("de", "privacy")))
+    return RedirectResponse(url="/en/privacy", status_code=301)
 
 
 @app.get("/de/terms", response_class=HTMLResponse)
 async def terms_de() -> HTMLResponse:
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("de", "terms")))
+    return RedirectResponse(url="/en/terms", status_code=301)
 
 
 @app.get("/de/contact", response_class=HTMLResponse)
 async def contact_de() -> HTMLResponse:
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("de", "contact")))
+    return RedirectResponse(url="/en/contact", status_code=301)
 
 
 @app.get("/fr/privacy", response_class=HTMLResponse)
 async def privacy_fr() -> HTMLResponse:
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("fr", "privacy")))
+    return RedirectResponse(url="/en/privacy", status_code=301)
 
 
 @app.get("/fr/terms", response_class=HTMLResponse)
 async def terms_fr() -> HTMLResponse:
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("fr", "terms")))
+    return RedirectResponse(url="/en/terms", status_code=301)
 
 
 @app.get("/fr/contact", response_class=HTMLResponse)
 async def contact_fr() -> HTMLResponse:
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("fr", "contact")))
+    return RedirectResponse(url="/en/contact", status_code=301)
 
 
 @app.get("/it/privacy", response_class=HTMLResponse)
 async def privacy_it() -> HTMLResponse:
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("it", "privacy")))
+    return RedirectResponse(url="/en/privacy", status_code=301)
 
 
 @app.get("/it/terms", response_class=HTMLResponse)
 async def terms_it() -> HTMLResponse:
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("it", "terms")))
+    return RedirectResponse(url="/en/terms", status_code=301)
 
 
 @app.get("/it/contact", response_class=HTMLResponse)
 async def contact_it() -> HTMLResponse:
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("it", "contact")))
+    return RedirectResponse(url="/en/contact", status_code=301)
 
 
 @app.get("/pt/privacy", response_class=HTMLResponse)
 async def privacy_pt() -> HTMLResponse:
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("pt", "privacy")))
+    return RedirectResponse(url="/en/privacy", status_code=301)
 
 
 @app.get("/pt/terms", response_class=HTMLResponse)
 async def terms_pt() -> HTMLResponse:
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("pt", "terms")))
+    return RedirectResponse(url="/en/terms", status_code=301)
 
 
 @app.get("/pt/contact", response_class=HTMLResponse)
 async def contact_pt() -> HTMLResponse:
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("pt", "contact")))
+    return RedirectResponse(url="/en/contact", status_code=301)
 
 
 @app.get("/blog", response_class=HTMLResponse)
@@ -2779,7 +2802,7 @@ async def blog_index_es() -> HTMLResponse:
         "nav_blog": "Blog",
         "lang_switch_href": "/en/blog",
         "lang_switch_label": "EN",
-        "lang_options": _lang_options({code: _blog_index_path(code) for code in SUPPORTED_LANGS}),
+        "lang_options": _lang_options({code: _blog_index_path(code) for code in PRIMARY_CONTENT_LANGS}),
         "h1": "Blog",
         "intro": "Guías prácticas para pasar ecuaciones de LaTeX e IA a Word con ecuaciones nativas (OMML), incluyendo flujos online y troubleshooting.",
         "index_cta_primary": "Conversor LaTeX → Word (OMML)",
@@ -2852,7 +2875,7 @@ async def blog_index_en() -> HTMLResponse:
         "nav_blog": "Blog",
         "lang_switch_href": "/blog",
         "lang_switch_label": "ES",
-        "lang_options": _lang_options({code: _blog_index_path(code) for code in SUPPORTED_LANGS}),
+        "lang_options": _lang_options({code: _blog_index_path(code) for code in PRIMARY_CONTENT_LANGS}),
         "h1": "Blog",
         "intro": "Practical guides to export LaTeX/AI equations to Word as native editable OMML equations, including online workflows and troubleshooting.",
         "index_cta_primary": "LaTeX → OMML Converter",
@@ -2942,22 +2965,22 @@ def _build_blog_index_context_fallback_en(lang: str) -> Dict[str, Any]:
 
 @app.get("/de/blog", response_class=HTMLResponse)
 async def blog_index_de() -> HTMLResponse:
-    return HTMLResponse(_render_template("blog_index.html", _build_blog_index_context_fallback_en("de")))
+    return RedirectResponse(url="/en/blog", status_code=301)
 
 
 @app.get("/fr/blog", response_class=HTMLResponse)
 async def blog_index_fr() -> HTMLResponse:
-    return HTMLResponse(_render_template("blog_index.html", _build_blog_index_context_fallback_en("fr")))
+    return RedirectResponse(url="/en/blog", status_code=301)
 
 
 @app.get("/it/blog", response_class=HTMLResponse)
 async def blog_index_it() -> HTMLResponse:
-    return HTMLResponse(_render_template("blog_index.html", _build_blog_index_context_fallback_en("it")))
+    return RedirectResponse(url="/en/blog", status_code=301)
 
 
 @app.get("/pt/blog", response_class=HTMLResponse)
 async def blog_index_pt() -> HTMLResponse:
-    return HTMLResponse(_render_template("blog_index.html", _build_blog_index_context_fallback_en("pt")))
+    return RedirectResponse(url="/en/blog", status_code=301)
 
 
 # Redirects legacy numeric
@@ -3025,10 +3048,6 @@ async def blog_post_es(slug: str) -> HTMLResponse:
     alt_paths = {
         "es": canonical_path,
         "en": en_path,
-        "de": f"/de/blog/{post['slug']}",
-        "fr": f"/fr/blog/{post['slug']}",
-        "it": f"/it/blog/{post['slug']}",
-        "pt": f"/pt/blog/{post['slug']}",
     }
 
     date_pub = post.get("date_published") or ""
@@ -3036,9 +3055,9 @@ async def blog_post_es(slug: str) -> HTMLResponse:
     meta_line = f"Publicado {_format_date(lang, date_pub)}"
     reading_time = _format_reading_time(post.get("reading_time"))
     if reading_time:
-        meta_line += f" ?{reading_time}"
+        meta_line += f" · {reading_time}"
     if date_mod and date_mod != date_pub:
-        meta_line += f" ?Actualizado {_format_date(lang, date_mod)}"
+        meta_line += f" · Actualizado {_format_date(lang, date_mod)}"
     indexable = _is_blog_post_indexable(lang, post)
 
     ctx = {
@@ -3114,10 +3133,6 @@ async def blog_post_en(slug: str) -> HTMLResponse:
     alt_paths = {
         "es": es_path,
         "en": canonical_path,
-        "de": f"/de/blog/{post['slug']}",
-        "fr": f"/fr/blog/{post['slug']}",
-        "it": f"/it/blog/{post['slug']}",
-        "pt": f"/pt/blog/{post['slug']}",
     }
 
     date_pub = post.get("date_published") or ""
@@ -3125,9 +3140,9 @@ async def blog_post_en(slug: str) -> HTMLResponse:
     meta_line = f"Published {_format_date(lang, date_pub)}"
     reading_time = _format_reading_time(post.get("reading_time"))
     if reading_time:
-        meta_line += f" ?{reading_time}"
+        meta_line += f" · {reading_time}"
     if date_mod and date_mod != date_pub:
-        meta_line += f" ?Updated {_format_date(lang, date_mod)}"
+        meta_line += f" · Updated {_format_date(lang, date_mod)}"
     indexable = _is_blog_post_indexable(lang, post)
 
     ctx = {
@@ -3187,14 +3202,14 @@ def _blog_post_context_fallback_en(lang: str, post: Dict[str, Any], body_html: s
     date_mod = post.get("date_modified") or ""
 
     meta_label = "Publicado" if lang == "es" else {
-        "de": "Ver?ffentlicht",
-        "fr": "Publi?",
+        "de": "Veröffentlicht",
+        "fr": "Publié",
         "it": "Pubblicato",
         "pt": "Publicado",
     }.get(lang, "Published")
     updated_label = "Actualizado" if lang == "es" else {
         "de": "Aktualisiert",
-        "fr": "Mis ?jour",
+        "fr": "Mis à jour",
         "it": "Aggiornato",
         "pt": "Atualizado",
     }.get(lang, "Updated")
@@ -3202,9 +3217,9 @@ def _blog_post_context_fallback_en(lang: str, post: Dict[str, Any], body_html: s
     meta_line = f"{meta_label} {_format_date(lang, date_pub)}"
     reading_time = _format_reading_time(post.get("reading_time"))
     if reading_time:
-        meta_line += f" ?{reading_time}"
+        meta_line += f" · {reading_time}"
     if date_mod and date_mod != date_pub:
-        meta_line += f" ?{updated_label} {_format_date(lang, date_mod)}"
+        meta_line += f" · {updated_label} {_format_date(lang, date_mod)}"
 
     alt_paths = {
         "es": (BLOG_POSTS.get("es", {}).get(slug, {}).get("canonical_path") or f"/blog/{slug}"),
@@ -3272,54 +3287,34 @@ def _blog_post_context_fallback_en(lang: str, post: Dict[str, Any], body_html: s
 
 @app.get("/de/blog/{slug}", response_class=HTMLResponse)
 async def blog_post_de(slug: str) -> HTMLResponse:
-    redirect_url, post = _resolve_blog_slug("de", slug)
-    if redirect_url:
-        return RedirectResponse(url=redirect_url, status_code=301)
-    if not post:
+    target = _secondary_blog_redirect_target("de", slug)
+    if not target:
         raise HTTPException(status_code=404, detail="Blog post not found")
-    body_html = _read_blog_body("de", post["slug"])
-    if not body_html.strip():
-        raise HTTPException(status_code=404, detail="Blog post body not found")
-    return HTMLResponse(_render_template("blog_post.html", _blog_post_context_fallback_en("de", post, body_html)))
+    return RedirectResponse(url=target, status_code=301)
 
 
 @app.get("/fr/blog/{slug}", response_class=HTMLResponse)
 async def blog_post_fr(slug: str) -> HTMLResponse:
-    redirect_url, post = _resolve_blog_slug("fr", slug)
-    if redirect_url:
-        return RedirectResponse(url=redirect_url, status_code=301)
-    if not post:
+    target = _secondary_blog_redirect_target("fr", slug)
+    if not target:
         raise HTTPException(status_code=404, detail="Blog post not found")
-    body_html = _read_blog_body("fr", post["slug"])
-    if not body_html.strip():
-        raise HTTPException(status_code=404, detail="Blog post body not found")
-    return HTMLResponse(_render_template("blog_post.html", _blog_post_context_fallback_en("fr", post, body_html)))
+    return RedirectResponse(url=target, status_code=301)
 
 
 @app.get("/it/blog/{slug}", response_class=HTMLResponse)
 async def blog_post_it(slug: str) -> HTMLResponse:
-    redirect_url, post = _resolve_blog_slug("it", slug)
-    if redirect_url:
-        return RedirectResponse(url=redirect_url, status_code=301)
-    if not post:
+    target = _secondary_blog_redirect_target("it", slug)
+    if not target:
         raise HTTPException(status_code=404, detail="Blog post not found")
-    body_html = _read_blog_body("it", post["slug"])
-    if not body_html.strip():
-        raise HTTPException(status_code=404, detail="Blog post body not found")
-    return HTMLResponse(_render_template("blog_post.html", _blog_post_context_fallback_en("it", post, body_html)))
+    return RedirectResponse(url=target, status_code=301)
 
 
 @app.get("/pt/blog/{slug}", response_class=HTMLResponse)
 async def blog_post_pt(slug: str) -> HTMLResponse:
-    redirect_url, post = _resolve_blog_slug("pt", slug)
-    if redirect_url:
-        return RedirectResponse(url=redirect_url, status_code=301)
-    if not post:
+    target = _secondary_blog_redirect_target("pt", slug)
+    if not target:
         raise HTTPException(status_code=404, detail="Blog post not found")
-    body_html = _read_blog_body("pt", post["slug"])
-    if not body_html.strip():
-        raise HTTPException(status_code=404, detail="Blog post body not found")
-    return HTMLResponse(_render_template("blog_post.html", _blog_post_context_fallback_en("pt", post, body_html)))
+    return RedirectResponse(url=target, status_code=301)
 
 
 LEGACY_REDIRECTS: Dict[str, str] = {
@@ -4524,4 +4519,5 @@ def _build_contextual_links(lang: str, current_post: Dict[str, Any]) -> List[Dic
         }
     )
     return links
+
 
