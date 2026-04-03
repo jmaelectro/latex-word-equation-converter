@@ -103,42 +103,61 @@ Segment = Tuple[str, str]  # ("text" | "inline" | "display", contenido)
 USE_EXERCISE_TWEAKS = True
 
 
+def _mojibake_score(value: str) -> int:
+    markers = ("Ã", "Â", "â€™", "â€œ", "â€", "�", "Ð", "Ñ")
+    return sum(value.count(m) for m in markers)
+
+
 def _fix_text_mojibake(text: str) -> str:
-    """Best-effort repair for common UTF-8/Latin-1 mojibake fragments."""
+    """Best-effort repair for UTF-8/Latin-1 mojibake fragments."""
     if not text:
         return text
 
     fixed = text
-    # Typical case: UTF-8 bytes decoded as Latin-1/cp1252.
-    if "Ã" in fixed or "Â" in fixed or "â" in fixed:
+    original_score = _mojibake_score(fixed)
+    if any(token in fixed for token in ("Ã", "Â", "â", "Ð", "Ñ", "�")):
+        candidates = [fixed]
         for encoding in ("latin-1", "cp1252"):
             try:
-                recoded = fixed.encode(encoding).decode("utf-8")
-                if recoded.count("Ã") + recoded.count("Â") < fixed.count("Ã") + fixed.count("Â"):
-                    fixed = recoded
-                    break
+                candidates.append(fixed.encode(encoding, errors="ignore").decode("utf-8", errors="ignore"))
             except Exception:
                 continue
+        fixed = min(candidates, key=_mojibake_score) if candidates else fixed
 
     replacements = {
-        "â†’": "→",
-        "â€œ": "“",
-        "â€": "”",
-        "â€˜": "‘",
-        "â€™": "’",
-        "â€“": "–",
-        "â€”": "—",
-        "â€¦": "…",
+        "â†’": "->",
+        "â€œ": "\"",
+        "â€": "\"",
+        "â€˜": "'",
+        "â€™": "'",
+        "â€“": "-",
+        "â€”": "-",
+        "â€¦": "...",
         "Â¿": "¿",
         "Â¡": "¡",
         "Âº": "º",
         "Âª": "ª",
         "Â·": "·",
-        "Â ": " ",
+        " ": " ",
     }
     for bad, good in replacements.items():
         fixed = fixed.replace(bad, good)
+
+    if _mojibake_score(fixed) > original_score:
+        return text
     return fixed
+
+
+def _deep_fix_mojibake(value: Any) -> Any:
+    if isinstance(value, str):
+        return _fix_text_mojibake(value)
+    if isinstance(value, list):
+        return [_deep_fix_mojibake(v) for v in value]
+    if isinstance(value, tuple):
+        return tuple(_deep_fix_mojibake(v) for v in value)
+    if isinstance(value, dict):
+        return {k: _deep_fix_mojibake(v) for k, v in value.items()}
+    return value
 
 
 def _parse_allowed_origins(value: str) -> List[str]:
@@ -372,8 +391,8 @@ UI_TEXT: Dict[str, Dict[str, str]] = {
 
 def _ui(lang: str, key: str) -> str:
     if lang in UI_TEXT and key in UI_TEXT[lang]:
-        return UI_TEXT[lang][key]
-    return UI_TEXT["en"].get(key, "")
+        return _fix_text_mojibake(UI_TEXT[lang][key])
+    return _fix_text_mojibake(UI_TEXT["en"].get(key, ""))
 
 LANG_PREFIX: Dict[str, str] = {
     "es": "",
@@ -422,9 +441,13 @@ def _solutions_path(lang: str) -> str:
     return f"{_lang_prefix(lang)}/solutions"
 
 
-def _all_alternates(path_by_lang: Dict[str, str], default_lang: str = "es") -> List[Dict[str, str]]:
+def _all_alternates(
+    path_by_lang: Dict[str, str],
+    default_lang: str = "es",
+    langs: Tuple[str, ...] = PRIMARY_CONTENT_LANGS,
+) -> List[Dict[str, str]]:
     out: List[Dict[str, str]] = []
-    for code in SUPPORTED_LANGS:
+    for code in langs:
         p = (path_by_lang.get(code) or "").strip()
         if not p:
             continue
@@ -443,7 +466,7 @@ def _lang_options(path_by_lang: Dict[str, str]) -> List[Dict[str, str]]:
         options.append(
             {
                 "code": code,
-                "label": LANGUAGE_LABELS.get(code, code.upper()),
+                "label": _fix_text_mojibake(LANGUAGE_LABELS.get(code, code.upper())),
                 "href": path,
             }
         )
@@ -1087,7 +1110,7 @@ def _load_blog_data() -> Dict[str, Any]:
             raise ValueError("posts.json root is not a JSON object")
         data.setdefault("posts", [])
         data.setdefault("aliases", {})
-        return data
+        return _deep_fix_mojibake(data)
     except Exception:
         logger.exception("Failed to load blog data from %s", BLOG_DATA_PATH)
         # Keep the app running (converter is critical). Blog will 404 gracefully.
@@ -1144,7 +1167,7 @@ _init_blog_cache()
 
 def _render_template(template_name: str, context: Dict[str, Any]) -> str:
     template = JINJA_ENV.get_template(template_name)
-    return template.render(**context)
+    return template.render(**_deep_fix_mojibake(context))
 
 
 def _read_blog_body(lang: str, slug: str) -> str:
@@ -1474,7 +1497,23 @@ def _read_text_file(path: str, default: Optional[str] = None) -> str:
 
 def read_html_file(filename: str) -> str:
     path = os.path.join(BASE_DIR, filename)
-    return _read_text_file(path)
+    return _fix_text_mojibake(_read_text_file(path))
+
+
+def _force_meta_robots_noindex(html: str) -> str:
+    if re.search(r'<meta[^>]+name=["\']robots["\']', html, flags=re.IGNORECASE):
+        return re.sub(
+            r'<meta[^>]+name=["\']robots["\'][^>]*>',
+            '<meta name="robots" content="noindex,follow,max-image-preview:large">',
+            html,
+            count=1,
+            flags=re.IGNORECASE,
+        )
+    return html.replace(
+        "</head>",
+        '<meta name="robots" content="noindex,follow,max-image-preview:large"></head>',
+        1,
+    )
 
 
 def _now_lastmod_iso() -> str:
@@ -1520,6 +1559,21 @@ def _sitemap_url_entry(
     )
 
 
+def _is_valid_blog_canonical_path(lang: str, path: str) -> bool:
+    expected = "/blog/" if lang == "es" else "/en/blog/"
+    return bool(path and path.startswith(expected))
+
+
+def _translated_indexable_path(lang: str, slug: str) -> Optional[str]:
+    post = BLOG_POSTS.get(lang, {}).get(slug)
+    if not post or not _is_blog_post_indexable(lang, post):
+        return None
+    path = (post.get("canonical_path") or "").strip()
+    if not _is_valid_blog_canonical_path(lang, path):
+        return None
+    return path
+
+
 def generate_sitemap_xml() -> str:
     """
     Build sitemap using only canonical, indexable, final URLs:
@@ -1528,6 +1582,31 @@ def generate_sitemap_xml() -> str:
     - blog posts explicitly marked as indexable by strategy
     """
     urls: List[str] = []
+    seen_locs: set[str] = set()
+
+    def append_url(
+        loc_path: str,
+        *,
+        lastmod: str,
+        changefreq: str,
+        priority: str,
+        alternates: Optional[List[Dict[str, str]]] = None,
+    ) -> None:
+        if not loc_path.startswith("/"):
+            return
+        loc = _abs_url(loc_path)
+        if loc in seen_locs:
+            return
+        seen_locs.add(loc)
+        urls.append(
+            _sitemap_url_entry(
+                loc,
+                lastmod,
+                changefreq,
+                priority,
+                alternates=alternates,
+            )
+        )
 
     def post_lastmod(p: Dict[str, Any]) -> str:
         d = (p.get("date_modified") or p.get("date_published") or "").strip()
@@ -1539,42 +1618,36 @@ def generate_sitemap_xml() -> str:
     home_paths = {lang: _home_path(lang) for lang in SITEMAP_LANGS}
     home_alts = _all_alternates(home_paths, default_lang="es")
     for lang in SITEMAP_LANGS:
-        urls.append(
-            _sitemap_url_entry(
-                _abs_url(home_paths[lang]),
-                _now_lastmod_iso(),
-                "weekly",
-                "1.0" if lang == "es" else "0.8",
-                alternates=home_alts,
-            )
+        append_url(
+            home_paths[lang],
+            lastmod=_now_lastmod_iso(),
+            changefreq="weekly",
+            priority="1.0" if lang == "es" else "0.8",
+            alternates=home_alts,
         )
 
     # Blog index
     blog_index_paths = {lang: _blog_index_path(lang) for lang in SITEMAP_LANGS}
     blog_index_alts = _all_alternates(blog_index_paths, default_lang="es")
     for lang in SITEMAP_LANGS:
-        urls.append(
-            _sitemap_url_entry(
-                _abs_url(blog_index_paths[lang]),
-                _now_lastmod_iso(),
-                "weekly",
-                "0.8" if lang == "es" else "0.7",
-                alternates=blog_index_alts,
-            )
+        append_url(
+            blog_index_paths[lang],
+            lastmod=_now_lastmod_iso(),
+            changefreq="weekly",
+            priority="0.8" if lang == "es" else "0.7",
+            alternates=blog_index_alts,
         )
 
     # Solutions hub
     solutions_paths = {lang: _solutions_path(lang) for lang in SITEMAP_LANGS}
     solutions_alts = _all_alternates(solutions_paths, default_lang="es")
     for lang in SITEMAP_LANGS:
-        urls.append(
-            _sitemap_url_entry(
-                _abs_url(solutions_paths[lang]),
-                _now_lastmod_iso(),
-                "weekly",
-                "0.75" if lang == "es" else "0.7",
-                alternates=solutions_alts,
-            )
+        append_url(
+            solutions_paths[lang],
+            lastmod=_now_lastmod_iso(),
+            changefreq="weekly",
+            priority="0.75" if lang == "es" else "0.7",
+            alternates=solutions_alts,
         )
 
     # Transactional landings
@@ -1585,14 +1658,12 @@ def generate_sitemap_xml() -> str:
             path = landing_paths.get(lang)
             if not path:
                 continue
-            urls.append(
-                _sitemap_url_entry(
-                    _abs_url(path),
-                    _now_lastmod_iso(),
-                    "weekly",
-                    "0.7" if lang == "es" else "0.6",
-                    alternates=alts,
-                )
+            append_url(
+                path,
+                lastmod=_now_lastmod_iso(),
+                changefreq="weekly",
+                priority="0.7" if lang == "es" else "0.6",
+                alternates=alts,
             )
 
     # Blog posts (indexable only)
@@ -1606,25 +1677,29 @@ def generate_sitemap_xml() -> str:
             canonical_path = (p.get("canonical_path") or "").strip()
             if not canonical_path:
                 canonical_path = f"{_blog_index_path(lang)}/{slug}"
+            if not _is_valid_blog_canonical_path(lang, canonical_path):
+                continue
             translation_slug = (p.get("translation_slug") or "").strip()
             if lang == "es":
                 es_path = canonical_path
                 en_slug = translation_slug or slug
-                en_path = (BLOG_POSTS.get("en", {}).get(en_slug, {}).get("canonical_path") or f"/en/blog/{en_slug}")
+                en_path = _translated_indexable_path("en", en_slug)
             else:
                 en_path = canonical_path
                 es_slug = translation_slug or slug
-                es_path = (BLOG_POSTS.get("es", {}).get(es_slug, {}).get("canonical_path") or f"/blog/{es_slug}")
-            paths = {"es": es_path, "en": en_path}
+                es_path = _translated_indexable_path("es", es_slug)
+            paths = {lang: canonical_path}
+            if es_path:
+                paths["es"] = es_path
+            if en_path:
+                paths["en"] = en_path
             alts = _all_alternates(paths, default_lang="es")
-            urls.append(
-                _sitemap_url_entry(
-                    _abs_url(canonical_path),
-                    post_lastmod(p),
-                    "monthly",
-                    "0.6" if lang == "es" else "0.5",
-                    alternates=alts,
-                )
+            append_url(
+                canonical_path,
+                lastmod=post_lastmod(p),
+                changefreq="monthly",
+                priority="0.6" if lang == "es" else "0.5",
+                alternates=alts,
             )
 
     return (
@@ -2101,9 +2176,9 @@ async def home_en() -> HTMLResponse:
 @app.get("/de", response_class=HTMLResponse)
 async def home_de() -> HTMLResponse:
     try:
-        resp = HTMLResponse(read_html_file("index-de.html"))
+        resp = HTMLResponse(_force_meta_robots_noindex(read_html_file("index-de.html")))
     except FileNotFoundError:
-        resp = HTMLResponse(read_html_file("index-en.html"))
+        resp = HTMLResponse(_force_meta_robots_noindex(read_html_file("index-en.html")))
     resp.headers.update(_noindex_headers(follow=True))
     return resp
 
@@ -2111,9 +2186,9 @@ async def home_de() -> HTMLResponse:
 @app.get("/fr", response_class=HTMLResponse)
 async def home_fr() -> HTMLResponse:
     try:
-        resp = HTMLResponse(read_html_file("index-fr.html"))
+        resp = HTMLResponse(_force_meta_robots_noindex(read_html_file("index-fr.html")))
     except FileNotFoundError:
-        resp = HTMLResponse(read_html_file("index-en.html"))
+        resp = HTMLResponse(_force_meta_robots_noindex(read_html_file("index-en.html")))
     resp.headers.update(_noindex_headers(follow=True))
     return resp
 
@@ -2121,9 +2196,9 @@ async def home_fr() -> HTMLResponse:
 @app.get("/it", response_class=HTMLResponse)
 async def home_it() -> HTMLResponse:
     try:
-        resp = HTMLResponse(read_html_file("index-it.html"))
+        resp = HTMLResponse(_force_meta_robots_noindex(read_html_file("index-it.html")))
     except FileNotFoundError:
-        resp = HTMLResponse(read_html_file("index-en.html"))
+        resp = HTMLResponse(_force_meta_robots_noindex(read_html_file("index-en.html")))
     resp.headers.update(_noindex_headers(follow=True))
     return resp
 
@@ -2131,9 +2206,9 @@ async def home_it() -> HTMLResponse:
 @app.get("/pt", response_class=HTMLResponse)
 async def home_pt() -> HTMLResponse:
     try:
-        resp = HTMLResponse(read_html_file("index-pt.html"))
+        resp = HTMLResponse(_force_meta_robots_noindex(read_html_file("index-pt.html")))
     except FileNotFoundError:
-        resp = HTMLResponse(read_html_file("index-en.html"))
+        resp = HTMLResponse(_force_meta_robots_noindex(read_html_file("index-en.html")))
     resp.headers.update(_noindex_headers(follow=True))
     return resp
 
@@ -3247,13 +3322,65 @@ async def blog_post_pt(slug: str) -> HTMLResponse:
     return HTMLResponse(_render_template("blog_post.html", _blog_post_context_fallback_en("pt", post, body_html)))
 
 
+LEGACY_REDIRECTS: Dict[str, str] = {
+    "/index.html": "/",
+    "/index-en.html": "/en",
+    "/blog-index.html": "/blog",
+    "/blog-index-en.html": "/en/blog",
+    "/blog-en-1.html": "/en/blog/copy-chatgpt-equations-word",
+    "/blog-en-2.html": "/en/blog/convert-latex-document-to-word",
+    "/blog-en-3.html": "/en/blog/use-ai-equations-to-word-exercises",
+    "/blog-en-4.html": "/en/blog/paste-latex-into-word-alt-eq",
+    "/blog-en-5.html": "/en/blog/what-is-omml-word-equations",
+    "/blog-en-6.html": "/en/blog/markdown-latex-to-word-docx",
+    "/blog-en-question-marks-chatgpt-equations-word.html": "/en/blog/question-marks-chatgpt-equations-word",
+    "/blog-en-overleaf-latex-to-word-editable-equations.html": "/en/blog/overleaf-latex-to-word-editable-equations",
+    "/blog-en-pandoc-math-to-word-omml-troubleshooting.html": "/en/blog/pandoc-math-to-word-omml-troubleshooting",
+    "/blog-en-omml-vs-mathtype-vs-latex-word-thesis.html": "/en/blog/omml-vs-mathtype-vs-latex-word-thesis",
+    "/blog-signos-interrogacion-ecuaciones-chatgpt-word.html": "/blog/signos-interrogacion-ecuaciones-chatgpt-word",
+    "/blog-overleaf-latex-a-word-ecuaciones-editables.html": "/blog/overleaf-latex-a-word-ecuaciones-editables",
+    "/blog-pandoc-ecuaciones-word-no-editables-soluciones.html": "/blog/pandoc-ecuaciones-word-no-editables-soluciones",
+    "/blog-omml-vs-mathtype-vs-latex-word-tfg.html": "/blog/omml-vs-mathtype-vs-latex-word-tfg",
+}
+
+
+@app.get("/index.html")
+@app.get("/index-en.html")
+@app.get("/blog-index.html")
+@app.get("/blog-index-en.html")
+@app.get("/blog-en-1.html")
+@app.get("/blog-en-2.html")
+@app.get("/blog-en-3.html")
+@app.get("/blog-en-4.html")
+@app.get("/blog-en-5.html")
+@app.get("/blog-en-6.html")
+@app.get("/blog-en-question-marks-chatgpt-equations-word.html")
+@app.get("/blog-en-overleaf-latex-to-word-editable-equations.html")
+@app.get("/blog-en-pandoc-math-to-word-omml-troubleshooting.html")
+@app.get("/blog-en-omml-vs-mathtype-vs-latex-word-thesis.html")
+@app.get("/blog-signos-interrogacion-ecuaciones-chatgpt-word.html")
+@app.get("/blog-overleaf-latex-a-word-ecuaciones-editables.html")
+@app.get("/blog-pandoc-ecuaciones-word-no-editables-soluciones.html")
+@app.get("/blog-omml-vs-mathtype-vs-latex-word-tfg.html")
+async def legacy_redirects(request: Request) -> RedirectResponse:
+    target = LEGACY_REDIRECTS.get(request.url.path)
+    if not target:
+        raise HTTPException(status_code=404, detail="Legacy route not mapped")
+    return RedirectResponse(url=target, status_code=301)
+
+
 @app.get("/robots.txt")
 async def robots_txt() -> Response:
-    default = (
-        "User-agent: *\nAllow: /\nSitemap: https://www.ecuacionesaword.com/sitemap.xml\n"
+    content = "\n".join(
+        [
+            "User-agent: *",
+            "Allow: /",
+            "Disallow: /healthz",
+            "",
+            f"Sitemap: {_abs_url('/sitemap.xml')}",
+            "",
+        ]
     )
-    path = os.path.join(BASE_DIR, "robots.txt")
-    content = _read_text_file(path, default=default)
     resp = Response(content=content, media_type="text/plain")
     resp.headers["Cache-Control"] = "public, max-age=3600"
     return resp

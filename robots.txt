@@ -1,10 +1,7 @@
 User-agent: *
 Allow: /
 
-# Backend / technical endpoints
-Disallow: /api/v1/convert
-Disallow: /health
+# Technical endpoint excluded from crawl budget
 Disallow: /healthz
 
-Host: https://www.ecuacionesaword.com
 Sitemap: https://www.ecuacionesaword.com/sitemap.xml
