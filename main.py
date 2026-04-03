@@ -3829,7 +3829,7 @@ def _find_math_spans(text: str) -> List[Tuple[str, int, int, str]]:
             if end == -1:
                 break
             latex = text[i + 1 : end]
-            if _looks_like_math_fragment(latex) and not _is_probable_currency_span(text, i, end):
+            if _looks_like_math_fragment(latex) and not _is_probable_currency_span(text, i, end + 1, latex):
                 spans.append(("inline", i, end + 1, latex))
                 i = end + 1
                 continue
