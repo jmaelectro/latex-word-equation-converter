@@ -2,6 +2,7 @@ import asyncio
 import io
 import unittest
 import zipfile
+from unittest.mock import patch
 
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.requests import Request
@@ -164,6 +165,40 @@ class SeoAndTextTests(unittest.TestCase):
         self.assertIn('role="status"', html)
         self.assertIn('aria-live="polite"', html)
         self.assertNotIn('role="link"', html)
+
+    def test_convert_upload_to_docx_bytes_txt_flow(self):
+        out_bytes = main._convert_upload_to_docx_bytes("sample.txt", b"Equation: $x+1$\n")
+        doc = main.Document(io.BytesIO(out_bytes))
+        self.assertGreater(self._doc_omml_count(doc), 0)
+        self.assertIn("Equation:", doc.paragraphs[0].text)
+
+    def test_convert_endpoint_offloads_blocking_work_to_threadpool(self):
+        captured = {}
+
+        async def fake_run_in_threadpool(func, *args, **kwargs):
+            captured["func"] = func
+            captured["args"] = args
+            return main._convert_upload_to_docx_bytes(*args)
+
+        with patch("main.run_in_threadpool", side_effect=fake_run_in_threadpool):
+            upload = main.UploadFile(filename="sample.txt", file=io.BytesIO(b"Equation: $x+1$\n"))
+            response = asyncio.run(main.convert(file=upload, lang="en"))
+            response_bytes = asyncio.run(self._collect_streaming_response(response))
+
+        self.assertIs(captured["func"], main._convert_upload_to_docx_bytes)
+        self.assertEqual(captured["args"][0], "sample.txt")
+        self.assertEqual(
+            response.headers["content-type"],
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+        doc = main.Document(io.BytesIO(response_bytes))
+        self.assertGreater(self._doc_omml_count(doc), 0)
+
+    async def _collect_streaming_response(self, response) -> bytes:
+        chunks = []
+        async for chunk in response.body_iterator:
+            chunks.append(chunk)
+        return b"".join(chunks)
 
 
 if __name__ == "__main__":

@@ -33,6 +33,7 @@ from fastapi.responses import (
 from fastapi.staticfiles import StaticFiles
 
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.concurrency import run_in_threadpool
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.requests import Request
 
@@ -4574,17 +4575,7 @@ def _download_filename(lang: str) -> str:
     return "equations-to-word.docx" if lang == "en" else "ecuaciones-a-word.docx"
 
 
-@app.post("/convert")
-async def convert(file: UploadFile = File(...), lang: str = Form("es")) -> StreamingResponse:
-    lang = "en" if (lang or "").strip().lower() == "en" else "es"
-    filename = (file.filename or "").lower().strip()
-    if not filename:
-        raise HTTPException(status_code=400, detail="Missing filename")
-
-    content = await file.read()
-    if len(content) > MAX_FILE_SIZE_BYTES:
-        raise HTTPException(status_code=413, detail="File too large (max 5MB)")
-
+def _convert_upload_to_docx_bytes(filename: str, content: bytes) -> bytes:
     if filename.endswith(".docx"):
         # IMPORTANT: preserve formatting and modify ONLY equations.
         try:
@@ -4611,7 +4602,22 @@ async def convert(file: UploadFile = File(...), lang: str = Form("es")) -> Strea
 
     out = io.BytesIO()
     out_doc.save(out)
-    out.seek(0)
+    return out.getvalue()
+
+
+@app.post("/convert")
+async def convert(file: UploadFile = File(...), lang: str = Form("es")) -> StreamingResponse:
+    lang = "en" if (lang or "").strip().lower() == "en" else "es"
+    filename = (file.filename or "").lower().strip()
+    if not filename:
+        raise HTTPException(status_code=400, detail="Missing filename")
+
+    content = await file.read()
+    if len(content) > MAX_FILE_SIZE_BYTES:
+        raise HTTPException(status_code=413, detail="File too large (max 5MB)")
+
+    out_bytes = await run_in_threadpool(_convert_upload_to_docx_bytes, filename, content)
+    out = io.BytesIO(out_bytes)
 
     download_name = _download_filename(lang)
     headers = {
