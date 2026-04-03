@@ -102,7 +102,7 @@
   <a href="{{ legal_links.contact }}">{{ "Contacto" if lang=="es" else "Contact" }}</a>
 </div>
 
-<script>
+<script nonce="{{ csp_nonce }}">
 (() => {
   const q = document.getElementById('postSearch');
   const grid = document.getElementById('postGrid');

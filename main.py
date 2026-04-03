@@ -5,12 +5,15 @@ import logging
 import os
 import json
 import re
+import secrets
 from collections import defaultdict, deque
+from contextvars import ContextVar
 from pathlib import Path
 from html import escape as html_escape
+from html.parser import HTMLParser
 from threading import Lock
 from time import monotonic
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit
 from zipfile import BadZipFile
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
@@ -81,29 +84,66 @@ class CanonicalHostRedirectMiddleware(BaseHTTPMiddleware):
         return await call_next(request)
 
 
+_CURRENT_CSP_NONCE: ContextVar[str] = ContextVar("current_csp_nonce", default="")
+
+
+def _current_csp_nonce() -> str:
+    return (_CURRENT_CSP_NONCE.get() or "").strip()
+
+
+def _inject_script_nonces(html: str, nonce: Optional[str] = None) -> str:
+    nonce = (nonce or _current_csp_nonce()).strip()
+    if not nonce:
+        return html
+
+    safe_nonce = html_escape(nonce, quote=True)
+    return re.sub(
+        r"<script\b(?![^>]*\bnonce=)([^>]*)>",
+        lambda match: f'<script nonce="{safe_nonce}"{match.group(1)}>',
+        html,
+        flags=re.IGNORECASE,
+    )
+
+
+def _build_csp_header(nonce: Optional[str] = None) -> str:
+    nonce = (nonce or _current_csp_nonce()).strip()
+    script_sources = ["'self'"]
+    if nonce:
+        script_sources.append(f"'nonce-{nonce}'")
+    script_sources.extend(
+        [
+            "https://www.googletagmanager.com",
+            "https://www.google-analytics.com",
+        ]
+    )
+
+    return "; ".join(
+        [
+            "default-src 'self'",
+            "base-uri 'self'",
+            "object-src 'none'",
+            "frame-ancestors 'none'",
+            "frame-src 'none'",
+            "img-src 'self' data: https:",
+            "style-src 'self' 'unsafe-inline'",
+            "font-src 'self' data:",
+            f"script-src {' '.join(script_sources)}",
+            "script-src-attr 'none'",
+            "connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com",
+            "manifest-src 'self'",
+            "worker-src 'none'",
+            "form-action 'self'",
+        ]
+    )
+
+
 def _add_common_headers(resp: StarletteResponse) -> StarletteResponse:
     # SEO/UX-safe defaults
     resp.headers.setdefault("X-Content-Type-Options", "nosniff")
     resp.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
     resp.headers.setdefault("Permissions-Policy", "interest-cohort=()")
     resp.headers.setdefault("X-Frame-Options", "DENY")
-    resp.headers.setdefault(
-        "Content-Security-Policy",
-        "; ".join(
-            [
-                "default-src 'self'",
-                "base-uri 'self'",
-                "object-src 'none'",
-                "frame-ancestors 'none'",
-                "img-src 'self' data: https:",
-                "style-src 'self' 'unsafe-inline'",
-                "font-src 'self' data:",
-                "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com",
-                "connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com",
-                "form-action 'self'",
-            ]
-        ),
-    )
+    resp.headers.setdefault("Content-Security-Policy", _build_csp_header())
     return resp
 
 import math2docx
@@ -292,19 +332,26 @@ if CANONICAL_HOST:
 
 @app.middleware("http")
 async def add_common_headers_mw(request: Request, call_next):
-    if request.url.path == "/convert" and request.method == "POST":
-        content_length = request.headers.get("content-length", "").strip()
-        if content_length.isdigit() and int(content_length) > MAX_UPLOAD_CONTENT_LENGTH_BYTES:
-            resp = PlainTextResponse("File too large (max 5MB)", status_code=413)
-            return _add_common_headers(resp)
-        if not _check_convert_rate_limit(request):
-            resp = PlainTextResponse("Too many conversion requests. Please try again shortly.", status_code=429)
-            return _add_common_headers(resp)
+    nonce = secrets.token_urlsafe(18)
+    nonce_token = _CURRENT_CSP_NONCE.set(nonce)
+    request.state.csp_nonce = nonce
 
-    resp = await call_next(request)
-    if _request_is_https(request):
-        resp.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
-    return _add_common_headers(resp)
+    try:
+        if request.url.path == "/convert" and request.method == "POST":
+            content_length = request.headers.get("content-length", "").strip()
+            if content_length.isdigit() and int(content_length) > MAX_UPLOAD_CONTENT_LENGTH_BYTES:
+                resp = PlainTextResponse("File too large (max 5MB)", status_code=413)
+                return _add_common_headers(resp)
+            if not _check_convert_rate_limit(request):
+                resp = PlainTextResponse("Too many conversion requests. Please try again shortly.", status_code=429)
+                return _add_common_headers(resp)
+
+        resp = await call_next(request)
+        if _request_is_https(request):
+            resp.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+        return _add_common_headers(resp)
+    finally:
+        _CURRENT_CSP_NONCE.reset(nonce_token)
 
 
 # Static
@@ -1300,6 +1347,11 @@ def _init_blog_cache() -> None:
         canonical_path = (p.get("canonical_path") or "").strip()
         if lang not in SUPPORTED_LANGS or not slug or not canonical_path:
             continue
+        p = dict(p)
+        p["intro_html"] = _sanitize_trusted_html_fragments(
+            p.get("intro_html") or [],
+            f"blog_metadata:{lang}/{slug}",
+        )
         BLOG_POSTS[lang][slug] = p
 
     # Lists (sorted)
@@ -1320,13 +1372,194 @@ def _init_blog_cache() -> None:
         if not BLOG_ALIASES.get(lang):
             BLOG_ALIASES[lang] = dict(BLOG_ALIASES["en"])
 
-
-_init_blog_cache()
-
-
 def _render_template(template_name: str, context: Dict[str, Any]) -> str:
     template = JINJA_ENV.get_template(template_name)
-    return template.render(**_deep_fix_mojibake(context))
+    render_context = dict(context)
+    render_context.setdefault("csp_nonce", _current_csp_nonce())
+    return template.render(**_deep_fix_mojibake(render_context))
+
+
+_ALLOWED_SAFE_HTML_TAGS = {
+    "a",
+    "article",
+    "blockquote",
+    "code",
+    "div",
+    "em",
+    "h2",
+    "h3",
+    "hr",
+    "li",
+    "nav",
+    "ol",
+    "p",
+    "pre",
+    "section",
+    "span",
+    "strong",
+    "table",
+    "tbody",
+    "td",
+    "th",
+    "thead",
+    "tr",
+    "ul",
+}
+_SAFE_HTML_ALLOWED_ATTRS: Dict[str, set[str]] = {
+    "a": {"class", "href"},
+    "article": {"class", "id"},
+    "div": {"class"},
+    "h2": {"class", "id"},
+    "h3": {"class", "id"},
+    "hr": {"class"},
+    "nav": {"class"},
+    "p": {"class"},
+    "section": {"class", "id"},
+}
+_SAFE_HTML_STRIP_CONTENT_TAGS = {
+    "embed",
+    "iframe",
+    "math",
+    "object",
+    "script",
+    "style",
+    "svg",
+    "template",
+}
+_SAFE_HTML_CLASS_RE = re.compile(r"^[A-Za-z0-9_-]+$")
+_SAFE_HTML_ID_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_.:-]*$")
+_SAFE_HTML_ALLOWED_HREF_SCHEMES = {"http", "https", "mailto"}
+_SAFE_HTML_RISKY_PATTERN = re.compile(
+    r"<\s*(script|iframe|object|embed|svg|math|template|style)\b|"
+    r"\son[a-z0-9_-]+\s*=|javascript\s*:|vbscript\s*:|data\s*:",
+    flags=re.IGNORECASE,
+)
+
+
+class _TrustedHtmlSanitizer(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.parts: List[str] = []
+        self._strip_content_depth = 0
+
+    def _serialize_attrs(self, tag: str, attrs: List[Tuple[str, Optional[str]]]) -> str:
+        allowed_attrs = _SAFE_HTML_ALLOWED_ATTRS.get(tag, set())
+        clean_attrs: List[str] = []
+
+        for attr_name, attr_value in attrs:
+            attr = (attr_name or "").strip().lower()
+            if attr not in allowed_attrs:
+                continue
+
+            value = self._sanitize_attr(tag, attr, attr_value)
+            if value is None:
+                continue
+            clean_attrs.append(f'{attr}="{html_escape(value, quote=True)}"')
+
+        return f" {' '.join(clean_attrs)}" if clean_attrs else ""
+
+    def _sanitize_attr(self, tag: str, attr: str, value: Optional[str]) -> Optional[str]:
+        raw_value = (value or "").strip()
+        if not raw_value:
+            return None
+
+        if attr == "class":
+            classes = [
+                token
+                for token in raw_value.split()
+                if _SAFE_HTML_CLASS_RE.fullmatch(token)
+            ]
+            return " ".join(classes) if classes else None
+
+        if attr == "id":
+            return raw_value if _SAFE_HTML_ID_RE.fullmatch(raw_value) else None
+
+        if tag == "a" and attr == "href":
+            compact = re.sub(r"[\x00-\x20]+", "", raw_value).lower()
+            if compact.startswith(("javascript:", "data:", "vbscript:")):
+                return None
+
+            if raw_value.startswith(("/", "#", "?", "./", "../")):
+                return raw_value
+
+            parsed = urlsplit(raw_value)
+            scheme = parsed.scheme.lower()
+            if scheme not in _SAFE_HTML_ALLOWED_HREF_SCHEMES:
+                return None
+            if scheme in {"http", "https"} and not parsed.netloc:
+                return None
+            return raw_value
+
+        return None
+
+    def handle_starttag(self, tag: str, attrs: List[Tuple[str, Optional[str]]]) -> None:
+        tag = tag.lower()
+        if tag in _SAFE_HTML_STRIP_CONTENT_TAGS:
+            self._strip_content_depth += 1
+            return
+        if self._strip_content_depth or tag not in _ALLOWED_SAFE_HTML_TAGS:
+            return
+        self.parts.append(f"<{tag}{self._serialize_attrs(tag, attrs)}>")
+
+    def handle_startendtag(self, tag: str, attrs: List[Tuple[str, Optional[str]]]) -> None:
+        tag = tag.lower()
+        if tag in _SAFE_HTML_STRIP_CONTENT_TAGS or self._strip_content_depth:
+            return
+        if tag not in _ALLOWED_SAFE_HTML_TAGS:
+            return
+        if tag == "hr":
+            self.parts.append(f"<hr{self._serialize_attrs(tag, attrs)}>")
+            return
+        self.parts.append(f"<{tag}{self._serialize_attrs(tag, attrs)}></{tag}>")
+
+    def handle_endtag(self, tag: str) -> None:
+        tag = tag.lower()
+        if tag in _SAFE_HTML_STRIP_CONTENT_TAGS:
+            if self._strip_content_depth:
+                self._strip_content_depth -= 1
+            return
+        if self._strip_content_depth:
+            return
+        if tag in _ALLOWED_SAFE_HTML_TAGS and tag != "hr":
+            self.parts.append(f"</{tag}>")
+
+    def handle_data(self, data: str) -> None:
+        if not self._strip_content_depth:
+            self.parts.append(html_escape(data))
+
+    def handle_entityref(self, name: str) -> None:
+        if not self._strip_content_depth:
+            self.parts.append(f"&{name};")
+
+    def handle_charref(self, name: str) -> None:
+        if not self._strip_content_depth:
+            self.parts.append(f"&#{name};")
+
+    def get_html(self) -> str:
+        return "".join(self.parts)
+
+
+def _sanitize_trusted_html(html_fragment: str, source: str) -> str:
+    parser = _TrustedHtmlSanitizer()
+    parser.feed(html_fragment or "")
+    parser.close()
+    sanitized = parser.get_html()
+    if _SAFE_HTML_RISKY_PATTERN.search(html_fragment or ""):
+        logger.warning("Sanitized trusted HTML fragment from %s", source)
+    return sanitized
+
+
+def _sanitize_trusted_html_fragments(fragments: Any, source: str) -> List[str]:
+    if not isinstance(fragments, list):
+        return []
+    return [
+        _sanitize_trusted_html(fragment, f"{source}[{index}]")
+        for index, fragment in enumerate(fragments)
+        if isinstance(fragment, str)
+    ]
+
+
+_init_blog_cache()
 
 
 def _read_blog_body(lang: str, slug: str) -> str:
@@ -1343,7 +1576,10 @@ def _read_blog_body(lang: str, slug: str) -> str:
         path = os.path.join(BLOG_POSTS_DIR, cand, f"{slug}.html")
         try:
             with open(path, "r", encoding="utf-8") as f:
-                return f.read()
+                return _sanitize_trusted_html(
+                    f.read(),
+                    f"blog_content/posts/{cand}/{slug}.html",
+                )
         except FileNotFoundError:
             continue
     return ""
@@ -1465,7 +1701,7 @@ def _format_date(lang: str, iso_date: str) -> str:
     return dt.strftime("%b %d, %Y")
 
 
-def _build_schema_article(post: Dict[str, Any], canonical_url: str) -> str:
+def _build_schema_article(post: Dict[str, Any], canonical_url: str) -> Dict[str, Any]:
     lang = post.get("lang") or "es"
     title = post.get("title") or ""
     desc = post.get("description") or ""
@@ -1504,19 +1740,17 @@ def _build_schema_article(post: Dict[str, Any], canonical_url: str) -> str:
         ],
     }
 
-    schema = {"@context": "https://schema.org", "@graph": [article, breadcrumbs]}
-    return json.dumps(schema, ensure_ascii=False)
+    return {"@context": "https://schema.org", "@graph": [article, breadcrumbs]}
 
 
-def _build_schema_simple_page(name: str, canonical_url: str, lang: str) -> str:
-    schema = {
+def _build_schema_simple_page(name: str, canonical_url: str, lang: str) -> Dict[str, Any]:
+    return {
         "@context": "https://schema.org",
         "@type": "WebPage",
         "name": name,
         "url": canonical_url,
         "inLanguage": lang,
     }
-    return json.dumps(schema, ensure_ascii=False)
 
 
 def _build_schema_solution_page(
@@ -1526,7 +1760,7 @@ def _build_schema_solution_page(
     description: str,
     related_blog_url: str,
     faq_items: Optional[List[Dict[str, str]]] = None,
-) -> str:
+) -> Dict[str, Any]:
     solutions_hub = _abs_url(_solutions_path(lang))
     solutions_name = "Soluciones" if lang == "es" else "Solutions"
     faq_entities: List[Dict[str, Any]] = []
@@ -1570,7 +1804,7 @@ def _build_schema_solution_page(
             },
         ]
 
-    schema = {
+    return {
         "@context": "https://schema.org",
         "@graph": [
             {
@@ -1607,10 +1841,9 @@ def _build_schema_solution_page(
             },
         ],
     }
-    return json.dumps(schema, ensure_ascii=False)
 
 
-def _build_schema_index(lang: str, canonical_url: str) -> str:
+def _build_schema_index(lang: str, canonical_url: str) -> Dict[str, Any]:
     items = []
     for idx, p in enumerate(BLOG_LIST.get(lang, []), start=1):
         slug = p.get("slug") or ""
@@ -1625,7 +1858,7 @@ def _build_schema_index(lang: str, canonical_url: str) -> str:
                 "name": p.get("title") or "",
             }
         )
-    schema = {
+    return {
         "@context": "https://schema.org",
         "@type": "WebPage",
         "name": "Blog",
@@ -1633,7 +1866,6 @@ def _build_schema_index(lang: str, canonical_url: str) -> str:
         "inLanguage": lang,
         "mainEntity": {"@type": "ItemList", "itemListElement": items[:50]},
     }
-    return json.dumps(schema, ensure_ascii=False)
 
 
 
@@ -1659,7 +1891,7 @@ def read_html_file(filename: str) -> str:
     html = _fix_text_mojibake(_read_text_file(path))
     html = html.replace("__GA_MEASUREMENT_ID__", GA_MEASUREMENT_ID)
     html = html.replace("/static/og-image.svg", OG_IMAGE_PATH)
-    return html
+    return _inject_script_nonces(html)
 
 
 def _force_meta_robots_noindex(html: str) -> str:
@@ -2853,7 +3085,7 @@ def _legal_page_context(lang: str, page: str) -> Dict[str, Any]:
 
     title = page_data["title"]
     description = page_data["description"]
-    body_html = page_data["body"]
+    body_html = _sanitize_trusted_html(page_data["body"], f"legal:{lang}:{page}")
 
     canonical_path = _legal_path(lang, page) if page in {"privacy", "terms", "contact"} else _home_path(lang)
     canonical_url = _abs_url(canonical_path)
