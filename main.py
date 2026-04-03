@@ -3239,32 +3239,6 @@ async def blog_index_pt() -> HTMLResponse:
     return RedirectResponse(url="/en/blog", status_code=301)
 
 
-# Redirects legacy numeric
-@app.get("/blog2")
-async def blog2_redirect() -> RedirectResponse:
-    return RedirectResponse(url="/blog/convertir-documento-latex-word", status_code=301)
-
-
-@app.get("/blog3")
-async def blog3_redirect() -> RedirectResponse:
-    return RedirectResponse(url="/blog/ia-chatgpt-a-word-ejercicios", status_code=301)
-
-
-@app.get("/blog4")
-async def blog4_redirect() -> RedirectResponse:
-    return RedirectResponse(url="/blog/pegar-latex-en-word-alt-eq", status_code=301)
-
-
-@app.get("/blog5")
-async def blog5_redirect() -> RedirectResponse:
-    return RedirectResponse(url="/blog/que-es-omml-ecuaciones-word", status_code=301)
-
-
-@app.get("/blog6")
-async def blog6_redirect() -> RedirectResponse:
-    return RedirectResponse(url="/blog/markdown-con-latex-a-word-docx", status_code=301)
-
-
 def _resolve_blog_slug(lang: str, slug: str) -> Tuple[Optional[str], Optional[Dict[str, Any]]]:
     """Return (redirect_url, post). redirect_url is set for alias slugs."""
     alias_map = BLOG_ALIASES.get(lang, {})
@@ -3558,8 +3532,23 @@ async def blog_post_pt(slug: str) -> HTMLResponse:
 
 
 LEGACY_REDIRECTS: Dict[str, str] = {
+    "/blog.html": "/blog/pasar-ecuaciones-chatgpt-word",
+    "/blog2": "/blog/convertir-documento-latex-word",
+    "/blog2.html": "/blog/convertir-documento-latex-word",
+    "/blog3": "/blog/ia-chatgpt-a-word-ejercicios",
+    "/blog3.html": "/blog/ia-chatgpt-a-word-ejercicios",
+    "/blog4": "/blog/pegar-latex-en-word-alt-eq",
+    "/blog4.html": "/blog/pegar-latex-en-word-alt-eq",
+    "/blog5": "/blog/que-es-omml-ecuaciones-word",
+    "/blog5.html": "/blog/que-es-omml-ecuaciones-word",
+    "/blog6": "/blog/markdown-con-latex-a-word-docx",
+    "/blog6.html": "/blog/markdown-con-latex-a-word-docx",
     "/index.html": "/",
     "/index-en.html": "/en",
+    "/index-de.html": "/en",
+    "/index-fr.html": "/en",
+    "/index-it.html": "/en",
+    "/index-pt.html": "/en",
     "/blog-index.html": "/blog",
     "/blog-index-en.html": "/en/blog",
     "/blog-en-1.html": "/en/blog/copy-chatgpt-equations-word",
@@ -3579,29 +3568,15 @@ LEGACY_REDIRECTS: Dict[str, str] = {
 }
 
 
-@app.get("/index.html")
-@app.get("/index-en.html")
-@app.get("/blog-index.html")
-@app.get("/blog-index-en.html")
-@app.get("/blog-en-1.html")
-@app.get("/blog-en-2.html")
-@app.get("/blog-en-3.html")
-@app.get("/blog-en-4.html")
-@app.get("/blog-en-5.html")
-@app.get("/blog-en-6.html")
-@app.get("/blog-en-question-marks-chatgpt-equations-word.html")
-@app.get("/blog-en-overleaf-latex-to-word-editable-equations.html")
-@app.get("/blog-en-pandoc-math-to-word-omml-troubleshooting.html")
-@app.get("/blog-en-omml-vs-mathtype-vs-latex-word-thesis.html")
-@app.get("/blog-signos-interrogacion-ecuaciones-chatgpt-word.html")
-@app.get("/blog-overleaf-latex-a-word-ecuaciones-editables.html")
-@app.get("/blog-pandoc-ecuaciones-word-no-editables-soluciones.html")
-@app.get("/blog-omml-vs-mathtype-vs-latex-word-tfg.html")
 async def legacy_redirects(request: Request) -> RedirectResponse:
     target = LEGACY_REDIRECTS.get(request.url.path)
     if not target:
         raise HTTPException(status_code=404, detail="Legacy route not mapped")
     return RedirectResponse(url=target, status_code=301)
+
+
+for legacy_path in LEGACY_REDIRECTS:
+    app.add_api_route(legacy_path, legacy_redirects, methods=["GET"], include_in_schema=False)
 
 
 @app.get("/robots.txt")

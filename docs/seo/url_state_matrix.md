@@ -1,5 +1,7 @@
 # URL State Matrix (Post Cleanup)
 
+Legacy root HTML copies are no longer part of the live source tree. Historical URLs are kept only as 301 redirects to their canonical 200 destinations.
+
 ## Indexable (index, follow, in sitemap)
 - `https://www.ecuacionesaword.com/`
 - `https://www.ecuacionesaword.com/en`
@@ -35,9 +37,12 @@
   - `/{de|fr|it|pt}/solutions/{slug}` -> matching `/en/solutions/{slug}` when equivalent exists
   - `/{de|fr|it|pt}/{privacy|terms|contact}` -> `/en/{privacy|terms|contact}`
 - Legacy short blog routes:
+  - `/blog.html`
   - `/blog2` ... `/blog6`
+  - `/blog2.html` ... `/blog6.html`
 - Legacy static routes:
   - `/index.html`, `/index-en.html`
+  - `/index-de.html`, `/index-fr.html`, `/index-it.html`, `/index-pt.html`
   - `/blog-index.html`, `/blog-index-en.html`
   - old blog html slugs (`/blog-en-*.html`, selected ES legacy html pages)
 - Blog alias slugs (via `BLOG_ALIASES`) to canonical blog paths

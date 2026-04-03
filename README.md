@@ -67,6 +67,11 @@ Open [http://127.0.0.1:8000](http://127.0.0.1:8000)
 - [Code of Conduct](./CODE_OF_CONDUCT.md)
 - [Changelog](./CHANGELOG.md)
 
+### Live site sources
+- Home pages live in `index.html` and `index-en.html`.
+- Dynamic pages live in `templates/`, with blog metadata/content in `blog_content/`.
+- Historical root HTML copies are intentionally removed from the live flow; old URLs are preserved via redirects in `main.py`.
+
 ---
 
 ## Español

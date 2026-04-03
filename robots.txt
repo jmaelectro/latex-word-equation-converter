@@ -1,7 +1,0 @@
-User-agent: *
-Allow: /
-
-# Technical endpoint excluded from crawl budget
-Disallow: /healthz
-
-Sitemap: https://www.ecuacionesaword.com/sitemap.xml

@@ -18,6 +18,20 @@ class SeoAndTextTests(unittest.TestCase):
             document_xml = zf.read("word/document.xml").decode("utf-8", errors="ignore")
         return document_xml.count("<m:oMath") + document_xml.count("<m:oMathPara")
 
+    def _request_for_path(self, path: str) -> Request:
+        return Request(
+            {
+                "type": "http",
+                "method": "GET",
+                "path": path,
+                "headers": [],
+                "scheme": "https",
+                "server": ("testserver", 443),
+                "client": ("127.0.0.1", 12345),
+                "query_string": b"",
+            }
+        )
+
     def test_fix_text_mojibake(self):
         raw = "GuÃƒÂ­a rÃƒÂ¡pida Ã¢â€ â€™ Word con fÃƒÂ³rmulas"
         fixed = main._fix_text_mojibake(raw)
@@ -62,6 +76,39 @@ class SeoAndTextTests(unittest.TestCase):
         resp = asyncio.run(main.blog_index_de())
         self.assertEqual(resp.status_code, 301)
         self.assertEqual(resp.headers.get("location"), "/en/blog")
+
+    def test_live_public_routes_still_return_200(self):
+        live_routes = {
+            "/": main.home,
+            "/en": main.home_en,
+            "/blog": main.blog_index_es,
+            "/en/blog": main.blog_index_en,
+            "/robots.txt": main.robots_txt,
+            "/sitemap.xml": main.sitemap_xml,
+        }
+        for path, handler in live_routes.items():
+            with self.subTest(path=path):
+                resp = asyncio.run(handler())
+                self.assertEqual(resp.status_code, 200)
+
+    def test_removed_legacy_root_html_routes_redirect_to_canonical_urls(self):
+        cases = {
+            "/blog.html": "/blog/pasar-ecuaciones-chatgpt-word",
+            "/blog2": "/blog/convertir-documento-latex-word",
+            "/blog2.html": "/blog/convertir-documento-latex-word",
+            "/blog6.html": "/blog/markdown-con-latex-a-word-docx",
+            "/blog-index.html": "/blog",
+            "/blog-en-1.html": "/en/blog/copy-chatgpt-equations-word",
+            "/index-de.html": "/en",
+            "/index-fr.html": "/en",
+            "/index-it.html": "/en",
+            "/index-pt.html": "/en",
+        }
+        for path, target in cases.items():
+            with self.subTest(path=path):
+                resp = asyncio.run(main.legacy_redirects(self._request_for_path(path)))
+                self.assertEqual(resp.status_code, 301)
+                self.assertEqual(resp.headers.get("location"), target)
 
     def test_non_primary_legal_redirects_to_en(self):
         resp = asyncio.run(main.privacy_fr())
