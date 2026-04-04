@@ -17,7 +17,7 @@ from docx import Document
 from docx.opc.exceptions import PackageNotFoundError
 from fastapi import FastAPI, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, PlainTextResponse, Response
+from fastapi.responses import HTMLResponse, PlainTextResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
 from starlette.concurrency import run_in_threadpool
@@ -46,6 +46,7 @@ from app_core.converter import (
 )
 import app_core.site as site_module
 from app_core.site import (
+    CURRENT_CSP_NONCE,
     BLOG_POSTS,
     blog2_redirect,
     blog3_redirect,
@@ -106,11 +107,8 @@ from app_core.site import (
     terms_fr,
     terms_it,
     terms_pt,
-    _render_template,
-    _secondary_blog_redirect_target,
-    _solution_landing_context,
-    _solutions_hub_context,
-    _legal_page_context,
+    build_csp_header,
+    custom_http_exception_handler as site_http_exception_handler,
 )
 
 UPLOAD_READ_CHUNK_SIZE = 64 * 1024
@@ -130,39 +128,6 @@ _RATE_LIMIT_LAST_SWEEP_AT = 0.0
 
 
 app = FastAPI(title=APP_TITLE)
-site_module.SITEMAP_LANGS = site_module.SUPPORTED_LANGS
-site_module.BLOG_TRANSLATION_TO_ES = {
-    (post.get("translation_slug") or ""): slug
-    for slug, post in BLOG_POSTS.get("es", {}).items()
-    if (post.get("translation_slug") or "")
-}
-site_module._published_home_langs = lambda: site_module.SUPPORTED_LANGS
-_original_blog_alternate_paths = site_module._blog_alternate_paths
-_original_all_alternates = site_module._all_alternates
-
-
-def _patched_blog_alternate_paths(lang: str, post: dict):
-    paths = _original_blog_alternate_paths(lang, post)
-    slug = (post.get("slug") or "").strip()
-    if lang == "en" and slug:
-        for code in ("de", "fr", "it", "pt"):
-            paths.setdefault(code, f"/{code}/blog/{slug}")
-    return paths
-
-
-site_module._blog_alternate_paths = _patched_blog_alternate_paths
-
-
-def _patched_all_alternates(path_by_lang, default_lang="es", langs=site_module.PRIMARY_CONTENT_LANGS):
-    effective_langs = langs
-    if langs == site_module.PRIMARY_CONTENT_LANGS and any(
-        code in path_by_lang for code in ("de", "fr", "it", "pt")
-    ):
-        effective_langs = site_module.SUPPORTED_LANGS
-    return _original_all_alternates(path_by_lang, default_lang=default_lang, langs=effective_langs)
-
-
-site_module._all_alternates = _patched_all_alternates
 
 app.add_middleware(
     CORSMiddleware,
@@ -184,7 +149,7 @@ if CANONICAL_HOST:
 @app.middleware("http")
 async def add_common_headers_mw(request: Request, call_next):
     nonce = secrets.token_urlsafe(18)
-    nonce_token = site_module._CURRENT_CSP_NONCE.set(nonce)
+    nonce_token = CURRENT_CSP_NONCE.set(nonce)
     request.state.csp_nonce = nonce
     try:
         if request.url.path == "/convert" and request.method == "POST":
@@ -203,10 +168,10 @@ async def add_common_headers_mw(request: Request, call_next):
                 "max-age=31536000; includeSubDomains",
             )
         resp = _add_common_headers(resp)
-        resp.headers["Content-Security-Policy"] = site_module._build_csp_header(nonce)
+        resp.headers["Content-Security-Policy"] = build_csp_header(nonce)
         return resp
     finally:
-        site_module._CURRENT_CSP_NONCE.reset(nonce_token)
+        CURRENT_CSP_NONCE.reset(nonce_token)
 
 
 _static_dir = os.path.join(BASE_DIR, "static")
@@ -454,7 +419,7 @@ async def convert(file: UploadFile, lang: str = Form("es")):
         "Content-Disposition": f'attachment; filename="{download_name}"; filename*=UTF-8\'\'{quote(download_name)}',
         "Cache-Control": "no-store",
     }
-    return site_module.StreamingResponse(
+    return StreamingResponse(
         out,
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         headers=headers,
@@ -465,7 +430,7 @@ async def custom_http_exception_handler(request: Request, exc: StarletteHTTPExce
     if request.url.path == "/convert":
         code, message = _coerce_convert_error(exc.status_code, exc.detail)
         return _convert_error_response(exc.status_code, code, message)
-    return await site_module.custom_http_exception_handler(request, exc)
+    return await site_http_exception_handler(request, exc)
 
 
 async def custom_validation_exception_handler(request: Request, exc: RequestValidationError):
@@ -476,134 +441,6 @@ async def custom_validation_exception_handler(request: Request, exc: RequestVali
             return _convert_error_response(400, "missing_file", "No file was uploaded.")
         return _convert_error_response(400, "invalid_request", "Invalid conversion request.")
     return _convert_error_response(400, "invalid_request", "Invalid conversion request.")
-
-
-async def home_de():
-    return HTMLResponse(read_html_file("index-de.html"))
-
-
-async def home_fr():
-    return HTMLResponse(read_html_file("index-fr.html"))
-
-
-async def home_it():
-    return HTMLResponse(read_html_file("index-it.html"))
-
-
-async def home_pt():
-    return HTMLResponse(read_html_file("index-pt.html"))
-
-
-async def blog_index_de():
-    return await site_module.blog_index_de()
-
-
-async def blog_index_fr():
-    return await site_module.blog_index_fr()
-
-
-async def blog_index_it():
-    return await site_module.blog_index_it()
-
-
-async def blog_index_pt():
-    return await site_module.blog_index_pt()
-
-
-async def privacy_de():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("de", "privacy")))
-
-
-async def terms_de():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("de", "terms")))
-
-
-async def contact_de():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("de", "contact")))
-
-
-async def privacy_fr():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("fr", "privacy")))
-
-
-async def terms_fr():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("fr", "terms")))
-
-
-async def contact_fr():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("fr", "contact")))
-
-
-async def privacy_it():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("it", "privacy")))
-
-
-async def terms_it():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("it", "terms")))
-
-
-async def contact_it():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("it", "contact")))
-
-
-async def privacy_pt():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("pt", "privacy")))
-
-
-async def terms_pt():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("pt", "terms")))
-
-
-async def contact_pt():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("pt", "contact")))
-
-
-async def solutions_de():
-    return await site_module.solutions_de()
-
-
-async def solutions_fr():
-    return await site_module.solutions_fr()
-
-
-async def solutions_it():
-    return await site_module.solutions_it()
-
-
-async def solutions_pt():
-    return await site_module.solutions_pt()
-
-
-async def solution_landing_de(slug: str):
-    return await site_module.solution_landing_de(slug)
-
-
-async def solution_landing_fr(slug: str):
-    return await site_module.solution_landing_fr(slug)
-
-
-async def solution_landing_it(slug: str):
-    return await site_module.solution_landing_it(slug)
-
-
-async def solution_landing_pt(slug: str):
-    return await site_module.solution_landing_pt(slug)
-
-
-async def blog_post_de(slug: str):
-    return await site_module.blog_post_de(slug)
-
-
-async def blog_post_fr(slug: str):
-    return await site_module.blog_post_fr(slug)
-
-
-async def blog_post_it(slug: str):
-    return await site_module.blog_post_it(slug)
-
-
-async def blog_post_pt(slug: str):
-    return await site_module.blog_post_pt(slug)
 
 
 def _register_get(path: str, endpoint, response_class=None) -> None:

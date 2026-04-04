@@ -7,6 +7,7 @@ import json
 import re
 from collections import defaultdict, deque
 from contextvars import ContextVar
+from functools import lru_cache
 from html.parser import HTMLParser
 from pathlib import Path
 from html import escape as html_escape
@@ -122,6 +123,7 @@ if not logger.handlers:
     logging.basicConfig(level=logging.INFO)
 
 _CURRENT_CSP_NONCE: ContextVar[str] = ContextVar("current_csp_nonce", default="")
+CURRENT_CSP_NONCE = _CURRENT_CSP_NONCE
 
 
 def _current_csp_nonce() -> str:
@@ -171,6 +173,10 @@ def _build_csp_header(nonce: Optional[str] = None) -> str:
             "form-action 'self'",
         ]
     )
+
+
+def build_csp_header(nonce: Optional[str] = None) -> str:
+    return _build_csp_header(nonce)
 
 MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
 MAX_UPLOAD_CONTENT_LENGTH_BYTES = MAX_FILE_SIZE_BYTES + 64 * 1024
@@ -401,7 +407,15 @@ JINJA_ENV.globals["GA_MEASUREMENT_ID"] = GA_MEASUREMENT_ID
 SUPPORTED_LANGS: Tuple[str, ...] = ("es", "en", "de", "fr", "it", "pt")
 PRIMARY_CONTENT_LANGS: Tuple[str, ...] = ("es", "en")
 SECONDARY_LANGS: Tuple[str, ...] = tuple(lang for lang in SUPPORTED_LANGS if lang not in PRIMARY_CONTENT_LANGS)
-SITEMAP_LANGS: Tuple[str, ...] = PRIMARY_CONTENT_LANGS
+SITEMAP_LANGS: Tuple[str, ...] = SUPPORTED_LANGS
+HOME_FILE_BY_LANG: Dict[str, str] = {
+    "es": "index.html",
+    "en": "index-en.html",
+    "de": "index-de.html",
+    "fr": "index-fr.html",
+    "it": "index-it.html",
+    "pt": "index-pt.html",
+}
 
 # Posts kept live for users but intentionally excluded from index/sitemap to reduce cannibalization.
 NON_INDEXABLE_BLOG_SLUGS: Dict[str, set[str]] = {
@@ -571,6 +585,7 @@ LANG_PREFIX: Dict[str, str] = {
 BLOG_POSTS: Dict[str, Dict[str, Dict[str, Any]]] = {lang: {} for lang in SUPPORTED_LANGS}
 BLOG_LIST: Dict[str, List[Dict[str, Any]]] = {lang: [] for lang in SUPPORTED_LANGS}
 BLOG_ALIASES: Dict[str, Dict[str, str]] = {lang: {} for lang in SUPPORTED_LANGS}
+BLOG_TRANSLATION_TO_ES: Dict[str, str] = {}
 
 
 def _content_lang(lang: str) -> str:
@@ -609,7 +624,7 @@ def _solutions_path(lang: str) -> str:
 def _all_alternates(
     path_by_lang: Dict[str, str],
     default_lang: str = "es",
-    langs: Tuple[str, ...] = PRIMARY_CONTENT_LANGS,
+    langs: Tuple[str, ...] = SUPPORTED_LANGS,
 ) -> List[Dict[str, str]]:
     out: List[Dict[str, str]] = []
     for code in langs:
@@ -632,8 +647,7 @@ def _default_site_lastmod_iso() -> str:
         return env_value
     tracked_paths = [
         Path(__file__),
-        Path(BASE_DIR) / "index.html",
-        Path(BASE_DIR) / "index-en.html",
+        *(Path(BASE_DIR) / filename for filename in HOME_FILE_BY_LANG.values()),
         Path(BASE_DIR) / "templates" / "base.html",
         Path(BASE_DIR) / "templates" / "blog_index.html",
         Path(BASE_DIR) / "templates" / "blog_post.html",
@@ -698,25 +712,6 @@ def _normalize_tag(tag: str) -> str:
 
 def _is_primary_lang(lang: str) -> bool:
     return lang in PRIMARY_CONTENT_LANGS
-
-
-def _is_blog_post_indexable(lang: str, post: Dict[str, Any]) -> bool:
-    slug = (post.get("slug") or "").strip()
-    if not slug:
-        return False
-    if not _is_primary_lang(lang):
-        return False
-    if slug in NON_INDEXABLE_BLOG_SLUGS.get(lang, set()):
-        return False
-    if bool(post.get("noindex")):
-        return False
-    return True
-
-
-def _robots_directive(lang: str, indexable: bool = True) -> str:
-    if not indexable or not _is_primary_lang(lang):
-        return "noindex,follow,max-image-preview:large"
-    return "index,follow,max-image-preview:large"
 
 LANDING_PAGES: Dict[str, Dict[str, Dict[str, Any]]] = {
     "chatgpt-equations-to-word": {
@@ -1334,6 +1329,7 @@ def _init_blog_cache() -> None:
     posts = data.get("posts", [])
     aliases = data.get("aliases", {})
 
+    BLOG_TRANSLATION_TO_ES.clear()
     for lang in SUPPORTED_LANGS:
         BLOG_POSTS[lang].clear()
         BLOG_LIST[lang].clear()
@@ -1354,6 +1350,11 @@ def _init_blog_cache() -> None:
         if lang not in SUPPORTED_LANGS or not slug or not canonical_path:
             continue
         BLOG_POSTS[lang][slug] = p
+        translation_slug = (p.get("translation_slug") or "").strip()
+        if lang == "es":
+            for candidate in {slug, translation_slug}:
+                if candidate:
+                    BLOG_TRANSLATION_TO_ES[candidate] = slug
 
     # Lists (sorted)
     for lang in SUPPORTED_LANGS:
@@ -1804,36 +1805,6 @@ def _build_schema_solution_page(
         ],
     }
     return json.dumps(schema, ensure_ascii=False)
-
-
-def _build_schema_index(lang: str, canonical_url: str) -> str:
-    items = []
-    for idx, p in enumerate(BLOG_LIST.get(lang, []), start=1):
-        slug = p.get("slug") or ""
-        url_path = (p.get("canonical_path") or "").strip()
-        if lang not in PRIMARY_CONTENT_LANGS or not url_path:
-            url_path = f"{_blog_index_path(lang)}/{slug}"
-        items.append(
-            {
-                "@type": "ListItem",
-                "position": idx,
-                "url": f"{SITE_CANONICAL_ORIGIN}{url_path}",
-                "name": p.get("title") or "",
-            }
-        )
-    schema = {
-        "@context": "https://schema.org",
-        "@type": "WebPage",
-        "name": "Blog",
-        "url": canonical_url,
-        "inLanguage": lang,
-        "mainEntity": {"@type": "ItemList", "itemListElement": items[:50]},
-    }
-    return json.dumps(schema, ensure_ascii=False)
-
-
-
-
 def _noindex_headers(follow: bool = False) -> Dict[str, str]:
     """Headers to discourage indexing for technical/non-content endpoints."""
     return {"X-Robots-Tag": "noindex, follow" if follow else "noindex, nofollow"}
@@ -1850,11 +1821,25 @@ def _read_text_file(path: str, default: Optional[str] = None) -> str:
         raise
 
 
-def read_html_file(filename: str) -> str:
+@lru_cache(maxsize=16)
+def _read_cached_html_source(
+    filename: str,
+    source_mtime: float,
+    ga_measurement_id: str,
+    og_image_path: str,
+) -> str:
+    del source_mtime
     path = os.path.join(BASE_DIR, filename)
     html = _fix_text_mojibake(_read_text_file(path))
-    html = html.replace("__GA_MEASUREMENT_ID__", GA_MEASUREMENT_ID)
-    html = html.replace("/static/og-image.svg", OG_IMAGE_PATH)
+    html = html.replace("__GA_MEASUREMENT_ID__", ga_measurement_id)
+    html = html.replace("/static/og-image.svg", og_image_path)
+    return html
+
+
+def read_html_file(filename: str) -> str:
+    path = os.path.join(BASE_DIR, filename)
+    source_mtime = os.path.getmtime(path)
+    html = _read_cached_html_source(filename, source_mtime, GA_MEASUREMENT_ID, OG_IMAGE_PATH)
     return _inject_script_nonces(html)
 
 
@@ -1917,9 +1902,6 @@ def _sitemap_url_entry(
     )
 
 
-def _is_valid_blog_canonical_path(lang: str, path: str) -> bool:
-    expected = "/blog/" if lang == "es" else "/en/blog/"
-    return bool(path and path.startswith(expected))
 
 
 def _translated_indexable_path(lang: str, slug: str) -> Optional[str]:
@@ -1932,147 +1914,6 @@ def _translated_indexable_path(lang: str, slug: str) -> Optional[str]:
     return path
 
 
-def _blog_alternate_paths(lang: str, post: Dict[str, Any]) -> Dict[str, str]:
-    canonical_path = (post.get("canonical_path") or "").strip()
-    slug = (post.get("slug") or "").strip()
-    if not canonical_path and slug:
-        canonical_path = f"{_blog_index_path(lang)}/{slug}"
-    paths: Dict[str, str] = {}
-    if canonical_path and _is_valid_blog_canonical_path(lang, canonical_path):
-        paths[lang] = canonical_path
-
-    translation_slug = (post.get("translation_slug") or "").strip()
-    counterpart_lang = "en" if lang == "es" else "es"
-    counterpart_slug = translation_slug or slug
-    counterpart_path = _translated_indexable_path(counterpart_lang, counterpart_slug)
-    if counterpart_path:
-        paths[counterpart_lang] = counterpart_path
-
-    return paths
-
-
-def generate_sitemap_xml() -> str:
-    """
-    Build sitemap using only canonical, indexable, final URLs:
-    - status 200 routes (no redirect hubs)
-    - primary languages only (es/en)
-    - blog posts explicitly marked as indexable by strategy
-    """
-    urls: List[str] = []
-    seen_locs: set[str] = set()
-
-    def append_url(
-        loc_path: str,
-        *,
-        lastmod: str,
-        changefreq: str,
-        priority: str,
-        alternates: Optional[List[Dict[str, str]]] = None,
-    ) -> None:
-        if not loc_path.startswith("/"):
-            return
-        loc = _abs_url(loc_path)
-        if loc in seen_locs:
-            return
-        seen_locs.add(loc)
-        urls.append(
-            _sitemap_url_entry(
-                loc,
-                lastmod,
-                changefreq,
-                priority,
-                alternates=alternates,
-            )
-        )
-
-    def post_lastmod(p: Dict[str, Any]) -> str:
-        d = (p.get("date_modified") or p.get("date_published") or "").strip()
-        if d:
-            return d
-        return _now_lastmod_iso()
-
-    # Home (primary languages only)
-    home_paths = {lang: _home_path(lang) for lang in SITEMAP_LANGS}
-    home_alts = _all_alternates(home_paths, default_lang="es")
-    for lang in SITEMAP_LANGS:
-        append_url(
-            home_paths[lang],
-            lastmod=_now_lastmod_iso(),
-            changefreq="weekly",
-            priority="1.0" if lang == "es" else "0.8",
-            alternates=home_alts,
-        )
-
-    # Blog index
-    blog_index_paths = {lang: _blog_index_path(lang) for lang in SITEMAP_LANGS}
-    blog_index_alts = _all_alternates(blog_index_paths, default_lang="es")
-    for lang in SITEMAP_LANGS:
-        append_url(
-            blog_index_paths[lang],
-            lastmod=_now_lastmod_iso(),
-            changefreq="weekly",
-            priority="0.8" if lang == "es" else "0.7",
-            alternates=blog_index_alts,
-        )
-
-    # Solutions hub
-    solutions_paths = {lang: _solutions_path(lang) for lang in SITEMAP_LANGS}
-    solutions_alts = _all_alternates(solutions_paths, default_lang="es")
-    for lang in SITEMAP_LANGS:
-        append_url(
-            solutions_paths[lang],
-            lastmod=_now_lastmod_iso(),
-            changefreq="weekly",
-            priority="0.75" if lang == "es" else "0.7",
-            alternates=solutions_alts,
-        )
-
-    # Transactional landings
-    for es_path, en_path in _all_landing_pairs():
-        landing_paths = {"es": es_path, "en": en_path}
-        alts = _all_alternates(landing_paths, default_lang="es")
-        for lang in SITEMAP_LANGS:
-            path = landing_paths.get(lang)
-            if not path:
-                continue
-            append_url(
-                path,
-                lastmod=_now_lastmod_iso(),
-                changefreq="weekly",
-                priority="0.7" if lang == "es" else "0.6",
-                alternates=alts,
-            )
-
-    # Blog posts (indexable only)
-    for lang in SITEMAP_LANGS:
-        for p in BLOG_LIST.get(lang, []):
-            if not _is_blog_post_indexable(lang, p):
-                continue
-            slug = (p.get("slug") or "").strip()
-            if not slug:
-                continue
-            canonical_path = (p.get("canonical_path") or "").strip()
-            if not canonical_path:
-                canonical_path = f"{_blog_index_path(lang)}/{slug}"
-            if not _is_valid_blog_canonical_path(lang, canonical_path):
-                continue
-            paths = _blog_alternate_paths(lang, p)
-            alts = _all_alternates(paths, default_lang="es")
-            append_url(
-                canonical_path,
-                lastmod=post_lastmod(p),
-                changefreq="monthly",
-                priority="0.6" if lang == "es" else "0.5",
-                alternates=alts,
-            )
-
-    return (
-        '<?xml version="1.0" encoding="UTF-8"?>\n'
-        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
-        'xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
-        + "".join(urls)
-        + "</urlset>\n"
-    )
 
 
 # ================================================================
@@ -2080,10 +1921,14 @@ def generate_sitemap_xml() -> str:
 # ================================================================
 # Routes: páginas
 # ================================================================
+def _home_filename(lang: str) -> str:
+    return HOME_FILE_BY_LANG.get(lang, HOME_FILE_BY_LANG["en"])
+
+
 @app.get("/", response_class=HTMLResponse)
 async def home() -> HTMLResponse:
     try:
-        return HTMLResponse(read_html_file("index.html"))
+        return HTMLResponse(read_html_file(_home_filename("es")))
     except FileNotFoundError:
         return HTMLResponse("<h1>index.html not found</h1>", status_code=404)
 
@@ -2091,29 +1936,29 @@ async def home() -> HTMLResponse:
 @app.get("/en", response_class=HTMLResponse)
 async def home_en() -> HTMLResponse:
     try:
-        return HTMLResponse(read_html_file("index-en.html"))
+        return HTMLResponse(read_html_file(_home_filename("en")))
     except FileNotFoundError:
         return HTMLResponse("<h1>index-en.html not found</h1>", status_code=404)
 
 
 @app.get("/de", response_class=HTMLResponse)
 async def home_de() -> HTMLResponse:
-    return RedirectResponse(url="/en", status_code=301)
+    return HTMLResponse(read_html_file(_home_filename("de")))
 
 
 @app.get("/fr", response_class=HTMLResponse)
 async def home_fr() -> HTMLResponse:
-    return RedirectResponse(url="/en", status_code=301)
+    return HTMLResponse(read_html_file(_home_filename("fr")))
 
 
 @app.get("/it", response_class=HTMLResponse)
 async def home_it() -> HTMLResponse:
-    return RedirectResponse(url="/en", status_code=301)
+    return HTMLResponse(read_html_file(_home_filename("it")))
 
 
 @app.get("/pt", response_class=HTMLResponse)
 async def home_pt() -> HTMLResponse:
-    return RedirectResponse(url="/en", status_code=301)
+    return HTMLResponse(read_html_file(_home_filename("pt")))
 
 
 def _landing_from_slug(lang: str, slug: str) -> Optional[Dict[str, Any]]:
@@ -2376,6 +2221,14 @@ def _active_blog_langs() -> Tuple[str, ...]:
     return tuple(lang for lang in SUPPORTED_LANGS if BLOG_LIST.get(lang))
 
 
+def _published_home_langs() -> Tuple[str, ...]:
+    return tuple(
+        lang
+        for lang, filename in HOME_FILE_BY_LANG.items()
+        if (Path(BASE_DIR) / filename).exists()
+    )
+
+
 def _is_blog_post_indexable(lang: str, post: Dict[str, Any]) -> bool:
     slug = (post.get("slug") or "").strip()
     if not slug:
@@ -2458,60 +2311,8 @@ def _build_schema_index(lang: str, canonical_url: str) -> str:
     return json.dumps(schema, ensure_ascii=False)
 
 
-def _get_related_posts(lang: str, current_post: Dict[str, Any], limit: int = 4) -> List[Dict[str, str]]:
-    tags = set(current_post.get("tags") or [])
-    cur_slug = current_post.get("slug") or ""
-    candidates: List[Tuple[int, str, Dict[str, Any]]] = []
-    for p in BLOG_LIST.get(lang, []):
-        if (p.get("slug") or "") == cur_slug:
-            continue
-        p_tags = set(p.get("tags") or [])
-        score = len(tags.intersection(p_tags))
-        if tags and score <= 0:
-            continue
-        candidates.append((score, (p.get("date_published") or ""), p))
-
-    candidates.sort(key=lambda t: (t[0], t[1]), reverse=True)
-
-    out: List[Dict[str, str]] = []
-    for _, __, p in candidates[:limit]:
-        url = (p.get("canonical_path") or "").strip()
-        if not _is_valid_blog_canonical_path(lang, url):
-            url = f"{_blog_index_path(lang)}/{p.get('slug') or ''}"
-        out.append({"url": url, "title": p.get("title") or ""})
-
-    if len(out) >= limit:
-        return out
-
-    used_urls = {item["url"] for item in out}
-    for p in BLOG_LIST.get(lang, []):
-        if (p.get("slug") or "") == cur_slug:
-            continue
-        url = (p.get("canonical_path") or "").strip()
-        if not _is_valid_blog_canonical_path(lang, url):
-            url = f"{_blog_index_path(lang)}/{p.get('slug') or ''}"
-        if not url or url in used_urls:
-            continue
-        out.append({"url": url, "title": p.get("title") or ""})
-        used_urls.add(url)
-        if len(out) >= limit:
-            break
-
-    return out
 
 
-def _pillar_link_for_lang(lang: str) -> Dict[str, str]:
-    if lang == "es":
-        return {
-            "href": "/blog/latex-a-word-omml-guia-definitiva",
-            "label": "Pilar: LaTeX a Word online (guia definitiva)",
-        }
-
-    slug = "latex-to-word-online-free-editable-equations"
-    return {
-        "href": f"{_blog_index_path(lang)}/{slug}",
-        "label": "Pillar: LaTeX to Word online guide",
-    }
 
 
 def _solution_lang_paths(landing_key: str) -> Dict[str, str]:
@@ -5000,4 +4801,3 @@ def _build_contextual_links(lang: str, current_post: Dict[str, Any]) -> List[Dic
         }
     )
     return links
-

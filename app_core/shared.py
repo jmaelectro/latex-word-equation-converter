@@ -13,7 +13,7 @@ except Exception as exc:  # pragma: no cover
     ) from exc
 
 
-APP_TITLE = "Ecuaciones a Word (LaTeX â†’ Word OMML)"
+APP_TITLE = "Ecuaciones a Word (LaTeX → Word OMML)"
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE_NAME = "Ecuaciones a Word"
 
@@ -51,7 +51,7 @@ PRIMARY_CONTENT_LANGS: Tuple[str, ...] = ("es", "en")
 SECONDARY_LANGS: Tuple[str, ...] = tuple(
     lang for lang in SUPPORTED_LANGS if lang not in PRIMARY_CONTENT_LANGS
 )
-SITEMAP_LANGS: Tuple[str, ...] = PRIMARY_CONTENT_LANGS
+SITEMAP_LANGS: Tuple[str, ...] = SUPPORTED_LANGS
 
 LANG_PREFIX: Dict[str, str] = {
     "es": "",
@@ -171,6 +171,10 @@ def tracked_site_files() -> List[Path]:
         Path(__file__),
         Path(BASE_DIR) / "index.html",
         Path(BASE_DIR) / "index-en.html",
+        Path(BASE_DIR) / "index-de.html",
+        Path(BASE_DIR) / "index-fr.html",
+        Path(BASE_DIR) / "index-it.html",
+        Path(BASE_DIR) / "index-pt.html",
         Path(BASE_DIR) / "templates" / "base.html",
         Path(BASE_DIR) / "templates" / "blog_index.html",
         Path(BASE_DIR) / "templates" / "blog_post.html",

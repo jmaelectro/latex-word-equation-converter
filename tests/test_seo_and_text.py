@@ -133,13 +133,15 @@ class SeoAndTextTests(unittest.TestCase):
         self.assertIn('<html lang="fr">', resp.body.decode("utf-8", errors="ignore"))
 
     def test_legal_text_no_mojibake(self):
-        ctx = main._legal_page_context("es", "privacy")
+        ctx = main.site_module._legal_page_context("es", "privacy")
         self.assertIn("Política", ctx["title"])
         self.assertIn("Cómo", ctx["description"])
         self.assertIn("únicamente", ctx["body_html"])
         self.assertIn("Analítica", ctx["body_html"])
         self.assertNotIn("Pol?tica", ctx["title"])
         self.assertNotIn("C?mo", ctx["description"])
+        self.assertNotIn("PolÃ", ctx["title"])
+        self.assertNotIn("CÃ³mo", ctx["description"])
 
     def test_home_tracking_events_are_consistent(self):
         html = main.read_html_file("index.html")
@@ -217,6 +219,48 @@ class SeoAndTextTests(unittest.TestCase):
         self.assertIn('role="status"', html)
         self.assertIn('aria-live="polite"', html)
         self.assertNotIn('role="link"', html)
+
+    def test_home_pages_use_single_upload_field_contract(self):
+        for filename in [
+            "index.html",
+            "index-en.html",
+            "index-de.html",
+            "index-fr.html",
+            "index-it.html",
+            "index-pt.html",
+        ]:
+            html = main.read_html_file(filename)
+            self.assertIn('fd.append("file", file);', html)
+            self.assertNotIn('fd.append("document", file);', html)
+
+    def test_home_guide_cards_use_matching_data_href_and_anchor(self):
+        for filename in [
+            "index.html",
+            "index-en.html",
+            "index-de.html",
+            "index-fr.html",
+            "index-it.html",
+            "index-pt.html",
+        ]:
+            html = main.read_html_file(filename)
+            for match in re.finditer(r'<article[^>]*data-href="([^"]+)"[^>]*>(.*?)</article>', html, re.S):
+                anchor = re.search(r'<a href="([^"]+)"', match.group(2))
+                if anchor:
+                    self.assertEqual(match.group(1), anchor.group(1), filename)
+
+    def test_localized_home_json_ld_uses_localized_urls(self):
+        expected = {
+            "index-en.html": "/en",
+            "index-de.html": "/de",
+            "index-fr.html": "/fr",
+            "index-it.html": "/it",
+            "index-pt.html": "/pt",
+        }
+        for filename, suffix in expected.items():
+            html = main.read_html_file(filename)
+            self.assertIn('"url": "https://www.ecuacionesaword.com/"', html)
+            self.assertIn(f'"url": "https://www.ecuacionesaword.com{suffix}"', html)
+            self.assertIn('"inLanguage": ["es", "en", "de", "fr", "it", "pt"]', html)
 
     def test_trusted_html_sanitizer_removes_active_content(self):
         raw = (
