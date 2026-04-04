@@ -1,11 +1,11 @@
 <h2>Qu'est-ce qu'OMML (et pourquoi c'est important)</h2>
 <p>Microsoft Word stocke les équations dans un format natif appelé<strong>OMML</strong>(Langage de balisage mathématique du bureau). Lorsque vos équations sont au format OMML, vous pouvez les modifier avec l'éditeur d'équations de Word, les aligner avec le texte et les maintenir cohérentes sur toutes les plateformes.</p>
-<p>En revanche, du LaTeX brut collé dans Word est généralement traité comme du texte. Dans certains cas, Word tente de l'interpréter, mais le résultat est incohérent : symboles manquants, espacements brisés ou « points d'interrogation » pour les glyphes non pris en charge.</p>
-<h2>Scénarios typiques : ChatGPT, Pandoc, Overleaf</h2>
+<p>En revanche, du LaTeX brut collé dans Word est généralement traité comme du texte. Dans certains cas, Word tente de l'interpréter, mais le résultat est incohérent : symboles manquants, espacements brisés ou « points d'interrogation » pour les glyphes non pris en charge.</p>
+<h2>Scénarios typiques : ChatGPT, Pandoc, Overleaf</h2>
 <ul>
-<li><strong>ChatGPT/Gémeaux/Copilote :</strong>génère LaTeX rapidement, mais le copier/coller dans Word échoue souvent ou n'est pas modifiable.</li>
-<li><strong>Pandoc :</strong>peut générer du DOCX, mais les mathématiques peuvent être des images ou ne pas être modifiables de manière fiable en fonction du pipeline et des macros.</li>
-<li><strong>Projets Overleaf/LaTeX :</strong>l'exportation vers Word peut conserver la mise en page mais pas les équations modifiables, en particulier dans les documents volumineux.</li>
+<li><strong>ChatGPT/Gémeaux/Copilote :</strong>génère LaTeX rapidement, mais le copier/coller dans Word échoue souvent ou n'est pas modifiable.</li>
+<li><strong>Pandoc :</strong>peut générer du DOCX, mais les mathématiques peuvent être des images ou ne pas être modifiables de manière fiable en fonction du pipeline et des macros.</li>
+<li><strong>Projets Overleaf/LaTeX :</strong>l'exportation vers Word peut conserver la mise en page mais pas les équations modifiables, en particulier dans les documents volumineux.</li>
 </ul>
 <h2>Le flux de travail fiable (prêt pour la soumission)</h2>
 <ol>
@@ -16,7 +16,7 @@
 <li>Pour le formatage final, gardez les polices cohérentes (Cambria Math est une valeur par défaut sûre) et utilisez les styles Word pour les titres et les légendes.</li>
 </ol>
 <h2>Exemples que vous pouvez tester</h2>
-<p>Essayez-les dans un .txt et convertissez :</p>
+<p>Essayez-les dans un .txt et convertissez :</p>
 <pre><code>Inline: $\frac{a}{b} + \sqrt{x}$
 
 Display:
@@ -42,13 +42,13 @@ $$</code></pre>
 <p>Voir:<a href="/fr/blog/pandoc-math-to-word-omml-troubleshooting">Dépannage Pandoc pour OMML</a>.</p>
 <h2>FAQ</h2>
 <h3>Mes équations seront-elles modifiables dans Word ?</h3>
-<p>Oui : lorsque la sortie utilise des objets d'équation Word natifs (OMML), vous pouvez cliquer sur une équation et la modifier avec l'éditeur d'équation.</p>
+<p>Oui : lorsque la sortie utilise des objets d'équation Word natifs (OMML), vous pouvez cliquer sur une équation et la modifier avec l'éditeur d'équation.</p>
 <h3>Stockez-vous mes fichiers ?</h3>
 <p>Non. L'outil traite votre téléchargement pour générer un DOCX et ne conserve pas le fichier après la conversion.</p>
 <h3>Est-ce que ça marche avec des documents longs ?</h3>
 <p>Oui. Pour les documents très longs, gardez les macros simples et testez d'abord la conversion sur une section représentative.</p>
-<h3>Quels délimiteurs sont pris en charge ?</h3>
+<h3>Quels délimiteurs sont pris en charge ?</h3>
 <p>Utilisez des délimiteurs cohérents comme<code>$...$</code>pour en ligne et<code>$$...$$</code>ou<code>\[...\]</code>pour afficher les mathématiques.</p>
-<h3>Que se passe-t-il si j'ai déjà un DOCX avec LaTeX tapé sous forme de texte ?</h3>
+<h3>Que se passe-t-il si j'ai déjà un DOCX avec LaTeX tapé sous forme de texte ?</h3>
 <p>C'est un cas courant. Téléchargez le DOCX et le convertisseur remplacera les segments LaTeX par des équations OMML modifiables.</p>
-<p><strong>Prochaines étapes :</strong>Si vous venez de Markdown, voir<a href="/fr/blog/markdown-latex-to-word-docx">Markdown + LaTeX vers DOCX</a>. Si vous venez de ChatGPT, voir<a href="/fr/blog/copy-chatgpt-equations-word">Copier des équations d'IA dans Word</a>.</p>
+<p><strong>Prochaines étapes :</strong>Si vous venez de Markdown, voir<a href="/fr/blog/markdown-latex-to-word-docx">Markdown + LaTeX vers DOCX</a>. Si vous venez de ChatGPT, voir<a href="/fr/blog/copy-chatgpt-equations-word">Copier des équations d'IA dans Word</a>.</p>

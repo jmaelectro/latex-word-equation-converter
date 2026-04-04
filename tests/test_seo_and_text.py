@@ -256,6 +256,26 @@ class SeoAndTextTests(unittest.TestCase):
         self.assertIn("Política de privacidad", legal_body)
         self.assertIn("mailto:ecuacionesaword@gmail.com", legal_body)
 
+    def test_rendered_pages_do_not_contain_known_text_corruption(self):
+        pages = [
+            asyncio.run(main.home()).body.decode("utf-8", errors="ignore"),
+            asyncio.run(main.home_en()).body.decode("utf-8", errors="ignore"),
+            asyncio.run(main.privacy_fr()).body.decode("utf-8", errors="ignore"),
+            asyncio.run(main.solutions_it()).body.decode("utf-8", errors="ignore"),
+        ]
+        for body in pages:
+            self.assertNotIn("ChatGPT?Word", body)
+            self.assertNotIn("? Ecuaciones", body)
+            self.assertNotIn("? No se vende", body)
+            self.assertNotIn("? Flujo pensado", body)
+            self.assertNotIn("Politique de confidentialit?", body)
+            self.assertNotIn("Datenschutzerkl?rung", body)
+
+    def test_json_ld_is_rendered_as_json_object_not_string(self):
+        _, _, body = asyncio.run(self._asgi_get("/en/blog/markdown-latex-to-word-docx"))
+        self.assertIn('type="application/ld+json">{"@context"', body)
+        self.assertNotIn('type="application/ld+json">"{', body)
+
     def test_convert_upload_to_docx_bytes_txt_flow(self):
         out_bytes = main._convert_upload_to_docx_bytes("txt", b"Equation: $x+1$\n")
         doc = main.Document(io.BytesIO(out_bytes))
