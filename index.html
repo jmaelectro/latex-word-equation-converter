@@ -33,7 +33,7 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('consent', 'default', { analytics_storage: 'denied' });
+    gtag('consent', 'default', { analytics_storage: 'granted' });
     gtag('config', '__GA_MEASUREMENT_ID__');
     window.setAnalyticsConsent = function(granted) {
       gtag('consent', 'update', { analytics_storage: granted ?'granted' : 'denied' });

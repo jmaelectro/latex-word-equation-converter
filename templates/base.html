@@ -44,7 +44,7 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('consent', 'default', { analytics_storage: 'denied' });
+    gtag('consent', 'default', { analytics_storage: 'granted' });
     gtag('config', '{{ GA_MEASUREMENT_ID }}');
     // Future CMP integration can call this global without changing templates.
     window.setAnalyticsConsent = function(granted) {

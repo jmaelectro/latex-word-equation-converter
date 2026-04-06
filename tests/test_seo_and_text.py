@@ -262,6 +262,23 @@ class SeoAndTextTests(unittest.TestCase):
             self.assertIn(f'"url": "https://www.ecuacionesaword.com{suffix}"', html)
             self.assertIn('"inLanguage": ["es", "en", "de", "fr", "it", "pt"]', html)
 
+    def test_analytics_default_consent_is_granted_on_published_pages(self):
+        for filename in [
+            "index.html",
+            "index-en.html",
+            "index-de.html",
+            "index-fr.html",
+            "index-it.html",
+            "index-pt.html",
+        ]:
+            html = main.read_html_file(filename)
+            self.assertIn("analytics_storage: 'granted'", html, filename)
+            self.assertNotIn("analytics_storage: 'denied'", html, filename)
+
+        _, _, blog_body = asyncio.run(self._asgi_get("/en/blog/markdown-latex-to-word-docx"))
+        self.assertIn("analytics_storage: 'granted'", blog_body)
+        self.assertNotIn("analytics_storage: 'denied'", blog_body)
+
     def test_trusted_html_sanitizer_removes_active_content(self):
         raw = (
             '<p class="intro" onclick="alert(1)">Texto '
