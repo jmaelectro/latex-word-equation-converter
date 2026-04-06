@@ -1295,7 +1295,7 @@
 <script>
 (() => {
   const endpoint = "/convert";
-  const supportedLangs = ["es", "en"];
+  const supportedLangs = ["es", "en", "de", "fr", "it", "pt"];
   const firstSegment = (window.location.pathname.split("/").filter(Boolean)[0] || "es").toLowerCase();
   const currentLang = supportedLangs.includes(firstSegment) ?firstSegment : "es";
   const isEnglish = currentLang !== "es";

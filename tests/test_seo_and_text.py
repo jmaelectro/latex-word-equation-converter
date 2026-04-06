@@ -279,6 +279,12 @@ class SeoAndTextTests(unittest.TestCase):
         self.assertIn("analytics_storage: 'granted'", blog_body)
         self.assertNotIn("analytics_storage: 'denied'", blog_body)
 
+    def test_home_language_switcher_supports_all_published_languages(self):
+        expected_langs = 'const supportedLangs = ["es", "en", "de", "fr", "it", "pt"];'
+        for filename in ["index.html", "index-en.html", "index-de.html", "index-fr.html", "index-it.html", "index-pt.html"]:
+            html = main.read_html_file(filename)
+            self.assertIn(expected_langs, html, filename)
+
     def test_trusted_html_sanitizer_removes_active_content(self):
         raw = (
             '<p class="intro" onclick="alert(1)">Texto '
