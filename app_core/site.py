@@ -6,11 +6,14 @@ import os
 import json
 import re
 from collections import defaultdict, deque
+from contextvars import ContextVar
+from functools import lru_cache
+from html.parser import HTMLParser
 from pathlib import Path
 from html import escape as html_escape
 from threading import Lock
 from time import monotonic
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit
 from zipfile import BadZipFile
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
@@ -119,6 +122,62 @@ logger = logging.getLogger("ecuacionesaword")
 if not logger.handlers:
     logging.basicConfig(level=logging.INFO)
 
+_CURRENT_CSP_NONCE: ContextVar[str] = ContextVar("current_csp_nonce", default="")
+CURRENT_CSP_NONCE = _CURRENT_CSP_NONCE
+
+
+def _current_csp_nonce() -> str:
+    return (_CURRENT_CSP_NONCE.get() or "").strip()
+
+
+def _inject_script_nonces(html: str, nonce: Optional[str] = None) -> str:
+    nonce = (nonce or _current_csp_nonce()).strip()
+    if not nonce:
+        return html
+
+    safe_nonce = html_escape(nonce, quote=True)
+    return re.sub(
+        r"<script\b(?![^>]*\bnonce=)([^>]*)>",
+        lambda match: f'<script nonce="{safe_nonce}"{match.group(1)}>',
+        html,
+        flags=re.IGNORECASE,
+    )
+
+
+def _build_csp_header(nonce: Optional[str] = None) -> str:
+    nonce = (nonce or _current_csp_nonce()).strip()
+    script_sources = ["'self'"]
+    if nonce:
+        script_sources.append(f"'nonce-{nonce}'")
+    script_sources.extend(
+        [
+            "https://www.googletagmanager.com",
+            "https://www.google-analytics.com",
+        ]
+    )
+    return "; ".join(
+        [
+            "default-src 'self'",
+            "base-uri 'self'",
+            "object-src 'none'",
+            "frame-ancestors 'none'",
+            "frame-src 'none'",
+            "img-src 'self' data: https:",
+            "style-src 'self' 'unsafe-inline'",
+            "font-src 'self' data:",
+            f"script-src {' '.join(script_sources)}",
+            "script-src-attr 'none'",
+            "connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com",
+            "manifest-src 'self'",
+            "worker-src 'none'",
+            "form-action 'self'",
+        ]
+    )
+
+
+def build_csp_header(nonce: Optional[str] = None) -> str:
+    return _build_csp_header(nonce)
+
 MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
 MAX_UPLOAD_CONTENT_LENGTH_BYTES = MAX_FILE_SIZE_BYTES + 64 * 1024
 RATE_LIMIT_WINDOW_SECONDS = int(os.getenv("CONVERT_RATE_LIMIT_WINDOW_SECONDS", "60"))
@@ -175,35 +234,35 @@ def _fix_text_mojibake(text: str) -> str:
     fixed = candidate
 
     replacements = {
-        "â€¦": "…",
-        "â€œ": "“",
-        "â€": "”",
-        "â€˜": "‘",
-        "â€™": "’",
-        "â€“": "–",
-        "â€”": "—",
-        "â€¢": "•",
-        "â†’": "→",
-        "â†": "←",
-        "â†”": "↔",
-        "â‡’": "⇒",
-        "â‡”": "⇔",
-        "âˆ‘": "∑",
-        "âˆ": "∏",
-        "âˆš": "√",
-        "âˆž": "∞",
-        "âˆ‚": "∂",
-        "âˆ‡": "∇",
-        "â‰¤": "≤",
-        "â‰¥": "≥",
-        "â‰ ": "≠",
-        "â‰ˆ": "≈",
-        "Â©": "©",
-        "Â·": "·",
-        "Â¿": "¿",
-        "Â¡": "¡",
-        "Âº": "º",
-        "Âª": "ª",
+        "…": "…",
+        "“": "“",
+        "”": "”",
+        "‘": "‘",
+        "’": "’",
+        "–": "–",
+        "—": "—",
+        "•": "•",
+        "→": "→",
+        "←": "←",
+        "↔": "↔",
+        "⇒": "⇒",
+        "⇔": "⇔",
+        "∑": "∑",
+        "∏": "∏",
+        "√": "√",
+        "∞": "∞",
+        "∂": "∂",
+        "∇": "∇",
+        "≤": "≤",
+        "≥": "≥",
+        "≠": "≠",
+        "≈": "≈",
+        "©": "©",
+        "·": "·",
+        "¿": "¿",
+        "¡": "¡",
+        "º": "º",
+        "ª": "ª",
         "\u00a0": " ",
     }
     for bad, good in replacements.items():
@@ -348,7 +407,15 @@ JINJA_ENV.globals["GA_MEASUREMENT_ID"] = GA_MEASUREMENT_ID
 SUPPORTED_LANGS: Tuple[str, ...] = ("es", "en", "de", "fr", "it", "pt")
 PRIMARY_CONTENT_LANGS: Tuple[str, ...] = ("es", "en")
 SECONDARY_LANGS: Tuple[str, ...] = tuple(lang for lang in SUPPORTED_LANGS if lang not in PRIMARY_CONTENT_LANGS)
-SITEMAP_LANGS: Tuple[str, ...] = PRIMARY_CONTENT_LANGS
+SITEMAP_LANGS: Tuple[str, ...] = SUPPORTED_LANGS
+HOME_FILE_BY_LANG: Dict[str, str] = {
+    "es": "index.html",
+    "en": "index-en.html",
+    "de": "index-de.html",
+    "fr": "index-fr.html",
+    "it": "index-it.html",
+    "pt": "index-pt.html",
+}
 
 # Posts kept live for users but intentionally excluded from index/sitemap to reduce cannibalization.
 NON_INDEXABLE_BLOG_SLUGS: Dict[str, set[str]] = {
@@ -518,6 +585,7 @@ LANG_PREFIX: Dict[str, str] = {
 BLOG_POSTS: Dict[str, Dict[str, Dict[str, Any]]] = {lang: {} for lang in SUPPORTED_LANGS}
 BLOG_LIST: Dict[str, List[Dict[str, Any]]] = {lang: [] for lang in SUPPORTED_LANGS}
 BLOG_ALIASES: Dict[str, Dict[str, str]] = {lang: {} for lang in SUPPORTED_LANGS}
+BLOG_TRANSLATION_TO_ES: Dict[str, str] = {}
 
 
 def _content_lang(lang: str) -> str:
@@ -556,7 +624,7 @@ def _solutions_path(lang: str) -> str:
 def _all_alternates(
     path_by_lang: Dict[str, str],
     default_lang: str = "es",
-    langs: Tuple[str, ...] = PRIMARY_CONTENT_LANGS,
+    langs: Tuple[str, ...] = SUPPORTED_LANGS,
 ) -> List[Dict[str, str]]:
     out: List[Dict[str, str]] = []
     for code in langs:
@@ -579,8 +647,7 @@ def _default_site_lastmod_iso() -> str:
         return env_value
     tracked_paths = [
         Path(__file__),
-        Path(BASE_DIR) / "index.html",
-        Path(BASE_DIR) / "index-en.html",
+        *(Path(BASE_DIR) / filename for filename in HOME_FILE_BY_LANG.values()),
         Path(BASE_DIR) / "templates" / "base.html",
         Path(BASE_DIR) / "templates" / "blog_index.html",
         Path(BASE_DIR) / "templates" / "blog_post.html",
@@ -645,25 +712,6 @@ def _normalize_tag(tag: str) -> str:
 
 def _is_primary_lang(lang: str) -> bool:
     return lang in PRIMARY_CONTENT_LANGS
-
-
-def _is_blog_post_indexable(lang: str, post: Dict[str, Any]) -> bool:
-    slug = (post.get("slug") or "").strip()
-    if not slug:
-        return False
-    if not _is_primary_lang(lang):
-        return False
-    if slug in NON_INDEXABLE_BLOG_SLUGS.get(lang, set()):
-        return False
-    if bool(post.get("noindex")):
-        return False
-    return True
-
-
-def _robots_directive(lang: str, indexable: bool = True) -> str:
-    if not indexable or not _is_primary_lang(lang):
-        return "noindex,follow,max-image-preview:large"
-    return "index,follow,max-image-preview:large"
 
 LANDING_PAGES: Dict[str, Dict[str, Dict[str, Any]]] = {
     "chatgpt-equations-to-word": {
@@ -1281,6 +1329,7 @@ def _init_blog_cache() -> None:
     posts = data.get("posts", [])
     aliases = data.get("aliases", {})
 
+    BLOG_TRANSLATION_TO_ES.clear()
     for lang in SUPPORTED_LANGS:
         BLOG_POSTS[lang].clear()
         BLOG_LIST[lang].clear()
@@ -1301,6 +1350,11 @@ def _init_blog_cache() -> None:
         if lang not in SUPPORTED_LANGS or not slug or not canonical_path:
             continue
         BLOG_POSTS[lang][slug] = p
+        translation_slug = (p.get("translation_slug") or "").strip()
+        if lang == "es":
+            for candidate in {slug, translation_slug}:
+                if candidate:
+                    BLOG_TRANSLATION_TO_ES[candidate] = slug
 
     # Lists (sorted)
     for lang in SUPPORTED_LANGS:
@@ -1324,9 +1378,152 @@ def _init_blog_cache() -> None:
 _init_blog_cache()
 
 
+_ALLOWED_SAFE_HTML_TAGS = {
+    "a",
+    "article",
+    "blockquote",
+    "code",
+    "div",
+    "em",
+    "h2",
+    "h3",
+    "h4",
+    "hr",
+    "li",
+    "ol",
+    "p",
+    "pre",
+    "section",
+    "span",
+    "strong",
+    "ul",
+}
+_SAFE_HTML_ALLOWED_ATTRS: Dict[str, set[str]] = {
+    "a": {"class", "href"},
+    "article": {"class", "id"},
+    "div": {"class"},
+    "h2": {"class", "id"},
+    "h3": {"class", "id"},
+    "h4": {"class", "id"},
+    "li": {"class"},
+    "ol": {"class"},
+    "p": {"class"},
+    "pre": {"class"},
+    "section": {"class", "id"},
+    "span": {"class"},
+    "ul": {"class"},
+}
+_SAFE_HTML_STRIP_CONTENT_TAGS = {"embed", "iframe", "math", "object", "script", "style", "template"}
+_SAFE_HTML_CLASS_RE = re.compile(r"^[A-Za-z0-9_-]+$")
+_SAFE_HTML_ID_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_.:-]*$")
+_SAFE_HTML_ALLOWED_HREF_SCHEMES = {"http", "https", "mailto"}
+_SAFE_HTML_RISKY_PATTERN = re.compile(
+    r"<\s*(script|iframe|object|embed|svg|math|template|style)\b|"
+    r"\son[a-z0-9_-]+\s*=|javascript\s*:|vbscript\s*:|data\s*:",
+    flags=re.IGNORECASE,
+)
+
+
+class _TrustedHtmlSanitizer(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.parts: List[str] = []
+        self._strip_content_depth = 0
+
+    def _sanitize_attr(self, tag: str, attr: str, raw_value: str) -> Optional[str]:
+        if attr == "class":
+            classes = [token for token in raw_value.split() if _SAFE_HTML_CLASS_RE.fullmatch(token)]
+            return " ".join(classes) if classes else None
+        if attr == "id":
+            return raw_value if _SAFE_HTML_ID_RE.fullmatch(raw_value) else None
+        if tag == "a" and attr == "href":
+            compact = re.sub(r"[\x00-\x20]+", "", raw_value).lower()
+            if compact.startswith(("javascript:", "data:", "vbscript:")):
+                return None
+            parsed = urlsplit(raw_value)
+            scheme = parsed.scheme.lower()
+            if scheme and scheme not in _SAFE_HTML_ALLOWED_HREF_SCHEMES:
+                return None
+            if scheme in {"http", "https"} and not parsed.netloc:
+                return None
+            return raw_value
+        return None
+
+    def _serialize_attrs(self, tag: str, attrs: List[Tuple[str, Optional[str]]]) -> str:
+        allowed_attrs = _SAFE_HTML_ALLOWED_ATTRS.get(tag, set())
+        clean_attrs: List[str] = []
+        for attr_name, attr_value in attrs:
+            attr = (attr_name or "").strip().lower()
+            if attr not in allowed_attrs:
+                continue
+            value = self._sanitize_attr(tag, attr, str(attr_value or "").strip())
+            if value is None:
+                continue
+            clean_attrs.append(f' {attr}="{html_escape(value, quote=True)}"')
+        return "".join(clean_attrs)
+
+    def handle_starttag(self, tag: str, attrs: List[Tuple[str, Optional[str]]]) -> None:
+        tag = tag.lower()
+        if tag in _SAFE_HTML_STRIP_CONTENT_TAGS:
+            self._strip_content_depth += 1
+            return
+        if self._strip_content_depth or tag not in _ALLOWED_SAFE_HTML_TAGS:
+            return
+        self.parts.append(f"<{tag}{self._serialize_attrs(tag, attrs)}>")
+
+    def handle_startendtag(self, tag: str, attrs: List[Tuple[str, Optional[str]]]) -> None:
+        tag = tag.lower()
+        if tag in _SAFE_HTML_STRIP_CONTENT_TAGS or self._strip_content_depth or tag not in _ALLOWED_SAFE_HTML_TAGS:
+            return
+        if tag == "hr":
+            self.parts.append(f"<hr{self._serialize_attrs(tag, attrs)}>")
+            return
+        self.parts.append(f"<{tag}{self._serialize_attrs(tag, attrs)}></{tag}>")
+
+    def handle_endtag(self, tag: str) -> None:
+        tag = tag.lower()
+        if tag in _SAFE_HTML_STRIP_CONTENT_TAGS:
+            if self._strip_content_depth:
+                self._strip_content_depth -= 1
+            return
+        if self._strip_content_depth:
+            return
+        if tag in _ALLOWED_SAFE_HTML_TAGS and tag != "hr":
+            self.parts.append(f"</{tag}>")
+
+    def handle_data(self, data: str) -> None:
+        if not self._strip_content_depth:
+            self.parts.append(html_escape(data))
+
+    def get_html(self) -> str:
+        return "".join(self.parts)
+
+
+def _sanitize_trusted_html(html_fragment: str, source: str) -> str:
+    parser = _TrustedHtmlSanitizer()
+    parser.feed(html_fragment or "")
+    parser.close()
+    sanitized = parser.get_html()
+    if _SAFE_HTML_RISKY_PATTERN.search(html_fragment or ""):
+        logger.warning("Sanitized trusted HTML fragment from %s", source)
+    return sanitized
+
+
+def _sanitize_trusted_html_fragments(fragments: Any, source: str) -> List[str]:
+    if not isinstance(fragments, list):
+        return []
+    return [
+        _sanitize_trusted_html(fragment, f"{source}[{index}]")
+        for index, fragment in enumerate(fragments)
+        if isinstance(fragment, str)
+    ]
+
+
 def _render_template(template_name: str, context: Dict[str, Any]) -> str:
     template = JINJA_ENV.get_template(template_name)
-    return template.render(**_deep_fix_mojibake(context))
+    render_context = dict(context)
+    render_context.setdefault("csp_nonce", _current_csp_nonce())
+    return template.render(**_deep_fix_mojibake(render_context))
 
 
 def _read_blog_body(lang: str, slug: str) -> str:
@@ -1343,7 +1540,7 @@ def _read_blog_body(lang: str, slug: str) -> str:
         path = os.path.join(BLOG_POSTS_DIR, cand, f"{slug}.html")
         try:
             with open(path, "r", encoding="utf-8") as f:
-                return f.read()
+                return _sanitize_trusted_html(f.read(), f"blog_content/posts/{cand}/{slug}.html")
         except FileNotFoundError:
             continue
     return ""
@@ -1608,36 +1805,6 @@ def _build_schema_solution_page(
         ],
     }
     return json.dumps(schema, ensure_ascii=False)
-
-
-def _build_schema_index(lang: str, canonical_url: str) -> str:
-    items = []
-    for idx, p in enumerate(BLOG_LIST.get(lang, []), start=1):
-        slug = p.get("slug") or ""
-        url_path = (p.get("canonical_path") or "").strip()
-        if lang not in PRIMARY_CONTENT_LANGS or not url_path:
-            url_path = f"{_blog_index_path(lang)}/{slug}"
-        items.append(
-            {
-                "@type": "ListItem",
-                "position": idx,
-                "url": f"{SITE_CANONICAL_ORIGIN}{url_path}",
-                "name": p.get("title") or "",
-            }
-        )
-    schema = {
-        "@context": "https://schema.org",
-        "@type": "WebPage",
-        "name": "Blog",
-        "url": canonical_url,
-        "inLanguage": lang,
-        "mainEntity": {"@type": "ItemList", "itemListElement": items[:50]},
-    }
-    return json.dumps(schema, ensure_ascii=False)
-
-
-
-
 def _noindex_headers(follow: bool = False) -> Dict[str, str]:
     """Headers to discourage indexing for technical/non-content endpoints."""
     return {"X-Robots-Tag": "noindex, follow" if follow else "noindex, nofollow"}
@@ -1654,12 +1821,26 @@ def _read_text_file(path: str, default: Optional[str] = None) -> str:
         raise
 
 
-def read_html_file(filename: str) -> str:
+@lru_cache(maxsize=16)
+def _read_cached_html_source(
+    filename: str,
+    source_mtime: float,
+    ga_measurement_id: str,
+    og_image_path: str,
+) -> str:
+    del source_mtime
     path = os.path.join(BASE_DIR, filename)
     html = _fix_text_mojibake(_read_text_file(path))
-    html = html.replace("__GA_MEASUREMENT_ID__", GA_MEASUREMENT_ID)
-    html = html.replace("/static/og-image.svg", OG_IMAGE_PATH)
+    html = html.replace("__GA_MEASUREMENT_ID__", ga_measurement_id)
+    html = html.replace("/static/og-image.svg", og_image_path)
     return html
+
+
+def read_html_file(filename: str) -> str:
+    path = os.path.join(BASE_DIR, filename)
+    source_mtime = os.path.getmtime(path)
+    html = _read_cached_html_source(filename, source_mtime, GA_MEASUREMENT_ID, OG_IMAGE_PATH)
+    return _inject_script_nonces(html)
 
 
 def _force_meta_robots_noindex(html: str) -> str:
@@ -1721,9 +1902,6 @@ def _sitemap_url_entry(
     )
 
 
-def _is_valid_blog_canonical_path(lang: str, path: str) -> bool:
-    expected = "/blog/" if lang == "es" else "/en/blog/"
-    return bool(path and path.startswith(expected))
 
 
 def _translated_indexable_path(lang: str, slug: str) -> Optional[str]:
@@ -1736,147 +1914,6 @@ def _translated_indexable_path(lang: str, slug: str) -> Optional[str]:
     return path
 
 
-def _blog_alternate_paths(lang: str, post: Dict[str, Any]) -> Dict[str, str]:
-    canonical_path = (post.get("canonical_path") or "").strip()
-    slug = (post.get("slug") or "").strip()
-    if not canonical_path and slug:
-        canonical_path = f"{_blog_index_path(lang)}/{slug}"
-    paths: Dict[str, str] = {}
-    if canonical_path and _is_valid_blog_canonical_path(lang, canonical_path):
-        paths[lang] = canonical_path
-
-    translation_slug = (post.get("translation_slug") or "").strip()
-    counterpart_lang = "en" if lang == "es" else "es"
-    counterpart_slug = translation_slug or slug
-    counterpart_path = _translated_indexable_path(counterpart_lang, counterpart_slug)
-    if counterpart_path:
-        paths[counterpart_lang] = counterpart_path
-
-    return paths
-
-
-def generate_sitemap_xml() -> str:
-    """
-    Build sitemap using only canonical, indexable, final URLs:
-    - status 200 routes (no redirect hubs)
-    - primary languages only (es/en)
-    - blog posts explicitly marked as indexable by strategy
-    """
-    urls: List[str] = []
-    seen_locs: set[str] = set()
-
-    def append_url(
-        loc_path: str,
-        *,
-        lastmod: str,
-        changefreq: str,
-        priority: str,
-        alternates: Optional[List[Dict[str, str]]] = None,
-    ) -> None:
-        if not loc_path.startswith("/"):
-            return
-        loc = _abs_url(loc_path)
-        if loc in seen_locs:
-            return
-        seen_locs.add(loc)
-        urls.append(
-            _sitemap_url_entry(
-                loc,
-                lastmod,
-                changefreq,
-                priority,
-                alternates=alternates,
-            )
-        )
-
-    def post_lastmod(p: Dict[str, Any]) -> str:
-        d = (p.get("date_modified") or p.get("date_published") or "").strip()
-        if d:
-            return d
-        return _now_lastmod_iso()
-
-    # Home (primary languages only)
-    home_paths = {lang: _home_path(lang) for lang in SITEMAP_LANGS}
-    home_alts = _all_alternates(home_paths, default_lang="es")
-    for lang in SITEMAP_LANGS:
-        append_url(
-            home_paths[lang],
-            lastmod=_now_lastmod_iso(),
-            changefreq="weekly",
-            priority="1.0" if lang == "es" else "0.8",
-            alternates=home_alts,
-        )
-
-    # Blog index
-    blog_index_paths = {lang: _blog_index_path(lang) for lang in SITEMAP_LANGS}
-    blog_index_alts = _all_alternates(blog_index_paths, default_lang="es")
-    for lang in SITEMAP_LANGS:
-        append_url(
-            blog_index_paths[lang],
-            lastmod=_now_lastmod_iso(),
-            changefreq="weekly",
-            priority="0.8" if lang == "es" else "0.7",
-            alternates=blog_index_alts,
-        )
-
-    # Solutions hub
-    solutions_paths = {lang: _solutions_path(lang) for lang in SITEMAP_LANGS}
-    solutions_alts = _all_alternates(solutions_paths, default_lang="es")
-    for lang in SITEMAP_LANGS:
-        append_url(
-            solutions_paths[lang],
-            lastmod=_now_lastmod_iso(),
-            changefreq="weekly",
-            priority="0.75" if lang == "es" else "0.7",
-            alternates=solutions_alts,
-        )
-
-    # Transactional landings
-    for es_path, en_path in _all_landing_pairs():
-        landing_paths = {"es": es_path, "en": en_path}
-        alts = _all_alternates(landing_paths, default_lang="es")
-        for lang in SITEMAP_LANGS:
-            path = landing_paths.get(lang)
-            if not path:
-                continue
-            append_url(
-                path,
-                lastmod=_now_lastmod_iso(),
-                changefreq="weekly",
-                priority="0.7" if lang == "es" else "0.6",
-                alternates=alts,
-            )
-
-    # Blog posts (indexable only)
-    for lang in SITEMAP_LANGS:
-        for p in BLOG_LIST.get(lang, []):
-            if not _is_blog_post_indexable(lang, p):
-                continue
-            slug = (p.get("slug") or "").strip()
-            if not slug:
-                continue
-            canonical_path = (p.get("canonical_path") or "").strip()
-            if not canonical_path:
-                canonical_path = f"{_blog_index_path(lang)}/{slug}"
-            if not _is_valid_blog_canonical_path(lang, canonical_path):
-                continue
-            paths = _blog_alternate_paths(lang, p)
-            alts = _all_alternates(paths, default_lang="es")
-            append_url(
-                canonical_path,
-                lastmod=post_lastmod(p),
-                changefreq="monthly",
-                priority="0.6" if lang == "es" else "0.5",
-                alternates=alts,
-            )
-
-    return (
-        '<?xml version="1.0" encoding="UTF-8"?>\n'
-        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
-        'xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
-        + "".join(urls)
-        + "</urlset>\n"
-    )
 
 
 # ================================================================
@@ -1884,10 +1921,14 @@ def generate_sitemap_xml() -> str:
 # ================================================================
 # Routes: páginas
 # ================================================================
+def _home_filename(lang: str) -> str:
+    return HOME_FILE_BY_LANG.get(lang, HOME_FILE_BY_LANG["en"])
+
+
 @app.get("/", response_class=HTMLResponse)
 async def home() -> HTMLResponse:
     try:
-        return HTMLResponse(read_html_file("index.html"))
+        return HTMLResponse(read_html_file(_home_filename("es")))
     except FileNotFoundError:
         return HTMLResponse("<h1>index.html not found</h1>", status_code=404)
 
@@ -1895,29 +1936,29 @@ async def home() -> HTMLResponse:
 @app.get("/en", response_class=HTMLResponse)
 async def home_en() -> HTMLResponse:
     try:
-        return HTMLResponse(read_html_file("index-en.html"))
+        return HTMLResponse(read_html_file(_home_filename("en")))
     except FileNotFoundError:
         return HTMLResponse("<h1>index-en.html not found</h1>", status_code=404)
 
 
 @app.get("/de", response_class=HTMLResponse)
 async def home_de() -> HTMLResponse:
-    return RedirectResponse(url="/en", status_code=301)
+    return HTMLResponse(read_html_file(_home_filename("de")))
 
 
 @app.get("/fr", response_class=HTMLResponse)
 async def home_fr() -> HTMLResponse:
-    return RedirectResponse(url="/en", status_code=301)
+    return HTMLResponse(read_html_file(_home_filename("fr")))
 
 
 @app.get("/it", response_class=HTMLResponse)
 async def home_it() -> HTMLResponse:
-    return RedirectResponse(url="/en", status_code=301)
+    return HTMLResponse(read_html_file(_home_filename("it")))
 
 
 @app.get("/pt", response_class=HTMLResponse)
 async def home_pt() -> HTMLResponse:
-    return RedirectResponse(url="/en", status_code=301)
+    return HTMLResponse(read_html_file(_home_filename("pt")))
 
 
 def _landing_from_slug(lang: str, slug: str) -> Optional[Dict[str, Any]]:
@@ -2328,60 +2369,8 @@ def _build_schema_index(lang: str, canonical_url: str) -> str:
     return json.dumps(schema, ensure_ascii=False)
 
 
-def _get_related_posts(lang: str, current_post: Dict[str, Any], limit: int = 4) -> List[Dict[str, str]]:
-    tags = set(current_post.get("tags") or [])
-    cur_slug = current_post.get("slug") or ""
-    candidates: List[Tuple[int, str, Dict[str, Any]]] = []
-    for p in BLOG_LIST.get(lang, []):
-        if (p.get("slug") or "") == cur_slug:
-            continue
-        p_tags = set(p.get("tags") or [])
-        score = len(tags.intersection(p_tags))
-        if tags and score <= 0:
-            continue
-        candidates.append((score, (p.get("date_published") or ""), p))
-
-    candidates.sort(key=lambda t: (t[0], t[1]), reverse=True)
-
-    out: List[Dict[str, str]] = []
-    for _, __, p in candidates[:limit]:
-        url = (p.get("canonical_path") or "").strip()
-        if not _is_valid_blog_canonical_path(lang, url):
-            url = f"{_blog_index_path(lang)}/{p.get('slug') or ''}"
-        out.append({"url": url, "title": p.get("title") or ""})
-
-    if len(out) >= limit:
-        return out
-
-    used_urls = {item["url"] for item in out}
-    for p in BLOG_LIST.get(lang, []):
-        if (p.get("slug") or "") == cur_slug:
-            continue
-        url = (p.get("canonical_path") or "").strip()
-        if not _is_valid_blog_canonical_path(lang, url):
-            url = f"{_blog_index_path(lang)}/{p.get('slug') or ''}"
-        if not url or url in used_urls:
-            continue
-        out.append({"url": url, "title": p.get("title") or ""})
-        used_urls.add(url)
-        if len(out) >= limit:
-            break
-
-    return out
 
 
-def _pillar_link_for_lang(lang: str) -> Dict[str, str]:
-    if lang == "es":
-        return {
-            "href": "/blog/latex-a-word-omml-guia-definitiva",
-            "label": "Pilar: LaTeX a Word online (guia definitiva)",
-        }
-
-    slug = "latex-to-word-online-free-editable-equations"
-    return {
-        "href": f"{_blog_index_path(lang)}/{slug}",
-        "label": "Pillar: LaTeX to Word online guide",
-    }
 
 
 def _solution_lang_paths(landing_key: str) -> Dict[str, str]:
@@ -2591,8 +2580,8 @@ def _blog_index_context_v2(lang: str) -> Dict[str, Any]:
                 "description": p.get("description") or "",
                 "kicker": p.get("kicker") or "",
                 "tags": [_normalize_tag(t) for t in (p.get("tags") or []) if isinstance(t, str)],
-                "meta": f"{_format_date(lang, p.get('date_published') or '')} Â· {_format_reading_time(p.get('reading_time'))}".strip(
-                    " Â·"
+                "meta": f"{_format_date(lang, p.get('date_published') or '')} · {_format_reading_time(p.get('reading_time'))}".strip(
+                    " ·"
                 ),
             }
         )
@@ -2664,7 +2653,7 @@ def _blog_post_context_v2(lang: str, post: Dict[str, Any], body_html: str) -> Di
     }.get(lang, "Published")
     updated_label = "Actualizado" if lang == "es" else {
         "de": "Aktualisiert",
-        "fr": "Mis Ã  jour",
+        "fr": "Mis Ã  jour",
         "it": "Aggiornato",
         "pt": "Atualizado",
     }.get(lang, "Updated")
@@ -2672,9 +2661,9 @@ def _blog_post_context_v2(lang: str, post: Dict[str, Any], body_html: str) -> Di
     meta_line = f"{meta_label} {_format_date(lang, date_pub)}"
     reading_time = _format_reading_time(post.get("reading_time"))
     if reading_time:
-        meta_line += f" Â· {reading_time}"
+        meta_line += f" · {reading_time}"
     if date_mod and date_mod != date_pub:
-        meta_line += f" Â· {updated_label} {_format_date(lang, date_mod)}"
+        meta_line += f" · {updated_label} {_format_date(lang, date_mod)}"
 
     alt_paths = _blog_alternate_paths(lang, post)
 
@@ -2714,7 +2703,7 @@ def _blog_post_context_v2(lang: str, post: Dict[str, Any], body_html: str) -> Di
         "title": post.get("title") or "",
         "meta_line": meta_line,
         "tags": [_normalize_tag(t) for t in (post.get("tags") or []) if isinstance(t, str)],
-        "intro_html": post.get("intro_html") or [],
+        "intro_html": _sanitize_trusted_html_fragments(post.get("intro_html") or [], f"blog_metadata:{lang}/{slug}"),
         "breadcrumbs": [
             {"name": "Inicio" if lang == "es" else "Home", "url": _home_path(lang)},
             {"name": "Blog", "url": _blog_index_path(lang)},
@@ -2942,23 +2931,23 @@ def _legal_page_context(lang: str, page: str) -> Dict[str, Any]:
             },
         },
         "de": {
-            "privacy": {"title": "Datenschutzerkl?rung", "description": "Wie wir hochgeladene Dateien und Daten verarbeiten.", "body": "<h2>Dateiverarbeitung</h2><p>Wir verarbeiten hochgeladene Dateien nur f?r die Konvertierung und verkaufen keine Daten.</p><h2>Speicherung</h2><p>Dokumente werden nicht dauerhaft gespeichert. W?hrend der Konvertierung kann tempor?re Verarbeitung im Speicher stattfinden.</p><h2>Analyse</h2><p>Wir verwenden aggregierte Nutzungsdaten zur Produktverbesserung. Dokumentinhalte werden nicht an Analytics-Tools gesendet.</p><h2>Kontakt</h2><p>Fragen: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a>.</p>"},
-            "terms": {"title": "Nutzungsbedingungen", "description": "Regeln und Einschr?nkungen f?r den Konverter.", "body": "<h2>Kostenloses Tool</h2><p>Der Konverter ist kostenlos; Dateigr??enlimits k?nnen gelten.</p><h2>Keine Gew?hr</h2><p>Der Dienst wird ohne Gew?hr bereitgestellt.</p><h2>Zul?ssige Nutzung</h2><p>Bitte keine illegalen Inhalte oder Malware hochladen.</p>"},
+            "privacy": {"title": "Datenschutzerklärung", "description": "Wie wir hochgeladene Dateien und Daten verarbeiten.", "body": "<h2>Dateiverarbeitung</h2><p>Wir verarbeiten hochgeladene Dateien nur für die Konvertierung und verkaufen keine Daten.</p><h2>Speicherung</h2><p>Dokumente werden nicht dauerhaft gespeichert. Während der Konvertierung kann temporäre Verarbeitung im Speicher stattfinden.</p><h2>Analyse</h2><p>Wir verwenden aggregierte Nutzungsdaten zur Produktverbesserung. Dokumentinhalte werden nicht an Analytics-Tools gesendet.</p><h2>Kontakt</h2><p>Fragen: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a>.</p>"},
+            "terms": {"title": "Nutzungsbedingungen", "description": "Regeln und Einschränkungen für den Konverter.", "body": "<h2>Kostenloses Tool</h2><p>Der Konverter ist kostenlos; Dateigrößenlimits können gelten.</p><h2>Keine Gewähr</h2><p>Der Dienst wird ohne Gewähr bereitgestellt.</p><h2>Zulässige Nutzung</h2><p>Bitte keine illegalen Inhalte oder Malware hochladen.</p>"},
             "contact": {"title": "Kontakt", "description": "So erreichst du das Projekt.", "body": "<p>E-Mail: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p>"},
         },
         "fr": {
-            "privacy": {"title": "Politique de confidentialit?", "description": "Comment nous traitons les fichiers et donn?es envoy?s.", "body": "<h2>Traitement des fichiers</h2><p>Nous traitons les fichiers uniquement pour la conversion et ne vendons pas vos donn?es.</p><h2>Stockage</h2><p>Nous ne stockons pas durablement les documents. Un traitement temporaire en m?moire peut avoir lieu.</p><h2>Analytique</h2><p>Nous utilisons des statistiques agr?g?es pour am?liorer le produit. Le contenu des documents n'est pas envoy? aux outils d'analyse.</p><h2>Contact</h2><p>Questions : <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a>.</p>"},
-            "terms": {"title": "Conditions d'utilisation", "description": "R?gles et limites d'utilisation du convertisseur.", "body": "<h2>Outil gratuit</h2><p>Le convertisseur est gratuit, avec possibles limites de taille.</p><h2>Sans garantie</h2><p>Le service est fourni tel quel.</p><h2>Usage acceptable</h2><p>N'envoyez pas de contenu ill?gal ou malveillant.</p>"},
+            "privacy": {"title": "Politique de confidentialité", "description": "Comment nous traitons les fichiers et données envoyés.", "body": "<h2>Traitement des fichiers</h2><p>Nous traitons les fichiers uniquement pour la conversion et ne vendons pas vos données.</p><h2>Stockage</h2><p>Nous ne stockons pas durablement les documents. Un traitement temporaire en mémoire peut avoir lieu.</p><h2>Analytique</h2><p>Nous utilisons des statistiques agrégées pour améliorer le produit. Le contenu des documents n'est pas envoyé aux outils d'analyse.</p><h2>Contact</h2><p>Questions : <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a>.</p>"},
+            "terms": {"title": "Conditions d'utilisation", "description": "Règles et limites d'utilisation du convertisseur.", "body": "<h2>Outil gratuit</h2><p>Le convertisseur est gratuit, avec possibles limites de taille.</p><h2>Sans garantie</h2><p>Le service est fourni tel quel.</p><h2>Usage acceptable</h2><p>N'envoyez pas de contenu illégal ou malveillant.</p>"},
             "contact": {"title": "Contact", "description": "Contactez le projet.", "body": "<p>Email : <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p>"},
         },
         "it": {
-            "privacy": {"title": "Informativa sulla privacy", "description": "Come trattiamo file e dati caricati.", "body": "<h2>Gestione dei file</h2><p>Elaboriamo i file caricati solo per la conversione e non vendiamo i dati.</p><h2>Archiviazione</h2><p>I documenti non sono conservati in modo permanente. Durante la conversione pu? esserci elaborazione temporanea in memoria.</p><h2>Analisi</h2><p>Usiamo dati aggregati per migliorare il prodotto. Il contenuto dei documenti non viene inviato agli strumenti di analytics.</p><h2>Contatto</h2><p>Domande: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a>.</p>"},
-            "terms": {"title": "Termini di utilizzo", "description": "Regole e limiti d'uso del convertitore.", "body": "<h2>Strumento gratuito</h2><p>Il convertitore ? gratuito, con possibili limiti di dimensione.</p><h2>Nessuna garanzia</h2><p>Il servizio ? fornito cos? com'?.</p><h2>Uso accettabile</h2><p>Non caricare contenuti illegali o malware.</p>"},
+            "privacy": {"title": "Informativa sulla privacy", "description": "Come trattiamo file e dati caricati.", "body": "<h2>Gestione dei file</h2><p>Elaboriamo i file caricati solo per la conversione e non vendiamo i dati.</p><h2>Archiviazione</h2><p>I documenti non sono conservati in modo permanente. Durante la conversione può esserci elaborazione temporanea in memoria.</p><h2>Analisi</h2><p>Usiamo dati aggregati per migliorare il prodotto. Il contenuto dei documenti non viene inviato agli strumenti di analytics.</p><h2>Contatto</h2><p>Domande: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a>.</p>"},
+            "terms": {"title": "Termini di utilizzo", "description": "Regole e limiti d'uso del convertitore.", "body": "<h2>Strumento gratuito</h2><p>Il convertitore è gratuito, con possibili limiti di dimensione.</p><h2>Nessuna garanzia</h2><p>Il servizio è fornito così com'è.</p><h2>Uso accettabile</h2><p>Non caricare contenuti illegali o malware.</p>"},
             "contact": {"title": "Contatto", "description": "Contatta il progetto.", "body": "<p>Email: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p>"},
         },
         "pt": {
-            "privacy": {"title": "Pol?tica de Privacidade", "description": "Como tratamos arquivos e dados enviados.", "body": "<h2>Tratamento de arquivos</h2><p>Processamos arquivos apenas para convers?o e n?o vendemos dados.</p><h2>Armazenamento</h2><p>N?o armazenamos documentos permanentemente. Pode haver processamento tempor?rio em mem?ria durante a convers?o.</p><h2>An?lises</h2><p>Usamos dados agregados para melhorar o produto. O conte?do dos documentos n?o ? enviado ?s ferramentas de analytics.</p><h2>Contato</h2><p>D?vidas: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a>.</p>"},
-            "terms": {"title": "Termos de uso", "description": "Regras e limita??es para usar o conversor.", "body": "<h2>Ferramenta gratuita</h2><p>O conversor ? gratuito, com poss?veis limites de tamanho.</p><h2>Sem garantias</h2><p>O servi?o ? fornecido no estado em que se encontra.</p><h2>Uso aceit?vel</h2><p>N?o envie conte?do ilegal ou malware.</p>"},
+            "privacy": {"title": "Política de Privacidade", "description": "Como tratamos arquivos e dados enviados.", "body": "<h2>Tratamento de arquivos</h2><p>Processamos arquivos apenas para conversão e não vendemos dados.</p><h2>Armazenamento</h2><p>Não armazenamos documentos permanentemente. Pode haver processamento temporário em memória durante a conversão.</p><h2>Análises</h2><p>Usamos dados agregados para melhorar o produto. O conteúdo dos documentos não é enviado às ferramentas de analytics.</p><h2>Contato</h2><p>Dúvidas: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a>.</p>"},
+            "terms": {"title": "Termos de uso", "description": "Regras e limitações para usar o conversor.", "body": "<h2>Ferramenta gratuita</h2><p>O conversor é gratuito, com possíveis limites de tamanho.</p><h2>Sem garantias</h2><p>O serviço é fornecido no estado em que se encontra.</p><h2>Uso aceitável</h2><p>Não envie conteúdo ilegal ou malware.</p>"},
             "contact": {"title": "Contato", "description": "Fale com o projeto.", "body": "<p>Email: <a href='mailto:ecuacionesaword@gmail.com'>ecuacionesaword@gmail.com</a></p>"},
         },
     }
@@ -2968,7 +2957,7 @@ def _legal_page_context(lang: str, page: str) -> Dict[str, Any]:
 
     title = page_data["title"]
     description = page_data["description"]
-    body_html = page_data["body"]
+    body_html = _sanitize_trusted_html(page_data["body"], f"legal:{lang}:{page}")
 
     canonical_path = _legal_path(lang, page) if page in {"privacy", "terms", "contact"} else _home_path(lang)
     canonical_url = _abs_url(canonical_path)
@@ -3486,7 +3475,7 @@ async def blog_post_es(slug: str) -> HTMLResponse:
         "title": post.get("title") or "",
         "meta_line": meta_line,
         "tags": [_normalize_tag(t) for t in (post.get("tags") or []) if isinstance(t, str)],
-        "intro_html": post.get("intro_html") or [],
+        "intro_html": _sanitize_trusted_html_fragments(post.get("intro_html") or [], f"blog_metadata:{lang}/{post['slug']}"),
         "breadcrumbs": [
             {"name": "Inicio", "url": "/"},
             {"name": "Blog", "url": "/blog"},
@@ -3564,7 +3553,7 @@ async def blog_post_en(slug: str) -> HTMLResponse:
         "title": post.get("title") or "",
         "meta_line": meta_line,
         "tags": [_normalize_tag(t) for t in (post.get("tags") or []) if isinstance(t, str)],
-        "intro_html": post.get("intro_html") or [],
+        "intro_html": _sanitize_trusted_html_fragments(post.get("intro_html") or [], f"blog_metadata:{lang}/{post['slug']}"),
         "breadcrumbs": [
             {"name": "Home", "url": "/en"},
             {"name": "Blog", "url": "/en/blog"},
@@ -3652,7 +3641,7 @@ def _blog_post_context_fallback_en(lang: str, post: Dict[str, Any], body_html: s
         "title": post.get("title") or "",
         "meta_line": meta_line,
         "tags": [_normalize_tag(t) for t in (post.get("tags") or []) if isinstance(t, str)],
-        "intro_html": post.get("intro_html") or [],
+        "intro_html": _sanitize_trusted_html_fragments(post.get("intro_html") or [], f"blog_metadata:{lang}/{post['slug']}"),
         "breadcrumbs": [
             {"name": "Home", "url": _home_path(lang)},
             {"name": "Blog", "url": _blog_index_path(lang)},
@@ -4868,5 +4857,3 @@ def _build_contextual_links(lang: str, current_post: Dict[str, Any]) -> List[Dic
         }
     )
     return links
-
-

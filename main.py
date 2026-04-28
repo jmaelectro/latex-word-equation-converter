@@ -5,18 +5,22 @@ import io
 import ipaddress
 import json
 import os
+import secrets
 import zipfile
 from collections import defaultdict, deque
+from pathlib import Path
 from threading import Lock
 from time import monotonic
 from urllib.parse import quote
 
+from docx import Document
 from docx.opc.exceptions import PackageNotFoundError
 from fastapi import FastAPI, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, PlainTextResponse, Response
+from fastapi.responses import HTMLResponse, PlainTextResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
+from starlette.concurrency import run_in_threadpool
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.gzip import GZipMiddleware
 from starlette.requests import Request
@@ -30,6 +34,7 @@ from app_core.converter import (
     CanonicalHostRedirectMiddleware,
     _add_common_headers,
     _fix_text_mojibake,
+    _extract_text_lines_from_txt,
     _request_is_https,
     _convert_docx_in_place,
     add_math_safe,
@@ -41,6 +46,7 @@ from app_core.converter import (
 )
 import app_core.site as site_module
 from app_core.site import (
+    CURRENT_CSP_NONCE,
     BLOG_POSTS,
     blog2_redirect,
     blog3_redirect,
@@ -101,15 +107,20 @@ from app_core.site import (
     terms_fr,
     terms_it,
     terms_pt,
-    _render_template,
+    build_csp_header,
+    custom_http_exception_handler as site_http_exception_handler,
     _secondary_blog_redirect_target,
-    _solution_landing_context,
-    _solutions_hub_context,
-    _legal_page_context,
 )
 
-
-MAX_DOCX_ENTRY_UNCOMPRESSED_BYTES = 4 * 1024 * 1024
+UPLOAD_READ_CHUNK_SIZE = 64 * 1024
+MAX_DOCX_ENTRY_UNCOMPRESSED_BYTES = int(
+    os.getenv("MAX_DOCX_ENTRY_UNCOMPRESSED_BYTES", str(12 * 1024 * 1024))
+)
+MAX_DOCX_MEMBER_COUNT = int(os.getenv("MAX_DOCX_MEMBER_COUNT", "2048"))
+MAX_DOCX_TOTAL_UNCOMPRESSED_BYTES = int(
+    os.getenv("MAX_DOCX_TOTAL_UNCOMPRESSED_BYTES", str(32 * 1024 * 1024))
+)
+MAX_DOCX_COMPRESSION_RATIO = int(os.getenv("MAX_DOCX_COMPRESSION_RATIO", "120"))
 RATE_LIMIT_WINDOW_SECONDS = int(os.getenv("CONVERT_RATE_LIMIT_WINDOW_SECONDS", "60"))
 RATE_LIMIT_MAX_REQUESTS = int(os.getenv("CONVERT_RATE_LIMIT_MAX_REQUESTS", "20"))
 _RATE_LIMIT_BUCKETS = defaultdict(deque)
@@ -143,22 +154,30 @@ if CANONICAL_HOST:
 
 @app.middleware("http")
 async def add_common_headers_mw(request: Request, call_next):
-    if request.url.path == "/convert" and request.method == "POST":
-        content_length = request.headers.get("content-length", "").strip()
-        if content_length.isdigit() and int(content_length) > MAX_UPLOAD_CONTENT_LENGTH_BYTES:
-            return _convert_error_response(413, "file_too_large", "File too large. Maximum size is 5 MB.")
-        if not _check_convert_rate_limit(request):
-            resp = _convert_error_response(429, "rate_limited", "Too many conversion requests. Please try again shortly.")
-            resp.headers["Retry-After"] = str(RATE_LIMIT_WINDOW_SECONDS)
-            return resp
+    nonce = secrets.token_urlsafe(18)
+    nonce_token = CURRENT_CSP_NONCE.set(nonce)
+    request.state.csp_nonce = nonce
+    try:
+        if request.url.path == "/convert" and request.method == "POST":
+            content_length = request.headers.get("content-length", "").strip()
+            if content_length.isdigit() and int(content_length) > MAX_UPLOAD_CONTENT_LENGTH_BYTES:
+                return _convert_error_response(413, "file_too_large", "File too large. Maximum size is 5 MB.")
+            if not _check_convert_rate_limit(request):
+                resp = _convert_error_response(429, "rate_limited", "Too many conversion requests. Please try again shortly.")
+                resp.headers["Retry-After"] = str(RATE_LIMIT_WINDOW_SECONDS)
+                return resp
 
-    resp = await call_next(request)
-    if _request_is_https(request):
-        resp.headers.setdefault(
-            "Strict-Transport-Security",
-            "max-age=31536000; includeSubDomains",
-        )
-    return _add_common_headers(resp)
+        resp = await call_next(request)
+        if _request_is_https(request):
+            resp.headers.setdefault(
+                "Strict-Transport-Security",
+                "max-age=31536000; includeSubDomains",
+            )
+        resp = _add_common_headers(resp)
+        resp.headers["Content-Security-Policy"] = build_csp_header(nonce)
+        return resp
+    finally:
+        CURRENT_CSP_NONCE.reset(nonce_token)
 
 
 _static_dir = os.path.join(BASE_DIR, "static")
@@ -231,10 +250,36 @@ def _raise_convert_error(status: int, code: str, message: str):
     raise HTTPException(status_code=status, detail={"code": code, "message": message})
 
 
+def _coerce_convert_error(status: int, detail) -> tuple[str, str]:
+    if isinstance(detail, dict):
+        code = str(detail.get("code") or "").strip() or "conversion_failed"
+        message = str(detail.get("message") or "").strip() or "The document could not be converted."
+        return code, message
+
+    detail_text = str(detail or "").strip().lower()
+    if status == 400 and "unsupported" in detail_text:
+        return "unsupported_file_type", "Unsupported file type. Use .docx or .txt."
+    if status == 400 and "missing filename" in detail_text:
+        return "missing_filename", "Uploaded file is missing a filename."
+    if status == 400 and "invalid .docx" in detail_text:
+        return "invalid_document", "Invalid .docx file. Upload a valid Word document."
+    if status == 400 and "plain text" in detail_text:
+        return "invalid_request", "Invalid .txt file. Upload plain text."
+    if status == 413:
+        return "file_too_large", "File too large. Maximum size is 5 MB."
+    if status == 429:
+        return "rate_limited", "Too many conversion requests. Please try again shortly."
+    if status == 422:
+        return "invalid_request", "Invalid conversion request."
+    return "conversion_failed", "The document could not be converted."
+
+
 def _normalize_upload_filename(file: UploadFile) -> str:
-    filename = (file.filename or "").strip().lower()
+    filename = Path((file.filename or "").strip()).name.strip().lower()
     if not filename:
-        _raise_convert_error(400, "missing_file", "No file was uploaded.")
+        _raise_convert_error(400, "missing_filename", "Uploaded file is missing a filename.")
+    if len(filename) > 255:
+        _raise_convert_error(400, "invalid_request", "Filename is too long.")
     return filename
 
 
@@ -251,13 +296,15 @@ def _looks_like_binary_payload(data: bytes) -> bool:
         return False
     if data.startswith(codecs.BOM_UTF16_LE) or data.startswith(codecs.BOM_UTF16_BE):
         return False
+    if _guess_utf16_txt_encoding(data):
+        return False
     if b"\x00" in data:
         return True
     return False
 
 
 def _guess_utf16_txt_encoding(data: bytes) -> str | None:
-    if len(data) < 2:
+    if len(data) < 8:
         return None
     even_zeros = sum(1 for idx in range(0, len(data), 2) if data[idx] == 0)
     odd_zeros = sum(1 for idx in range(1, len(data), 2) if data[idx] == 0)
@@ -292,14 +339,48 @@ def _extract_text_lines_from_txt(file_bytes: bytes):
     raise HTTPException(status_code=400, detail="Invalid .txt file. Upload plain text.")
 
 
+async def _read_upload_limited(file: UploadFile) -> bytes:
+    content = bytearray()
+    while True:
+        chunk = await file.read(UPLOAD_READ_CHUNK_SIZE)
+        if not chunk:
+            break
+        content.extend(chunk)
+        if len(content) > MAX_FILE_SIZE_BYTES:
+            _raise_convert_error(413, "file_too_large", "File too large. Maximum size is 5 MB.")
+
+    if not content:
+        _raise_convert_error(400, "invalid_document", "The uploaded file is empty or invalid.")
+
+    return bytes(content)
+
+
 def _validate_docx_file_bytes(content: bytes) -> None:
     try:
         with zipfile.ZipFile(io.BytesIO(content)) as zf:
-            if "[Content_Types].xml" not in zf.namelist():
+            infos = zf.infolist()
+            names = set()
+            total_uncompressed = 0
+            if not infos or len(infos) > MAX_DOCX_MEMBER_COUNT:
                 _raise_convert_error(400, "invalid_document", "Invalid .docx file. Upload a valid Word document.")
             for info in zf.infolist():
+                name = (info.filename or "").strip()
+                if not name:
+                    _raise_convert_error(400, "invalid_document", "Invalid .docx file. Upload a valid Word document.")
+                if name.startswith("/") or name.startswith("\\") or ".." in Path(name).parts:
+                    _raise_convert_error(400, "invalid_document", "Invalid .docx file. Upload a valid Word document.")
+                names.add(name)
+                total_uncompressed += info.file_size
                 if info.file_size > MAX_DOCX_ENTRY_UNCOMPRESSED_BYTES:
                     _raise_convert_error(413, "file_too_large", "The .docx file exceeds safe size limits.")
+                if total_uncompressed > MAX_DOCX_TOTAL_UNCOMPRESSED_BYTES:
+                    _raise_convert_error(413, "file_too_large", "The .docx file exceeds safe size limits.")
+                if info.compress_size > 0:
+                    compression_ratio = info.file_size / info.compress_size
+                    if compression_ratio > MAX_DOCX_COMPRESSION_RATIO:
+                        _raise_convert_error(413, "file_too_large", "The .docx file exceeds safe size limits.")
+            if "[Content_Types].xml" not in names or "word/document.xml" not in names:
+                _raise_convert_error(400, "invalid_document", "Invalid .docx file. Upload a valid Word document.")
     except zipfile.BadZipFile:
         _raise_convert_error(400, "invalid_document", "Invalid .docx file. Upload a valid Word document.")
 
@@ -312,16 +393,7 @@ def _download_filename(lang: str) -> str:
     return "equations-to-word.docx" if lang == "en" else "ecuaciones-a-word.docx"
 
 
-async def convert(file: UploadFile, lang: str = Form("es")):
-    lang = "en" if (lang or "").strip().lower() == "en" else "es"
-    filename = _normalize_upload_filename(file)
-    upload_kind = _detect_upload_kind(filename)
-    content = await file.read()
-    await file.close()
-
-    if len(content) > MAX_FILE_SIZE_BYTES:
-        _raise_convert_error(413, "file_too_large", "File too large. Maximum size is 5 MB.")
-
+def _convert_upload_to_docx_bytes(upload_kind: str, content: bytes) -> bytes:
     if upload_kind == "docx":
         _validate_docx_file_bytes(content)
         try:
@@ -334,13 +406,26 @@ async def convert(file: UploadFile, lang: str = Form("es")):
 
     out = io.BytesIO()
     out_doc.save(out)
-    out.seek(0)
+    return out.getvalue()
+
+
+async def convert(file: UploadFile, lang: str = Form("es")):
+    lang = "en" if (lang or "").strip().lower() == "en" else "es"
+    filename = _normalize_upload_filename(file)
+    upload_kind = _detect_upload_kind(filename)
+    try:
+        content = await _read_upload_limited(file)
+    finally:
+        await file.close()
+
+    out_bytes = await run_in_threadpool(_convert_upload_to_docx_bytes, upload_kind, content)
+    out = io.BytesIO(out_bytes)
     download_name = _download_filename(lang)
     headers = {
         "Content-Disposition": f'attachment; filename="{download_name}"; filename*=UTF-8\'\'{quote(download_name)}',
         "Cache-Control": "no-store",
     }
-    return site_module.StreamingResponse(
+    return StreamingResponse(
         out,
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         headers=headers,
@@ -349,12 +434,9 @@ async def convert(file: UploadFile, lang: str = Form("es")):
 
 async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
     if request.url.path == "/convert":
-        detail = exc.detail
-        if isinstance(detail, dict):
-            return _convert_error_response(exc.status_code, detail["code"], detail["message"])
-        message = str(detail)
-        return _convert_error_response(exc.status_code, "conversion_failed", message)
-    return await site_module.custom_http_exception_handler(request, exc)
+        code, message = _coerce_convert_error(exc.status_code, exc.detail)
+        return _convert_error_response(exc.status_code, code, message)
+    return await site_http_exception_handler(request, exc)
 
 
 async def custom_validation_exception_handler(request: Request, exc: RequestValidationError):
