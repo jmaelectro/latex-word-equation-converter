@@ -71,66 +71,70 @@ class SeoAndTextTests(unittest.TestCase):
         self.assertIn('hreflang="x-default"', xml)
         self.assertIn("<loc>https://www.ecuacionesaword.com/blog</loc>", xml)
 
-    def test_sitemap_includes_published_localized_routes(self):
+    def test_sitemap_excludes_non_primary_legal_and_noindex_posts(self):
         xml = main.generate_sitemap_xml()
-        self.assertIn("<loc>https://www.ecuacionesaword.com/de</loc>", xml)
-        self.assertIn("<loc>https://www.ecuacionesaword.com/fr</loc>", xml)
-        self.assertIn("<loc>https://www.ecuacionesaword.com/de/privacy</loc>", xml)
-        self.assertIn("<loc>https://www.ecuacionesaword.com/pt/contact</loc>", xml)
+        self.assertNotIn("<loc>https://www.ecuacionesaword.com/de</loc>", xml)
+        self.assertNotIn("<loc>https://www.ecuacionesaword.com/fr</loc>", xml)
+        self.assertNotIn("/privacy</loc>", xml)
+        self.assertNotIn("/en/privacy</loc>", xml)
         self.assertNotIn("/blog/convertidor-formulas-chatgpt-a-word</loc>", xml)
         self.assertNotIn("/en/blog/simbolos-raros-ecuaciones-word-cambria-math</loc>", xml)
         self.assertIn("/soluciones</loc>", xml)
         self.assertIn("/en/solutions</loc>", xml)
 
-    def test_home_has_all_supported_hreflang(self):
+    def test_home_has_only_primary_hreflang(self):
         html = main.read_html_file("index.html")
         self.assertIn('hreflang="es"', html)
         self.assertIn('hreflang="en"', html)
-        self.assertIn('hreflang="de"', html)
-        self.assertIn('hreflang="fr"', html)
-        self.assertIn('hreflang="it"', html)
-        self.assertIn('hreflang="pt"', html)
+        self.assertNotIn('hreflang="de"', html)
+        self.assertNotIn('hreflang="fr"', html)
+        self.assertNotIn('hreflang="it"', html)
+        self.assertNotIn('hreflang="pt"', html)
 
     def test_solutions_hub_is_200_not_redirect(self):
         resp = asyncio.run(main.solutions_es())
         self.assertEqual(resp.status_code, 200)
         self.assertIn("Soluciones", resp.body.decode("utf-8", errors="ignore"))
 
-    def test_non_primary_home_renders_localized_page(self):
+    def test_non_primary_home_redirects_to_en(self):
         resp = asyncio.run(main.home_de())
-        self.assertEqual(resp.status_code, 200)
-        self.assertIn('<html lang="de">', resp.body.decode("utf-8", errors="ignore"))
+        self.assertEqual(resp.status_code, 301)
+        self.assertEqual(resp.headers.get("location"), "/en")
 
-    def test_non_primary_blog_renders_localized_index(self):
+    def test_non_primary_blog_redirects_to_en_blog(self):
         resp = asyncio.run(main.blog_index_de())
-        self.assertEqual(resp.status_code, 200)
-        html = resp.body.decode("utf-8", errors="ignore")
-        self.assertIn('lang="de"', html)
-        self.assertIn('href="https://www.ecuacionesaword.com/de/blog"', html)
+        self.assertEqual(resp.status_code, 301)
+        self.assertEqual(resp.headers.get("location"), "/en/blog")
 
-    def test_non_primary_legal_renders_localized_page(self):
+    def test_non_primary_legal_redirects_to_en(self):
         resp = asyncio.run(main.privacy_fr())
-        self.assertEqual(resp.status_code, 200)
-        self.assertIn('<html lang="fr">', resp.body.decode("utf-8", errors="ignore"))
+        self.assertEqual(resp.status_code, 301)
+        self.assertEqual(resp.headers.get("location"), "/en/privacy")
 
-    def test_non_primary_solutions_render_localized_page(self):
+    def test_non_primary_solutions_redirect_to_en(self):
         resp = asyncio.run(main.solutions_it())
-        self.assertEqual(resp.status_code, 200)
-        html = resp.body.decode("utf-8", errors="ignore")
-        self.assertIn('<html lang="it">', html)
-        self.assertIn('noindex,follow,max-image-preview:large', html)
+        self.assertEqual(resp.status_code, 301)
+        self.assertEqual(resp.headers.get("location"), "/en/solutions")
 
-    def test_non_primary_blog_post_renders_localized_page(self):
+    def test_non_primary_blog_post_redirects_to_en_equivalent(self):
         resp = asyncio.run(main.blog_post_de("gemini-equations-to-word-omml"))
-        self.assertEqual(resp.status_code, 200)
-        html = resp.body.decode("utf-8", errors="ignore")
-        self.assertIn('lang="de"', html)
-        self.assertIn('/de/blog/gemini-equations-to-word-omml', html)
+        self.assertEqual(resp.status_code, 301)
+        self.assertEqual(resp.headers.get("location"), "/en/blog/gemini-equations-to-word-omml")
 
-    def test_non_primary_solution_slug_renders_localized_page(self):
+    def test_non_primary_solution_slug_redirects_to_en_equivalent(self):
         resp = asyncio.run(main.solution_landing_fr("gemini-equations-to-word"))
-        self.assertEqual(resp.status_code, 200)
-        self.assertIn('<html lang="fr">', resp.body.decode("utf-8", errors="ignore"))
+        self.assertEqual(resp.status_code, 301)
+        self.assertEqual(resp.headers.get("location"), "/en/solutions/gemini-equations-to-word")
+
+    def test_mixed_language_solution_slug_redirects_to_en_equivalent(self):
+        resp = asyncio.run(main.solution_landing_fr("gemini-ecuaciones-a-word"))
+        self.assertEqual(resp.status_code, 301)
+        self.assertEqual(resp.headers.get("location"), "/en/solutions/gemini-equations-to-word")
+
+    def test_mixed_language_blog_slug_redirects_to_canonical_language(self):
+        resp = asyncio.run(main.blog_post_en("matrices-sistemas-latex-a-word"))
+        self.assertEqual(resp.status_code, 301)
+        self.assertEqual(resp.headers.get("location"), "/blog/matrices-sistemas-latex-a-word")
 
     def test_legal_text_no_mojibake(self):
         ctx = main.site_module._legal_page_context("es", "privacy")
@@ -187,10 +191,7 @@ class SeoAndTextTests(unittest.TestCase):
             'hreflang="es" href="https://www.ecuacionesaword.com/blog/gemini-equations-to-word-omml"',
             html,
         )
-        self.assertIn(
-            'hreflang="de" href="https://www.ecuacionesaword.com/de/blog/gemini-equations-to-word-omml"',
-            html,
-        )
+        self.assertNotIn('hreflang="de"', html)
 
     def test_custom_404_is_noindex(self):
         request = Request(
