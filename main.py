@@ -118,39 +118,11 @@ _RATE_LIMIT_LAST_SWEEP_AT = 0.0
 
 
 app = FastAPI(title=APP_TITLE)
-site_module.SITEMAP_LANGS = site_module.SUPPORTED_LANGS
 site_module.BLOG_TRANSLATION_TO_ES = {
     (post.get("translation_slug") or ""): slug
     for slug, post in BLOG_POSTS.get("es", {}).items()
     if (post.get("translation_slug") or "")
 }
-site_module._published_home_langs = lambda: site_module.SUPPORTED_LANGS
-_original_blog_alternate_paths = site_module._blog_alternate_paths
-_original_all_alternates = site_module._all_alternates
-
-
-def _patched_blog_alternate_paths(lang: str, post: dict):
-    paths = _original_blog_alternate_paths(lang, post)
-    slug = (post.get("slug") or "").strip()
-    if lang == "en" and slug:
-        for code in ("de", "fr", "it", "pt"):
-            paths.setdefault(code, f"/{code}/blog/{slug}")
-    return paths
-
-
-site_module._blog_alternate_paths = _patched_blog_alternate_paths
-
-
-def _patched_all_alternates(path_by_lang, default_lang="es", langs=site_module.PRIMARY_CONTENT_LANGS):
-    effective_langs = langs
-    if langs == site_module.PRIMARY_CONTENT_LANGS and any(
-        code in path_by_lang for code in ("de", "fr", "it", "pt")
-    ):
-        effective_langs = site_module.SUPPORTED_LANGS
-    return _original_all_alternates(path_by_lang, default_lang=default_lang, langs=effective_langs)
-
-
-site_module._all_alternates = _patched_all_alternates
 
 app.add_middleware(
     CORSMiddleware,
@@ -396,131 +368,155 @@ async def custom_validation_exception_handler(request: Request, exc: RequestVali
 
 
 async def home_de():
-    return HTMLResponse(read_html_file("index-de.html"))
+    return site_module.RedirectResponse(url="/en", status_code=301)
 
 
 async def home_fr():
-    return HTMLResponse(read_html_file("index-fr.html"))
+    return site_module.RedirectResponse(url="/en", status_code=301)
 
 
 async def home_it():
-    return HTMLResponse(read_html_file("index-it.html"))
+    return site_module.RedirectResponse(url="/en", status_code=301)
 
 
 async def home_pt():
-    return HTMLResponse(read_html_file("index-pt.html"))
+    return site_module.RedirectResponse(url="/en", status_code=301)
 
 
 async def blog_index_de():
-    return await site_module.blog_index_de()
+    return site_module.RedirectResponse(url="/en/blog", status_code=301)
 
 
 async def blog_index_fr():
-    return await site_module.blog_index_fr()
+    return site_module.RedirectResponse(url="/en/blog", status_code=301)
 
 
 async def blog_index_it():
-    return await site_module.blog_index_it()
+    return site_module.RedirectResponse(url="/en/blog", status_code=301)
 
 
 async def blog_index_pt():
-    return await site_module.blog_index_pt()
+    return site_module.RedirectResponse(url="/en/blog", status_code=301)
 
 
 async def privacy_de():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("de", "privacy")))
+    return site_module.RedirectResponse(url="/en/privacy", status_code=301)
 
 
 async def terms_de():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("de", "terms")))
+    return site_module.RedirectResponse(url="/en/terms", status_code=301)
 
 
 async def contact_de():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("de", "contact")))
+    return site_module.RedirectResponse(url="/en/contact", status_code=301)
 
 
 async def privacy_fr():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("fr", "privacy")))
+    return site_module.RedirectResponse(url="/en/privacy", status_code=301)
 
 
 async def terms_fr():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("fr", "terms")))
+    return site_module.RedirectResponse(url="/en/terms", status_code=301)
 
 
 async def contact_fr():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("fr", "contact")))
+    return site_module.RedirectResponse(url="/en/contact", status_code=301)
 
 
 async def privacy_it():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("it", "privacy")))
+    return site_module.RedirectResponse(url="/en/privacy", status_code=301)
 
 
 async def terms_it():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("it", "terms")))
+    return site_module.RedirectResponse(url="/en/terms", status_code=301)
 
 
 async def contact_it():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("it", "contact")))
+    return site_module.RedirectResponse(url="/en/contact", status_code=301)
 
 
 async def privacy_pt():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("pt", "privacy")))
+    return site_module.RedirectResponse(url="/en/privacy", status_code=301)
 
 
 async def terms_pt():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("pt", "terms")))
+    return site_module.RedirectResponse(url="/en/terms", status_code=301)
 
 
 async def contact_pt():
-    return HTMLResponse(_render_template("legal_page.html", _legal_page_context("pt", "contact")))
+    return site_module.RedirectResponse(url="/en/contact", status_code=301)
 
 
 async def solutions_de():
-    return await site_module.solutions_de()
+    return site_module.RedirectResponse(url="/en/solutions", status_code=301)
 
 
 async def solutions_fr():
-    return await site_module.solutions_fr()
+    return site_module.RedirectResponse(url="/en/solutions", status_code=301)
 
 
 async def solutions_it():
-    return await site_module.solutions_it()
+    return site_module.RedirectResponse(url="/en/solutions", status_code=301)
 
 
 async def solutions_pt():
-    return await site_module.solutions_pt()
+    return site_module.RedirectResponse(url="/en/solutions", status_code=301)
 
 
 async def solution_landing_de(slug: str):
-    return await site_module.solution_landing_de(slug)
+    target = site_module._secondary_solution_redirect_target("de", slug)
+    if not target:
+        raise HTTPException(status_code=404, detail="Landing not found")
+    return site_module.RedirectResponse(url=target, status_code=301)
 
 
 async def solution_landing_fr(slug: str):
-    return await site_module.solution_landing_fr(slug)
+    target = site_module._secondary_solution_redirect_target("fr", slug)
+    if not target:
+        raise HTTPException(status_code=404, detail="Landing not found")
+    return site_module.RedirectResponse(url=target, status_code=301)
 
 
 async def solution_landing_it(slug: str):
-    return await site_module.solution_landing_it(slug)
+    target = site_module._secondary_solution_redirect_target("it", slug)
+    if not target:
+        raise HTTPException(status_code=404, detail="Landing not found")
+    return site_module.RedirectResponse(url=target, status_code=301)
 
 
 async def solution_landing_pt(slug: str):
-    return await site_module.solution_landing_pt(slug)
+    target = site_module._secondary_solution_redirect_target("pt", slug)
+    if not target:
+        raise HTTPException(status_code=404, detail="Landing not found")
+    return site_module.RedirectResponse(url=target, status_code=301)
 
 
 async def blog_post_de(slug: str):
-    return await site_module.blog_post_de(slug)
+    target = _secondary_blog_redirect_target("de", slug)
+    if not target:
+        raise HTTPException(status_code=404, detail="Blog post not found")
+    return site_module.RedirectResponse(url=target, status_code=301)
 
 
 async def blog_post_fr(slug: str):
-    return await site_module.blog_post_fr(slug)
+    target = _secondary_blog_redirect_target("fr", slug)
+    if not target:
+        raise HTTPException(status_code=404, detail="Blog post not found")
+    return site_module.RedirectResponse(url=target, status_code=301)
 
 
 async def blog_post_it(slug: str):
-    return await site_module.blog_post_it(slug)
+    target = _secondary_blog_redirect_target("it", slug)
+    if not target:
+        raise HTTPException(status_code=404, detail="Blog post not found")
+    return site_module.RedirectResponse(url=target, status_code=301)
 
 
 async def blog_post_pt(slug: str):
-    return await site_module.blog_post_pt(slug)
+    target = _secondary_blog_redirect_target("pt", slug)
+    if not target:
+        raise HTTPException(status_code=404, detail="Blog post not found")
+    return site_module.RedirectResponse(url=target, status_code=301)
 
 
 def _register_get(path: str, endpoint, response_class=None) -> None:

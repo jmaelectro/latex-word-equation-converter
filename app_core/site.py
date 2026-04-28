@@ -1954,8 +1954,13 @@ def _all_landing_pairs() -> List[Tuple[str, str]]:
 
 
 def _secondary_solution_redirect_target(source_lang: str, route_slug: str) -> Optional[str]:
-    """Map a secondary-language solution slug to its EN canonical path."""
+    """Map a secondary-language or mixed-language solution slug to its EN canonical path."""
     landing_key = _landing_key_from_route_slug(source_lang, route_slug)
+    if not landing_key:
+        for candidate_lang in ("en", "es", *SECONDARY_LANGS):
+            landing_key = _landing_key_from_route_slug(candidate_lang, route_slug)
+            if landing_key:
+                break
     if not landing_key:
         return None
     en_page = _landing_from_slug("en", landing_key)
@@ -1977,6 +1982,7 @@ def _secondary_blog_redirect_target(source_lang: str, slug: str) -> Optional[str
     en_alias_target = BLOG_ALIASES.get("en", {}).get(clean_slug)
     if en_alias_target:
         clean_slug = en_alias_target
+    es_alias_target = BLOG_ALIASES.get("es", {}).get(clean_slug)
 
     en_post = BLOG_POSTS.get("en", {}).get(clean_slug)
     if en_post:
@@ -1989,12 +1995,66 @@ def _secondary_blog_redirect_target(source_lang: str, slug: str) -> Optional[str
         if en_post:
             return (en_post.get("canonical_path") or f"/en/blog/{translation_slug}").strip()
 
-    es_post = BLOG_POSTS.get("es", {}).get(clean_slug)
+    es_post = BLOG_POSTS.get("es", {}).get(es_alias_target or clean_slug)
     es_translation = (es_post or {}).get("translation_slug")
     if es_translation:
         en_post = BLOG_POSTS.get("en", {}).get(es_translation)
         if en_post:
             return (en_post.get("canonical_path") or f"/en/blog/{es_translation}").strip()
+    if es_post:
+        es_slug = (es_post.get("slug") or es_alias_target or clean_slug).strip()
+        return (es_post.get("canonical_path") or f"/blog/{es_slug}").strip()
+
+    for candidate_lang, posts in BLOG_POSTS.items():
+        if candidate_lang in {source_lang, "es", "en"}:
+            continue
+        candidate_post = posts.get(clean_slug)
+        if not candidate_post:
+            continue
+        translation_slug = (candidate_post.get("translation_slug") or "").strip()
+        en_post = BLOG_POSTS.get("en", {}).get(translation_slug or clean_slug)
+        if en_post:
+            return (en_post.get("canonical_path") or f"/en/blog/{translation_slug or clean_slug}").strip()
+        es_slug = BLOG_TRANSLATION_TO_ES.get(clean_slug) or BLOG_TRANSLATION_TO_ES.get(translation_slug)
+        es_post = BLOG_POSTS.get("es", {}).get(es_slug or clean_slug)
+        if es_post:
+            return (es_post.get("canonical_path") or f"/blog/{es_slug or clean_slug}").strip()
+
+    return None
+
+
+def _cross_language_blog_redirect_target(current_lang: str, slug: str) -> Optional[str]:
+    """Redirect mixed-language blog slugs to the best canonical ES/EN URL."""
+    clean_slug = BLOG_ALIASES.get(current_lang, {}).get((slug or "").strip(), (slug or "").strip())
+    if not clean_slug:
+        return None
+
+    if current_lang in SECONDARY_LANGS:
+        return _secondary_blog_redirect_target(current_lang, clean_slug)
+
+    preferred_langs = ("en", "es") if current_lang == "en" else ("es", "en")
+    for candidate_lang in preferred_langs:
+        post = BLOG_POSTS.get(candidate_lang, {}).get(clean_slug)
+        if not post or candidate_lang == current_lang:
+            continue
+        if current_lang == "en":
+            translation_slug = (post.get("translation_slug") or "").strip()
+            translated_post = BLOG_POSTS.get("en", {}).get(translation_slug)
+            if translated_post:
+                return (translated_post.get("canonical_path") or f"/en/blog/{translation_slug}").strip()
+        return (post.get("canonical_path") or f"{_blog_index_path(candidate_lang)}/{clean_slug}").strip()
+
+    for candidate_lang, posts in BLOG_POSTS.items():
+        if candidate_lang == current_lang:
+            continue
+        post = posts.get(clean_slug)
+        if not post:
+            continue
+        translation_slug = (post.get("translation_slug") or "").strip()
+        en_post = BLOG_POSTS.get("en", {}).get(translation_slug or clean_slug)
+        if en_post:
+            return (en_post.get("canonical_path") or f"/en/blog/{translation_slug or clean_slug}").strip()
+        return (post.get("canonical_path") or f"{_blog_index_path(candidate_lang)}/{clean_slug}").strip()
 
     return None
 
@@ -2176,13 +2236,19 @@ def _solutions_hub_context(lang: str) -> Dict[str, Any]:
         },
     }
 
+def _published_home_langs() -> Tuple[str, ...]:
+    return PRIMARY_CONTENT_LANGS
+
+
 def _active_blog_langs() -> Tuple[str, ...]:
-    return tuple(lang for lang in SUPPORTED_LANGS if BLOG_LIST.get(lang))
+    return tuple(lang for lang in PRIMARY_CONTENT_LANGS if BLOG_LIST.get(lang))
 
 
 def _is_blog_post_indexable(lang: str, post: Dict[str, Any]) -> bool:
     slug = (post.get("slug") or "").strip()
     if not slug:
+        return False
+    if lang not in PRIMARY_CONTENT_LANGS:
         return False
     if lang not in _active_blog_langs():
         return False
@@ -2194,7 +2260,7 @@ def _is_blog_post_indexable(lang: str, post: Dict[str, Any]) -> bool:
 
 
 def _robots_directive(lang: str, indexable: bool = True) -> str:
-    if not indexable:
+    if not indexable or lang not in PRIMARY_CONTENT_LANGS:
         return "noindex,follow,max-image-preview:large"
     return "index,follow,max-image-preview:large"
 
@@ -2716,12 +2782,6 @@ def generate_sitemap_xml() -> str:
     blog_index_alts = _all_alternates(blog_index_paths, default_lang="es", langs=blog_langs)
     for lang in blog_langs:
         append_url(blog_index_paths[lang], lastmod=_now_lastmod_iso(), changefreq="weekly", priority="0.8" if lang == "es" else "0.7", alternates=blog_index_alts)
-
-    for page in ("privacy", "terms", "contact"):
-        legal_paths = {lang: _legal_path(lang, page) for lang in SUPPORTED_LANGS}
-        legal_alts = _all_alternates(legal_paths, default_lang="es")
-        for lang in SUPPORTED_LANGS:
-            append_url(legal_paths[lang], lastmod=_now_lastmod_iso(), changefreq="monthly", priority="0.3", alternates=legal_alts)
 
     solutions_paths = {lang: _solutions_path(lang) for lang in PRIMARY_CONTENT_LANGS}
     solutions_alts = _all_alternates(solutions_paths, default_lang="es")
@@ -3358,6 +3418,10 @@ def _resolve_blog_slug(lang: str, slug: str) -> Tuple[Optional[str], Optional[Di
         return f"{prefix}{canonical_slug}", None
 
     post = BLOG_POSTS.get(lang, {}).get(slug)
+    if not post:
+        redirect_url = _cross_language_blog_redirect_target(lang, slug)
+        if redirect_url:
+            return redirect_url, None
     return None, post
 
 

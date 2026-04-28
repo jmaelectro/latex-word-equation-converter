@@ -30,10 +30,12 @@ class SeoAndTextTests(unittest.TestCase):
         self.assertIn('hreflang="x-default"', xml)
         self.assertIn("<loc>https://www.ecuacionesaword.com/blog</loc>", xml)
 
-    def test_sitemap_excludes_non_primary_and_noindex_posts(self):
+    def test_sitemap_excludes_non_primary_legal_and_noindex_posts(self):
         xml = main.generate_sitemap_xml()
         self.assertNotIn("<loc>https://www.ecuacionesaword.com/de</loc>", xml)
         self.assertNotIn("<loc>https://www.ecuacionesaword.com/fr</loc>", xml)
+        self.assertNotIn("/privacy</loc>", xml)
+        self.assertNotIn("/en/privacy</loc>", xml)
         self.assertNotIn("/blog/convertidor-formulas-chatgpt-a-word</loc>", xml)
         self.assertNotIn("/en/blog/simbolos-raros-ecuaciones-word-cambria-math</loc>", xml)
         self.assertIn("/soluciones</loc>", xml)
@@ -76,12 +78,22 @@ class SeoAndTextTests(unittest.TestCase):
     def test_non_primary_blog_post_redirects_to_en_equivalent(self):
         resp = asyncio.run(main.blog_post_de("gemini-equations-to-word-omml"))
         self.assertEqual(resp.status_code, 301)
-        self.assertTrue(resp.headers.get("location", "").startswith("/en/blog/"))
+        self.assertEqual(resp.headers.get("location"), "/en/blog/gemini-equations-to-word-omml")
 
     def test_non_primary_solution_slug_redirects_to_en_equivalent(self):
         resp = asyncio.run(main.solution_landing_fr("gemini-equations-to-word"))
         self.assertEqual(resp.status_code, 301)
         self.assertEqual(resp.headers.get("location"), "/en/solutions/gemini-equations-to-word")
+
+    def test_mixed_language_solution_slug_redirects_to_en_equivalent(self):
+        resp = asyncio.run(main.solution_landing_fr("gemini-ecuaciones-a-word"))
+        self.assertEqual(resp.status_code, 301)
+        self.assertEqual(resp.headers.get("location"), "/en/solutions/gemini-equations-to-word")
+
+    def test_mixed_language_blog_slug_redirects_to_canonical_language(self):
+        resp = asyncio.run(main.blog_post_en("matrices-sistemas-latex-a-word"))
+        self.assertEqual(resp.status_code, 301)
+        self.assertEqual(resp.headers.get("location"), "/blog/matrices-sistemas-latex-a-word")
 
     def test_legal_text_no_mojibake(self):
         ctx = main._legal_page_context("es", "privacy")
@@ -136,6 +148,7 @@ class SeoAndTextTests(unittest.TestCase):
             'hreflang="es" href="https://www.ecuacionesaword.com/blog/gemini-equations-to-word-omml"',
             html,
         )
+        self.assertNotIn('hreflang="de"', html)
 
     def test_custom_404_is_noindex(self):
         request = Request(
